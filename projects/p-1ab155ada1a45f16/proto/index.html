@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-proto-page="home" data-proto-state="default">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智批数据统计 - 新教育管理后台</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23001f38'/%3E%3Cpath d='m7 11 7 6L26 5M8 27l10-11 7 6' fill='none' stroke='%23189fff' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+:root{--blue:#1890ff;--ink:#595959;--muted:#909399;--border:#ebeef2;--surface:#f0f2f5;--nav:#001529;--orange:#ff5722}
+*{box-sizing:border-box}body{margin:0;color:var(--ink);font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;font-size:14px;background:var(--surface);font-weight:400}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.45}button,input,select{outline:none}button:focus-visible,a:focus-visible{outline:2px solid #1890ff;outline-offset:3px}input:focus,select:focus{border-color:#40a9ff!important;box-shadow:0 0 0 2px #1890ff18}button{color:inherit}svg.icon{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;vertical-align:-3px}svg.sprite{position:absolute;width:0;height:0;overflow:hidden}[hidden]{display:none!important}
+.sidebar{position:fixed;inset:0 auto 0 0;width:254px;background:var(--nav);color:#aab7c3;z-index:20;box-shadow:3px 0 5px #00152922}.brand{height:68px;background:#00213c;display:flex;align-items:center;gap:14px;padding:0 25px;color:white;font-size:20px;white-space:nowrap;font-weight:600;border-top:4px solid #454545}.brand-logo{width:27px;height:32px;fill:none;stroke:#12a6e3;stroke-width:3.8;stroke-linecap:round;stroke-linejoin:round}.nav-section{padding-top:16px}.nav-heading{height:48px;width:100%;border:0;background:transparent;display:flex;align-items:center;gap:11px;text-align:left;padding:0 23px;color:#dce5ed}.nav-heading .arrow{margin-left:auto;width:12px;transition:transform .15s}.nav-heading[aria-expanded="true"] .arrow{transform:rotate(180deg)}.nav-items{background:#000f1a;padding-bottom:6px}.nav-item{height:48px;display:flex;align-items:center;padding:0 20px 0 46px;white-space:nowrap}.nav-item.active{height:40px;margin:3px 0 0;background:var(--blue);color:white}.nav-heading.secondary{color:#aab7c3}.nav-label{display:flex;align-items:center;gap:11px;height:48px;padding:0 23px}.exam-item{padding:12px 46px;font-size:13px;background:#000f1a}.page{margin-left:254px;min-height:100vh}.workspace-tabs{height:32px;display:flex;align-items:stretch;gap:4px;padding-left:24px;border-top:4px solid #454545;overflow:hidden;white-space:nowrap;background:#f0f2f5}.workspace-tab{padding:0 15px;display:flex;align-items:center;gap:7px;background:#fafafa;font-size:14px}.workspace-tab.current{color:var(--blue);background:white}.tab-close{font-size:18px;font-weight:300;color:#999;line-height:1;border:0;background:none;padding:0}.workspace-tab .icon{width:14px;height:14px}.main{padding:10px 20px 0 24px}.filters{background:white;padding:24px 24px 26px}.section-caption{margin:0 0 19px;font-size:14px;font-weight:400}.filter-grid{display:grid;grid-template-columns:1.12fr 1.12fr .8fr .8fr 1.05fr .76fr .68fr;gap:16px;align-items:center}.field{display:flex;align-items:center;gap:9px;white-space:nowrap;color:#303133;min-width:0}.field label{flex-shrink:0}.field select,.field input{min-width:0;width:100%;height:32px;border:1px solid #dcdfe6;border-radius:3px;padding:0 11px;color:#606266;background:white}.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='m4 6 4 5 4-5' fill='none' stroke='%23bfc2c8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:28px}.field input::placeholder{color:#bcbfc5}.filter-bottom{display:flex;align-items:center;gap:16px;margin-top:8px;flex-wrap:wrap}.date-field{gap:9px}.date-range{display:flex;align-items:center;border:1px solid #dcdfe6;border-radius:3px;height:32px;padding:0 9px;gap:8px}.date-range input{height:28px;border:0;width:141px;text-align:center;padding:0 3px;background:none;color:#606266}.date-range input::-webkit-calendar-picker-indicator{width:12px;margin-left:0;opacity:0;cursor:pointer}.date-range:hover input::-webkit-calendar-picker-indicator{opacity:.55}.date-range input:focus{box-shadow:none}.date-range span{color:#909399}.quick-dates{display:flex}.quick-date{height:32px;min-width:59px;border:1px solid #dcdfe6;background:#fff;margin-left:-1px;padding:0 14px}.quick-date:first-child{border-radius:3px 0 0 3px;margin-left:0}.quick-date:last-child{border-radius:0 3px 3px 0}.quick-date.active{position:relative;border-color:var(--blue);color:var(--blue);background:#f7fbff}.data-scope{color:#a8abb2;white-space:nowrap;font-size:13px;margin-left:8px}.filter-actions{display:flex;gap:10px;margin-left:auto}.btn{border:1px solid #dcdfe6;border-radius:4px;background:#fff;height:32px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 14px;white-space:nowrap;transition:background .15s,border-color .15s}.btn:hover{color:var(--blue);border-color:#91caff;background:#f5faff}.btn.primary{border-color:var(--blue);background:var(--blue);color:white}.btn.primary:hover{background:#40a9ff}.btn .icon{width:14px;height:14px}.stats-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:20px;margin-top:16px}.stat-card{background:white;border-radius:11px;height:150px;padding:20px;position:relative}.stat-title{display:flex;align-items:center;gap:5px;font-size:16px}.help{border:0;background:none;padding:0;color:#666;display:inline-flex;position:relative}.help .icon{width:16px;height:16px}.help::after{content:attr(data-tip);position:absolute;z-index:40;left:50%;top:26px;transform:translateX(-50%);background:#303133;color:#fff;border-radius:4px;padding:8px 12px;width:max-content;max-width:230px;font-size:12px;line-height:1.6;pointer-events:none;opacity:0;transition:opacity .15s;text-align:left}.help:hover::after,.help:focus::after{opacity:1}.stat-icon{position:absolute;right:20px;top:21px;color:var(--blue)}.stat-icon .icon{width:23px;height:23px;stroke-width:1.7}.stat-number{font-family:Arial,"Microsoft YaHei",sans-serif;font-weight:600;font-size:32px;letter-spacing:.2px;line-height:1.15;margin-top:26px;white-space:nowrap;font-variant-numeric:tabular-nums}.stat-sub{font-size:12px;color:#8d95a2;margin-top:5px;white-space:nowrap}.stat-card.cost{border-left:2px solid var(--orange)}.stat-card.cost .stat-number,.stat-card.cost .stat-icon{color:var(--orange)}.notice{margin:7px 0 9px;color:#a3a8b1;font-size:13px;line-height:16px}.table-panel{background:#fff;padding:24px 24px 12px;min-height:420px}.panel-tabs{display:flex;align-items:center;gap:0;border-bottom:1px solid #edf0f4;height:45px}.panel-tab{align-self:stretch;position:relative;background:none;border:0;min-width:120px;margin-right:14px;padding:0 16px}.panel-tab.active{color:var(--blue)}.panel-tab.active::after{content:"";position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--blue)}.export-btn{margin-left:auto;margin-bottom:7px}.table-toolbar{min-height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 4px 0 28px;gap:12px}.table-toolbar h2{font-size:14px;font-weight:600;margin:0;display:flex;align-items:center;gap:10px}.record-tag{color:#909399;font-size:12px;font-weight:400}.text-btn{color:var(--blue);background:transparent;border:0;padding:6px 9px;font-size:13px;display:inline-flex;gap:5px;align-items:center}.text-btn:hover{background:#f0f7ff;border-radius:3px}.text-btn .icon{width:13px;height:13px}.table-scroller{overflow:auto;border:1px solid var(--border);border-radius:2px}.data-table{width:100%;min-width:1460px;table-layout:fixed;border-collapse:separate;border-spacing:0;text-align:center}.data-table th,.data-table td{border-right:1px solid #f0f0f2;border-bottom:1px solid #f0f0f2;font-size:14px;padding:14px 9px;line-height:22px;font-weight:400;overflow-wrap:break-word}.data-table th:last-child,.data-table td:last-child{border-right:0}.data-table thead th{background:#fafafa;height:65px;color:#606266}.data-table thead th.fee-heading{color:#ff4d4f}.data-table .num{font-variant-numeric:tabular-nums;white-space:nowrap;font-family:Arial,"Microsoft YaHei",sans-serif}.data-table .model-row{height:66px;cursor:pointer;transition:background .13s}.data-table .model-row:hover{background:#f6faff}.data-table .model-row.expanded{background:#f0f7ff}.provider-cell{position:relative;padding-left:37px!important}.expand-toggle{display:inline-flex;align-items:center;justify-content:center;border:1px solid #cdd5df;border-radius:3px;width:18px;height:18px;background:#fff;color:#7f8fa0;font-size:17px;font-family:Arial;line-height:1;position:absolute;left:12px;top:50%;transform:translateY(-50%);padding:0}.expanded .expand-toggle{border-color:#91caff;color:var(--blue)}.expanded .provider-cell{box-shadow:inset 3px 0 0 var(--blue)}.model-label{font-size:14px;white-space:nowrap}.agent-count{font-size:12px;color:#9b9fa7;line-height:18px}.expanded .agent-count{color:#6f9dc6}.price{line-height:21px!important}.agent-row{height:51px;background:#fafcff}.agent-row:hover{background:#f0f7ff}.agent-row td{border-right-color:transparent;border-bottom-color:#edf2f7;padding-top:11px;padding-bottom:11px;font-size:13px}.agent-row td.agent-name-cell{text-align:left;padding-left:40px;position:relative}.agent-name-cell::before{content:"";position:absolute;left:21px;top:0;height:50%;width:15px;border-left:1px solid #cddff1;border-bottom:1px solid #cddff1}.agent-name-cell::after{content:"";position:absolute;left:21px;top:50%;bottom:-1px;border-left:1px solid #cddff1}.agent-row.last-agent .agent-name-cell::after{display:none}.agent-label{display:flex;align-items:center;gap:10px}.agent-icon{display:inline-flex;color:#6c9ed2;background:#eaf3fc;border-radius:4px;padding:5px}.agent-icon .icon{width:14px;height:14px}.agent-name{color:#4a586a;font-size:13px;font-weight:500;letter-spacing:.15px}.agent-type{font-size:11px;line-height:19px;padding:0 6px;border-radius:3px;color:#7d8ea0;background:#eef2f6;font-weight:400}.agent-row .agent-fee{color:#3878b4;font-weight:500}.data-table tfoot td{height:48px;background:#fafafa;color:#202124;font-weight:600;border-bottom:0;padding:12px 9px}.data-table tfoot td:first-child{text-align:left;padding-left:28px}.empty-state{padding:55px 20px!important;color:#a0a5ae}.empty-state .icon{width:40px;height:40px;display:block;margin:0 auto 14px;stroke-width:1}.empty-state strong{display:block;color:#606266;font-weight:400;margin-bottom:5px}.pagination{height:40px;display:flex;align-items:center;justify-content:flex-end;gap:9px;color:#777;font-size:13px;padding-top:10px}.page-button{height:24px;min-width:24px;padding:0;border:1px solid #91caff;border-radius:3px;background:white;color:var(--blue)}.page-arrow{border:0;background:none;color:#c0c4cc;padding:0 1px;display:inline-flex}.page-arrow .icon{width:12px;height:12px}.page-size{height:26px;border:1px solid #dcdfe6;border-radius:3px;color:#777;background:#fff;padding:0 5px}.usage-table{min-width:1200px}.usage-table td:first-child,.usage-table th:first-child{text-align:left;padding-left:24px}.usage-table .usage-name{display:flex;align-items:center;gap:9px}.usage-table .model-count{font-size:12px;color:#9199a5}.toast{position:fixed;top:55px;left:calc(50% + 90px);transform:translate(-50%,-12px);border:1px solid #ccebd5;background:#f0f9eb;box-shadow:0 3px 14px #0000000c;color:#529b37;border-radius:5px;padding:11px 20px;z-index:100;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;display:flex;gap:8px;align-items:center}.toast.visible{opacity:1;transform:translate(-50%,0)}.toast.error{color:#f56c6c;background:#fef0f0;border-color:#fde2e2}.toast .icon{width:17px;height:17px}.date-range.invalid{border-color:#f56c6c}
+.data-table thead th{white-space:nowrap;padding:10px 9px}.data-table .model-row td{padding-top:11px;padding-bottom:11px}.data-table tr>:last-child{position:sticky;right:0;z-index:2;box-shadow:-1px 0 0 #edf0f4}.data-table tbody tr{background:#fff}.data-table tbody .agent-row{background:#fafcff}.data-table tbody .model-row.expanded{background:#f0f7ff}.data-table tbody .model-row:hover,.data-table tbody .agent-row:hover{background:#f0f7ff}.data-table tbody tr>td:last-child{background:inherit}.data-table thead th:last-child{z-index:3}
+@media(min-width:1850px){.filter-grid{grid-template-columns:248px 248px 162px 162px 248px 161px 161px;gap:16px}.main{padding-right:20px}.filters{padding-top:24px}.data-table{min-width:1600px}}
+@media(max-width:1700px){.sidebar{width:220px}.brand{padding:0 20px;font-size:18px;gap:11px}.page{margin-left:220px}.main{padding:10px 16px 0}.filters{padding:20px}.filter-grid{gap:12px;grid-template-columns:repeat(4,minmax(0,1fr))}.filter-bottom{margin-top:12px;gap:12px}.stats-grid{gap:14px}.stat-card{padding:18px 16px;height:144px}.stat-title{font-size:14px}.stat-number{font-size:28px}.stat-sub{font-size:11px}.stat-icon{right:14px;top:18px}.table-panel{padding:20px}.data-scope{font-size:12px;margin-left:0}}
+@media(max-width:1300px){.sidebar{width:200px}.brand{padding:0 16px;font-size:17px;gap:9px}.nav-item{padding-left:38px;font-size:13px}.page{margin-left:200px}.stats-grid{gap:10px}.stat-number{font-size:24px;margin-top:30px}.stat-card{padding:16px 12px;height:132px}.stat-title{font-size:13px}.stat-icon{right:11px;top:17px}.stat-icon .icon{width:19px;height:19px}.stat-sub{font-size:10px;white-space:normal}.data-scope{order:3;width:100%}.filter-actions{margin-left:auto}.date-range input{width:124px}.filter-bottom{gap:10px}.quick-date{padding:0 10px;min-width:50px}}
+@media(max-width:1000px){.sidebar{width:180px}.brand{font-size:15px;padding:0 12px}.brand-logo{width:23px}.page{margin-left:180px}.stats-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.stat-card{height:124px}.stat-number{margin-top:23px}.filters,.table-panel{padding:16px}.filter-bottom{gap:12px}.filter-actions{margin-left:0}.data-scope{order:0;width:auto;white-space:normal}.workspace-tabs{padding-left:12px}}
+@media(max-width:640px){.help::after{position:fixed;left:74px;right:16px;top:58px;transform:none;width:auto;max-width:none}.sidebar{width:58px}.brand{padding:0 15px}.brand span,.nav-heading span,.nav-heading .arrow,.nav-items,.nav-label span,.exam-item{display:none}.nav-heading,.nav-label{padding:0 21px}.page{margin-left:58px}.main{padding:8px}.workspace-tabs{padding-left:8px}.workspace-tab:not(.current){display:none}.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.stat-card.tokens{grid-column:span 2;order:3}.filter-grid{grid-template-columns:1fr}.filter-bottom{gap:10px}.date-field{width:100%;gap:6px}.date-range{flex:1;min-width:0;padding:0 3px;gap:3px}.date-range input{width:calc(50% - 9px);font-size:12px}.quick-date{min-width:48px}.filter-actions{margin-left:0}.table-toolbar{padding-left:0}.table-toolbar h2{gap:5px;font-size:13px}.panel-tab{min-width:85px;margin-right:0;padding:0 8px}.export-btn{padding:0 9px;font-size:12px}.toast{left:50%;max-width:90%;width:max-content}.record-tag{font-size:11px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
+<symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 10a8 8 0 1 1 2 8M4 5v5h5"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></symbol>
+<symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4 2c-1.5 1-1.5 1.2-1.5 2.5M12 17h.01"/></symbol>
+<symbol id="i-calls" viewBox="0 0 24 24"><path d="M3 3h18v18H3zM7 7v10M12 7v5M17 7v8"/></symbol>
+<symbol id="i-pie" viewBox="0 0 24 24"><path d="M11 3a9 9 0 1 0 10 10H11zM14 2v8h8a9 9 0 0 0-8-8Z"/></symbol>
+<symbol id="i-school" viewBox="0 0 24 24"><path d="m2 9 10-7 10 7H2ZM4 21h16M6 11v10M10 11v10M14 11v10M18 11v10"/></symbol>
+<symbol id="i-money" viewBox="0 0 24 24"><path d="M3 5h18v16H3zM7 2v5M17 2v5m-8 4 3 4 3-4M9 15h6M9 18h6M12 15v5"/></symbol>
+<symbol id="i-pen" viewBox="0 0 24 24"><path d="m5 14 10-10 4 4L9 18l-5 1zM13 6l4 4M3 22h17"/></symbol>
+<symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M5 3h14v18H5zM8 7h1M12 7h4M8 12h1M12 12h4M8 17h1M12 17h4"/></symbol>
+<symbol id="i-export" viewBox="0 0 24 24"><path d="M19 4H5v16h14M12 12h10m-4-4 4 4-4 4"/></symbol>
+<symbol id="i-agent" viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="13" rx="3"/><path d="M12 3v4M2 11v5M22 11v5M8 12h.01M16 12h.01M9 16h6"/></symbol>
+<symbol id="i-expand" viewBox="0 0 24 24"><path d="m7 8 5-5 5 5M7 16l5 5 5-5"/></symbol>
+<symbol id="i-empty" viewBox="0 0 24 24"><path d="m3 14 4-9h10l4 9v6H3zM3 14h5l2 3h4l2-3h5M8 8h8M7 11h10"/></symbol>
+</defs></svg>
+<aside class="sidebar" aria-label="主导航" data-proto-id="main-nav">
+  <div class="brand"><svg class="brand-logo" viewBox="0 0 30 34" aria-hidden="true"><path d="m3 10 7 6L23 3M7 30l12-13 8 7M4 27l3 3"/></svg><span>新教育管理后台</span></div>
+  <nav class="nav-section">
+    <button class="nav-heading" id="gradingNav" aria-expanded="true" aria-controls="gradingMenu"><svg class="icon"><use href="#i-pen"/></svg><span>批阅中心</span><svg class="icon arrow"><use href="#i-chevron"/></svg></button>
+    <div class="nav-items" id="gradingMenu">
+      <div class="nav-item">扫描管理</div><div class="nav-item">扫码&amp;在线作业管理</div><div class="nav-item">题卡回收站</div><div class="nav-item">用户自制答题卡管理</div><div class="nav-item">通用答题卡管理</div><div class="nav-item">智能批改开通学校管理</div><div class="nav-item">智能批改错误反馈</div><div class="nav-item">业务题型管理</div><div class="nav-item">智批题型管理</div><div class="nav-item active" aria-current="page">智批数据统计</div>
+    </div>
+    <button class="nav-heading secondary" id="examNav" aria-expanded="false" aria-controls="examMenu"><svg class="icon"><use href="#i-pen"/></svg><span>考试管理</span><svg class="icon arrow"><use href="#i-chevron"/></svg></button>
+    <div id="examMenu" hidden><div class="exam-item">考试列表</div><div class="exam-item">成绩管理</div></div>
+    <div class="nav-label"><svg class="icon"><use href="#i-list"/></svg><span>批阅痕迹管理</span></div>
+  </nav>
+</aside>
+<div class="page">
+  <div class="workspace-tabs" aria-label="已打开的页面">
+    <div class="workspace-tab">扫描量统计<button class="tab-close" aria-label="关闭扫描量统计">×</button></div><div class="workspace-tab">智能体管理<button class="tab-close" aria-label="关闭智能体管理">×</button></div><div class="workspace-tab">编辑智能体<button class="tab-close" aria-label="关闭编辑智能体">×</button></div><div class="workspace-tab">扫描管理<button class="tab-close" aria-label="关闭扫描管理">×</button></div><div class="workspace-tab current"><svg class="icon"><use href="#i-reset"/></svg>智批数据统计</div>
+  </div>
+  <main class="main">
+    <form class="filters" id="filterForm" data-proto-id="filter-form">
+      <h1 class="section-caption">数据筛选</h1>
+      <div class="filter-grid">
+        <div class="field"><label for="business">业务类型:</label><select id="business"><option value="">全部</option><option value="grading">智能批改</option><option value="rubric">评分标准</option></select></div>
+        <div class="field"><label for="schoolType">学校类型:</label><select id="schoolType"><option value="">全部</option><option>普通高中</option><option>初级中学</option></select></div>
+        <div class="field"><label for="province">省份:</label><select id="province"><option value="">全部</option><option>浙江省</option><option>江苏省</option><option>山东省</option><option>河南省</option><option>四川省</option></select></div>
+        <div class="field"><label for="district">地区:</label><select id="district"><option value="">全部</option></select></div>
+        <div class="field"><label for="schoolName">学校名称:</label><input id="schoolName" placeholder="请输入学校名称" autocomplete="off"></div>
+        <div class="field"><label for="grade">年级:</label><select id="grade"><option value="">全部</option><option>高一</option><option>高二</option><option>高三</option><option>初一</option><option>初二</option><option>初三</option></select></div>
+        <div class="field"><label for="subject">学科:</label><select id="subject"><option value="">全部</option><option>语文</option><option>数学</option><option>英语</option></select></div>
+      </div>
+      <div class="filter-bottom">
+        <div class="field date-field"><label for="startDate">时间范围:</label><div class="date-range" id="dateRange"><input id="startDate" type="date" value="2026-09-15" max="2026-09-15" aria-label="开始日期" required><span>~</span><input id="endDate" type="date" value="2026-09-15" max="2026-09-15" aria-label="结束日期" required></div></div>
+        <div class="quick-dates" aria-label="快捷时间范围"><button type="button" class="quick-date active" data-period="yesterday">昨天</button><button type="button" class="quick-date" data-period="week">本周</button><button type="button" class="quick-date" data-period="month">本月</button><button type="button" class="quick-date" data-period="lastMonth">上月</button></div>
+        <span class="data-scope">数据范围：截至昨日24:00（每日凌晨自动更新）</span>
+        <div class="filter-actions"><button class="btn primary" type="submit"><svg class="icon"><use href="#i-search"/></svg>查询</button><button class="btn" type="reset"><svg class="icon"><use href="#i-reset"/></svg>重置</button></div>
+      </div>
+    </form>
+    <section class="stats-grid" aria-label="数据概览" data-proto-id="stats-overview">
+      <div class="stat-card"><div class="stat-title">调用总次数<button class="help" data-tip="当前筛选范围内的模型调用总次数" aria-label="调用总次数说明"><svg class="icon"><use href="#i-help"/></svg></button></div><div class="stat-icon"><svg class="icon"><use href="#i-calls"/></svg></div><div class="stat-number" id="statCalls">815,727</div></div>
+      <div class="stat-card"><div class="stat-title">成功次数<button class="help" data-tip="模型成功返回结果的调用次数" aria-label="成功次数说明"><svg class="icon"><use href="#i-help"/></svg></button></div><div class="stat-icon" style="color:#52c41a"><svg class="icon"><use href="#i-check"/></svg></div><div class="stat-number" id="statSuccess">815,727</div></div>
+      <div class="stat-card tokens"><div class="stat-title">总消耗tokens<button class="help" data-tip="输入tokens与输出tokens之和" aria-label="总消耗tokens说明"><svg class="icon"><use href="#i-help"/></svg></button></div><div class="stat-icon" style="color:#ff8500"><svg class="icon"><use href="#i-pie"/></svg></div><div class="stat-number" id="statTokens">5,663,194,860</div><div class="stat-sub" id="statTokenDetail">输入 4,746,996,219 ｜ 输出 916,198,641</div></div>
+      <div class="stat-card"><div class="stat-title">学校数量<button class="help" data-tip="当前筛选范围内产生调用的去重学校数量" aria-label="学校数量说明"><svg class="icon"><use href="#i-help"/></svg></button></div><div class="stat-icon" style="color:#8439ef"><svg class="icon"><use href="#i-school"/></svg></div><div class="stat-number" id="statSchools">260</div></div>
+      <div class="stat-card cost" data-proto-id="stat-cost"><div class="stat-title">预计总费用<button class="help" data-tip="当前筛选范围内所有模型的预估费用合计" aria-label="预计总费用说明"><svg class="icon"><use href="#i-help"/></svg></button></div><div class="stat-icon"><svg class="icon"><use href="#i-money"/></svg></div><div class="stat-number" id="statCost">¥ 6,423.94</div><div class="stat-sub" id="statCostDetail">按token ¥ 6,423.94 ｜ 按次 ¥ 0</div></div>
+    </section>
+    <p class="notice" data-proto-id="fee-notice">ⓘ预估费用仅供参考，基于当前配置的单价计算。实际费用请以厂商账单为准。</p>
+    <section class="table-panel" aria-label="统计明细" data-proto-id="fee-table-panel">
+      <div class="panel-tabs" role="tablist" aria-label="统计类型"><button class="panel-tab" id="usageTab" data-tab="usage" role="tab" aria-selected="false" aria-controls="usageView" tabindex="-1">使用量统计</button><button class="panel-tab active" id="costTab" data-tab="cost" role="tab" aria-selected="true" aria-controls="costView">模型费用</button><button class="btn export-btn" id="exportButton" data-proto-id="export-excel"><svg class="icon"><use href="#i-export"/></svg>导出Excel</button></div>
+      <div id="costView" role="tabpanel" aria-labelledby="costTab">
+        <div class="table-toolbar"><h2>模型费用汇总<span class="record-tag" id="modelCountLabel">4 个模型</span></h2><button class="text-btn" id="expandAll" data-proto-id="expand-all"><svg class="icon"><use href="#i-expand"/></svg><span>全部展开</span></button></div>
+        <div class="table-scroller"><table class="data-table" aria-label="模型与智能体费用明细" data-proto-id="fee-table">
+          <colgroup><col style="width:9%"><col style="width:17%"><col style="width:6%"><col style="width:10%"><col style="width:6%"><col style="width:6%"><col style="width:7.667%"><col style="width:7.667%"><col style="width:7.667%"><col style="width:7.667%"><col style="width:7.667%"><col style="width:7.665%"></colgroup>
+          <thead><tr><th scope="col">模型厂商</th><th scope="col">模型名称</th><th scope="col">计费方式</th><th scope="col">输入单价</th><th scope="col">输出单价<br>（非思考）</th><th scope="col">输出单价<br>（思考）</th><th scope="col">调用总次数</th><th scope="col">成功次数</th><th scope="col">输入tokens</th><th scope="col">输出tokens</th><th scope="col">总消耗tokens</th><th scope="col" class="fee-heading">预估费用</th></tr></thead>
+          <tbody id="modelRows"></tbody><tfoot id="modelTotal"></tfoot>
+        </table></div>
+        <div class="pagination" data-proto-id="pagination"><span id="modelPageCount">共 4 模型</span><button class="page-arrow" disabled aria-label="上一页"><svg class="icon" style="transform:rotate(90deg)"><use href="#i-chevron"/></svg></button><button class="page-button" aria-current="page">1</button><button class="page-arrow" disabled aria-label="下一页"><svg class="icon" style="transform:rotate(-90deg)"><use href="#i-chevron"/></svg></button><select class="page-size" aria-label="每页模型数量"><option>10</option><option>20</option><option>50</option></select></div>
+      </div>
+      <div id="usageView" role="tabpanel" aria-labelledby="usageTab" hidden><div class="table-toolbar"><h2>智能体使用量汇总<span class="record-tag" id="usageCountLabel"></span></h2></div><div class="table-scroller"><table class="data-table usage-table" aria-label="智能体使用量统计"><colgroup><col style="width:24%"><col style="width:10%"><col style="width:11%"><col style="width:11%"><col style="width:10%"><col style="width:12%"><col style="width:12%"><col style="width:10%"></colgroup><thead><tr><th>智能体名称</th><th>调用模型数</th><th>调用总次数</th><th>成功次数</th><th>成功率</th><th>输入tokens</th><th>输出tokens</th><th class="fee-heading">预估费用</th></tr></thead><tbody id="usageRows"></tbody><tfoot id="usageTotal"></tfoot></table></div><div class="pagination"><span id="usagePageCount"></span></div></div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"><svg class="icon"><use href="#i-check"/></svg><span></span></div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const fmt = value => Number(value).toLocaleString('en-US');
+const money = cents => (cents / 100).toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
+const esc = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const icon = name => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"/></svg>`;
+const snapshotDate = '2026-09-15';
+const agentDefinitions = [
+  {id:'hs-chinese-grade',name:'高中语文智批',subject:'语文',type:'普通高中',business:'grading'},
+  {id:'hs-chinese-rubric',name:'高中语文评分标准',subject:'语文',type:'普通高中',business:'rubric'},
+  {id:'hs-math-grade',name:'高中数学智批',subject:'数学',type:'普通高中',business:'grading'},
+  {id:'hs-math-rubric',name:'高中数学评分标准',subject:'数学',type:'普通高中',business:'rubric'},
+  {id:'hs-english-grade',name:'高中英语智批',subject:'英语',type:'普通高中',business:'grading'},
+  {id:'hs-english-rubric',name:'高中英语评分标准',subject:'英语',type:'普通高中',business:'rubric'},
+  {id:'ms-chinese-grade',name:'初中语文智批',subject:'语文',type:'初级中学',business:'grading'},
+  {id:'ms-chinese-rubric',name:'初中语文评分标准',subject:'语文',type:'初级中学',business:'rubric'}
+];
+const models = [
+  {id:'lite0428',provider:'字节火山方舟',name:'doubao-seed-2-0-lite-260428',inputPrice:0.6,outputPrice:3.6,calls:747123,input:4369023714,output:762506498,cents:536648,agents:[0,1,2,3,4,5,6,7],weights:[30,12,20,8,15,5,7,3]},
+  {id:'lite0215',provider:'字节火山方舟',name:'doubao-seed-2-0-lite-260215',inputPrice:0.6,outputPrice:3.6,calls:57846,input:175755513,output:52103573,cents:29303,agents:[0,1,2,3,4,5],weights:[32,13,22,8,18,7]},
+  {id:'qwen',provider:'阿里云百炼平台',name:'qwen3.5-plus',inputPrice:0.8,outputPrice:4.8,calls:9785,input:186200520,output:94755093,cents:60385,agents:[0,1,4,5,6,7],weights:[35,16,24,9,11,5]},
+  {id:'pro',provider:'字节火山方舟',name:'doubao-seed-2-0-pro-260215',inputPrice:3.2,outputPrice:16,calls:973,input:16016472,output:6833477,cents:16058,agents:[0,1,2,3],weights:[43,20,26,11]}
+];
+const cities = {'浙江省':['杭州市','宁波市'],'江苏省':['南京市','苏州市'],'山东省':['济南市','青岛市'],'河南省':['郑州市','洛阳市'],'四川省':['成都市','绵阳市']};
+const schools = Array.from({length:260},(_,i) => {
+  const province = Object.keys(cities)[Math.floor(i / 52)];
+  const type = i % 52 < 36 ? '普通高中' : '初级中学';
+  const city = cities[province][i % 2];
+  return {id:i,province,city,type,name:`${city}第${Math.floor((i % 52) / 2) + 1}${type === '普通高中' ? '高级中学' : '初级中学'}`};
+});
+function allocate(total, weights) {
+  const sum = weights.reduce((a,b) => a + b, 0);
+  const values = weights.map(w => Math.floor(total * w / sum));
+  let remainder = total - values.reduce((a,b) => a + b, 0);
+  const order = weights.map((w,i) => ({i,remainder:total*w/sum-values[i]})).sort((a,b) => b.remainder-a.remainder || a.i-b.i);
+  for (let i=0;i<remainder;i++) values[order[i % order.length].i]++;
+  return values;
+}
+const records = [];
+models.forEach((model,mi) => {
+  const parts = Object.fromEntries(['calls','input','output','cents'].map(key => [key,allocate(model[key],model.weights)]));
+  model.agents.forEach((definitionIndex,ai) => {
+    const agent = agentDefinitions[definitionIndex];
+    const eligible = schools.filter(s => s.type === agent.type).slice(0, parts.calls[ai]);
+    const weights = eligible.map(s => 1 + (s.id*7+ai*3+mi*5)%13);
+    const details = Object.fromEntries(['calls','input','output','cents'].map(key => [key,allocate(parts[key][ai],weights)]));
+    details.calls = allocate(parts.calls[ai] - eligible.length, weights).map(value => value + 1);
+    eligible.forEach((school,si) => {
+      const gradeIndex = (school.id+ai+mi)%3;
+      records.push({modelId:model.id,agentId:agent.id,schoolId:school.id,province:school.province,city:school.city,schoolName:school.name,schoolType:school.type,subject:agent.subject,business:agent.business,grade:(school.type==='普通高中'?['高一','高二','高三']:['初一','初二','初三'])[gradeIndex],date:snapshotDate,calls:details.calls[si],input:details.input[si],output:details.output[si],cents:details.cents[si]});
+    });
+  });
+});
+const state = {expanded:new Set(['lite0428']),tab:'cost',models:[],agents:[],totals:null,filters:null};
+function sumRows(rows) {
+  return rows.reduce((total,row) => {for(const key of ['calls','input','output','cents']) total[key]+=row[key];return total;},{calls:0,input:0,output:0,cents:0});
+}
+function getFilters() {
+  return Object.fromEntries(['business','schoolType','province','district','schoolName','grade','subject','startDate','endDate'].map(key=>[key,$(key).value.trim()]));
+}
+function applyFilters(notify=false) {
+  const f=getFilters();
+  if(!f.startDate || !f.endDate || f.startDate>f.endDate || f.endDate>snapshotDate){$('dateRange').classList.add('invalid');showToast('请选择有效日期，结束日期不能晚于2026-09-15',true);return false;}
+  $('dateRange').classList.remove('invalid');
+  state.filters=f;
+  const selected=records.filter(r=>(!f.business||r.business===f.business)&&(!f.schoolType||r.schoolType===f.schoolType)&&(!f.province||r.province===f.province)&&(!f.district||r.city===f.district)&&(!f.schoolName||r.schoolName.includes(f.schoolName))&&(!f.grade||r.grade===f.grade)&&(!f.subject||r.subject===f.subject)&&r.date>=f.startDate&&r.date<=f.endDate);
+  state.models=models.map(model=>{
+    const rows=selected.filter(r=>r.modelId===model.id);
+    const agents=model.agents.map(index=>{
+      const agent=agentDefinitions[index];
+      const agentRows=rows.filter(r=>r.agentId===agent.id);
+      return {...agent,...sumRows(agentRows),recordCount:agentRows.length};
+    }).filter(a=>a.recordCount);
+    return {...model,...sumRows(rows),agents,recordCount:rows.length};
+  }).filter(m=>m.recordCount);
+  state.agents=agentDefinitions.map(agent=>{
+    const rows=selected.filter(r=>r.agentId===agent.id);
+    return {...agent,...sumRows(rows),modelCount:new Set(rows.map(r=>r.modelId)).size,recordCount:rows.length};
+  }).filter(a=>a.recordCount);
+  state.totals={...sumRows(selected),schoolCount:new Set(selected.map(r=>r.schoolId)).size};
+  render();
+  if(notify) showToast(selected.length?'查询完成':'查询完成，当前筛选条件下暂无数据');
+  return true;
+}
+function numericCells(row,isAgent=false) {
+  return `<td class="num">${fmt(row.calls)}</td><td class="num">${fmt(row.calls)}</td><td class="num">${fmt(row.input)}</td><td class="num">${fmt(row.output)}</td><td class="num">${fmt(row.input+row.output)}</td><td class="num ${isAgent?'agent-fee':''}">¥ ${money(row.cents)}</td>`;
+}
+function renderModels() {
+  $('modelRows').innerHTML=state.models.length?state.models.map(model=>{
+    const expanded=state.expanded.has(model.id);
+    const childIds=model.agents.map(a=>`row-${model.id}-${a.id}`).join(' ');
+    return `<tr class="model-row ${expanded?'expanded':''}" data-model="${model.id}"><td class="provider-cell"><button class="expand-toggle" aria-label="${expanded?'收起':'展开'} ${model.name} 智能体费用明细" aria-expanded="${expanded}" aria-controls="${childIds}" data-toggle="${model.id}">${expanded?'−':'+'}</button>${model.provider}</td><td><div class="model-label">${model.name}</div><div class="agent-count">${model.agents.length} 个智能体</div></td><td>按token</td><td class="price">${model.inputPrice}元/百万tokens</td><td class="price">${model.outputPrice}元/百万<br>tokens</td><td class="price">${model.outputPrice}元/百万<br>tokens</td>${numericCells(model)}</tr>`+
+      model.agents.map((agent,i)=>`<tr id="row-${model.id}-${agent.id}" class="agent-row ${i===model.agents.length-1?'last-agent':''}" data-parent="${model.id}" ${expanded?'':'hidden'}><td class="agent-name-cell" colspan="6"><div class="agent-label"><span class="agent-icon">${icon('agent')}</span><span class="agent-name">${agent.name}</span><span class="agent-type">智能体</span></div></td>${numericCells(agent,true)}</tr>`).join('');
+  }).join(''):`<tr><td class="empty-state" colspan="12">${icon('empty')}<strong>暂无模型费用数据</strong>请调整筛选条件后查询</td></tr>`;
+  $('modelTotal').innerHTML=`<tr><td colspan="6">合计</td>${numericCells(state.totals)}</tr>`;
+  $('modelCountLabel').textContent=`${state.models.length} 个模型`;
+  $('modelPageCount').textContent=`共 ${state.models.length} 模型`;
+  updateExpandAll();
+}
+function updateExpandAll() {
+  const all=state.models.length>0&&state.models.every(m=>state.expanded.has(m.id));
+  $('expandAll').querySelector('span').textContent=all?'全部收起':'全部展开';
+  $('expandAll').disabled=!state.models.length;
+}
+function renderUsage() {
+  $('usageRows').innerHTML=state.agents.length?state.agents.map(a=>`<tr><td><span class="usage-name"><span class="agent-icon">${icon('agent')}</span>${a.name}</span></td><td>${a.modelCount}</td><td class="num">${fmt(a.calls)}</td><td class="num">${fmt(a.calls)}</td><td>${a.calls?'100%':'—'}</td><td class="num">${fmt(a.input)}</td><td class="num">${fmt(a.output)}</td><td class="num">¥ ${money(a.cents)}</td></tr>`).join(''):`<tr><td colspan="8" class="empty-state">${icon('empty')}<strong>暂无智能体使用数据</strong>请调整筛选条件后查询</td></tr>`;
+  const t=state.totals;
+  $('usageTotal').innerHTML=`<tr><td>合计</td><td>${state.models.length}</td><td class="num">${fmt(t.calls)}</td><td class="num">${fmt(t.calls)}</td><td>${t.calls?'100%':'—'}</td><td class="num">${fmt(t.input)}</td><td class="num">${fmt(t.output)}</td><td class="num">¥ ${money(t.cents)}</td></tr>`;
+  $('usageCountLabel').textContent=`${state.agents.length} 个智能体`;
+  $('usagePageCount').textContent=`共 ${state.agents.length} 智能体`;
+}
+function render() {
+  const t=state.totals;
+  $('statCalls').textContent=fmt(t.calls);$('statSuccess').textContent=fmt(t.calls);$('statTokens').textContent=fmt(t.input+t.output);$('statSchools').textContent=fmt(t.schoolCount);$('statCost').textContent=`¥ ${money(t.cents)}`;
+  $('statTokenDetail').textContent=`输入 ${fmt(t.input)} ｜ 输出 ${fmt(t.output)}`;$('statCostDetail').textContent=`按token ¥ ${money(t.cents)} ｜ 按次 ¥ 0`;
+  $('exportButton').disabled=!state.models.length;
+  renderModels();renderUsage();
+}
+function toggleModel(id) {
+  if(state.expanded.has(id))state.expanded.delete(id);else state.expanded.add(id);
+  const expanded=state.expanded.has(id);
+  const row=document.querySelector(`[data-model="${id}"]`);
+  row.classList.toggle('expanded',expanded);
+  const button=row.querySelector('.expand-toggle');
+  const model=models.find(m=>m.id===id);
+  button.setAttribute('aria-expanded',String(expanded));button.setAttribute('aria-label',`${expanded?'收起':'展开'} ${model.name} 智能体费用明细`);button.textContent=expanded?'−':'+';
+  document.querySelectorAll(`[data-parent="${id}"]`).forEach(child=>child.hidden=!expanded);
+  updateExpandAll();
+}
+$('modelRows').addEventListener('click',event=>{const row=event.target.closest('[data-model]');if(row)toggleModel(row.dataset.model);});
+$('expandAll').addEventListener('click',()=>{const all=state.models.every(m=>state.expanded.has(m.id));state.models.forEach(m=>{if(state.expanded.has(m.id)===all)toggleModel(m.id);});});
+function selectTab(tab) {
+  state.tab=tab;
+  document.querySelectorAll('.panel-tab').forEach(button=>{const active=button.dataset.tab===tab;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;});
+  $('costView').hidden=tab!=='cost';$('usageView').hidden=tab!=='usage';
+}
+document.querySelectorAll('.panel-tab').forEach(button=>{
+  button.addEventListener('click',()=>selectTab(button.dataset.tab));
+  button.addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const tab=event.key==='Home'?'usage':event.key==='End'?'cost':state.tab==='cost'?'usage':'cost';selectTab(tab);$(tab+'Tab').focus();}});
+});
+$('filterForm').addEventListener('submit',event=>{event.preventDefault();applyFilters(true);});
+$('filterForm').addEventListener('reset',()=>setTimeout(()=>{updateDistricts();document.querySelectorAll('.quick-date').forEach(b=>b.classList.toggle('active',b.dataset.period==='yesterday'));state.expanded=new Set(['lite0428']);applyFilters();showToast('已重置筛选条件');},0));
+function updateDistricts() {
+  const options=$('province').value?cities[$('province').value]:Object.values(cities).flat();
+  $('district').innerHTML='<option value="">全部</option>'+options.map(city=>`<option>${city}</option>`).join('');
+}
+$('province').addEventListener('change',updateDistricts);
+document.querySelectorAll('.quick-date').forEach(button=>button.addEventListener('click',()=>{
+  const ranges={yesterday:['2026-09-15','2026-09-15'],week:['2026-09-14','2026-09-15'],month:['2026-09-01','2026-09-15'],lastMonth:['2026-08-01','2026-08-31']};
+  [$('startDate').value,$('endDate').value]=ranges[button.dataset.period];
+  document.querySelectorAll('.quick-date').forEach(b=>b.classList.toggle('active',b===button));
+  applyFilters();
+}));
+['startDate','endDate'].forEach(id=>$(id).addEventListener('change',()=>document.querySelectorAll('.quick-date').forEach(b=>b.classList.remove('active'))));
+let toastTimer;
+function showToast(message,error=false) {clearTimeout(toastTimer);$('toast').querySelector('span').textContent=message;$('toast').classList.toggle('error',error);$('toast').classList.add('visible');toastTimer=setTimeout(()=>$('toast').classList.remove('visible'),2600);}
+[['gradingNav','gradingMenu'],['examNav','examMenu']].forEach(([buttonId,menuId])=>$(buttonId).addEventListener('click',()=>{const open=$(buttonId).getAttribute('aria-expanded')!=='true';$(buttonId).setAttribute('aria-expanded',String(open));$(menuId).hidden=!open;}));
+document.querySelectorAll('.tab-close').forEach(button=>button.addEventListener('click',()=>button.parentElement.remove()));
+const encoder=new TextEncoder();
+function crc32(bytes) {let crc=0xffffffff;for(const byte of bytes){crc^=byte;for(let j=0;j<8;j++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}return (crc^0xffffffff)>>>0;}
+function zipStore(files) {
+  const chunks=[],central=[];let offset=0,centralSize=0;
+  for(const [path,content] of Object.entries(files)){
+    const name=encoder.encode(path),data=encoder.encode(content),crc=crc32(data);
+    const local=new Uint8Array(30+name.length),lv=new DataView(local.buffer);
+    lv.setUint32(0,0x04034b50,true);lv.setUint16(4,20,true);lv.setUint16(10,0,true);lv.setUint16(12,33,true);lv.setUint32(14,crc,true);lv.setUint32(18,data.length,true);lv.setUint32(22,data.length,true);lv.setUint16(26,name.length,true);local.set(name,30);
+    chunks.push(local,data);
+    const entry=new Uint8Array(46+name.length),ev=new DataView(entry.buffer);
+    ev.setUint32(0,0x02014b50,true);ev.setUint16(4,20,true);ev.setUint16(6,20,true);ev.setUint16(14,33,true);ev.setUint32(16,crc,true);ev.setUint32(20,data.length,true);ev.setUint32(24,data.length,true);ev.setUint16(28,name.length,true);ev.setUint32(42,offset,true);entry.set(name,46);central.push(entry);centralSize+=entry.length;offset+=local.length+data.length;
+  }
+  const end=new Uint8Array(22),view=new DataView(end.buffer);view.setUint32(0,0x06054b50,true);view.setUint16(8,central.length,true);view.setUint16(10,central.length,true);view.setUint32(12,centralSize,true);view.setUint32(16,offset,true);
+  return new Blob([...chunks,...central,end],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+function worksheet(rows) {
+  const colName=index=>{let name='';for(let n=index+1;n>0;n=Math.floor((n-1)/26))name=String.fromCharCode(65+(n-1)%26)+name;return name;};
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols><col min="1" max="2" width="29" customWidth="1"/><col min="3" max="14" width="20" customWidth="1"/></cols><sheetData>${rows.map((row,ri)=>`<row r="${ri+1}">${row.map((cell,ci)=>typeof cell==='number'?`<c r="${colName(ci)}${ri+1}" s="${ri===0?1:ci===row.length-1?2:0}"><v>${cell}</v></c>`:`<c r="${colName(ci)}${ri+1}" t="inlineStr" s="${ri===0?1:0}"><is><t>${esc(cell)}</t></is></c>`).join('')}</row>`).join('')}</sheetData></worksheet>`;
+}
+function createWorkbook() {
+  const headers=['模型厂商','模型名称','计费方式','输入单价（元/百万tokens）','输出单价（非思考）','输出单价（思考）','调用总次数','成功次数','输入tokens','输出tokens','总消耗tokens','预估费用（元）'];
+  const summary=[headers,...state.models.map(m=>[m.provider,m.name,'按token',m.inputPrice,m.outputPrice,m.outputPrice,m.calls,m.calls,m.input,m.output,m.input+m.output,m.cents/100])];
+  const t=state.totals;
+  summary.push(['合计','','','','','',t.calls,t.calls,t.input,t.output,t.input+t.output,t.cents/100]);
+  const details=[['模型厂商','模型名称','智能体名称','调用总次数','成功次数','输入tokens','输出tokens','总消耗tokens','预估费用（元）'],...state.models.flatMap(m=>m.agents.map(a=>[m.provider,m.name,a.name,a.calls,a.calls,a.input,a.output,a.input+a.output,a.cents/100]))];
+  details.push(['合计','','',t.calls,t.calls,t.input,t.output,t.input+t.output,t.cents/100]);
+  const usage=[['智能体名称','调用模型数','调用总次数','成功次数','输入tokens','输出tokens','总消耗tokens','预估费用（元）'],...state.agents.map(a=>[a.name,a.modelCount,a.calls,a.calls,a.input,a.output,a.input+a.output,a.cents/100])];
+  const sheets=[['模型费用汇总',summary],['智能体费用明细',details],['智能体使用量统计',usage]];
+  const ns='http://schemas.openxmlformats.org';
+  const files={
+    '[Content_Types].xml':`<?xml version="1.0" encoding="UTF-8"?><Types xmlns="${ns}/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`,
+    '_rels/.rels':`<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="${ns}/package/2006/relationships"><Relationship Id="rId1" Type="${ns}/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`,
+    'xl/workbook.xml':`<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="${ns}/spreadsheetml/2006/main" xmlns:r="${ns}/officeDocument/2006/relationships"><sheets>${sheets.map(([name],i)=>`<sheet name="${name}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`,
+    'xl/_rels/workbook.xml.rels':`<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="${ns}/package/2006/relationships">${sheets.map((_,i)=>`<Relationship Id="rId${i+1}" Type="${ns}/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId4" Type="${ns}/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`,
+    'xl/styles.xml':`<?xml version="1.0" encoding="UTF-8"?><styleSheet xmlns="${ns}/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Microsoft YaHei"/></font><font><b/><sz val="11"/><name val="Microsoft YaHei"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="4" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`
+  };
+  sheets.forEach(([,rows],i)=>files[`xl/worksheets/sheet${i+1}.xml`]=worksheet(rows));
+  return zipStore(files);
+}
+$('exportButton').addEventListener('click',()=>{
+  if(!state.models.length)return;
+  const blob=createWorkbook(),url=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=url;link.download=`智批数据统计_${state.filters.startDate}_${state.filters.endDate}.xlsx`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);showToast('已导出模型汇总及全部智能体费用明细');
+});
+updateDistricts();applyFilters();
+</script>
+</body>
+</html>
