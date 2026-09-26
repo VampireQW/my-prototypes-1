@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>智批模型费用明细 · 原型评审</title>
+        <style>
+            :root {
+                --bg: #f7f8f8;
+                --surface: #fff;
+                --alt: #f1f2f4;
+                --border: #d8dee3;
+                --text: #1a1d23;
+                --muted: #4e5560;
+                --accent: #1d4ed8;
+                --soft: #eef2ff;
+                --control: #808790;
+                --on-accent: #fff;
+                --font: 'PingFang SC', 'Microsoft YaHei UI', 'Microsoft YaHei', system-ui, sans-serif;
+                --left: 224px;
+                --right: 400px;
+            }
+            * { box-sizing: border-box; }
+            @media (prefers-color-scheme: dark) { :root { --bg:#0b0d10;--surface:#121519;--alt:#1a1e23;--border:#363c44;--text:#f2f4f7;--muted:#a8b0ba;--accent:#7ba2ff;--soft:#1b2946;--control:#7e8795;--on-accent:#0b0d10;color-scheme:dark; } }
+            body {
+                margin: 0;
+                background: var(--bg);
+                color: var(--text);
+                font: 14px/1.7 var(--font);
+                height: 100vh;
+                overflow: hidden;
+                letter-spacing: .02em;
+                display: flex;
+                flex-direction: column;
+            }
+            .brand { width:32px;height:32px;padding:6px;border-radius:6px;background:var(--accent);color:var(--on-accent);flex:none; }
+            svg { width:18px;height:18px;vertical-align:middle; }
+            .brand svg { width:20px;height:20px; }
+            button {
+                min-height: 32px;
+                font: inherit;
+                color: inherit;
+                border: 1px solid var(--control);
+                border-radius: 6px;
+                background: var(--surface);
+                padding: 5px 10px;
+                cursor: pointer;
+                white-space: nowrap;
+            }
+            button:hover { background: var(--alt); }
+            button:focus-visible,
+            a:focus-visible,
+            .note:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+            header.topbar {
+                height: 56px;
+                flex: none;
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                padding: 0 20px;
+                border-bottom: 1px solid var(--border);
+                background: var(--surface);
+            }
+            .topbar strong { flex: 1; }
+            .topbar #scope { max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+            .muted { color: var(--muted); font-size: 12px; }
+            #source { color:var(--muted);text-decoration:none;font-size:12px;white-space:nowrap; }
+            #source:hover { color: var(--accent); }
+            .layout {
+                display: grid;
+                grid-template-columns: var(--left) minmax(0, 1fr) var(--right);
+                flex: 1;
+                min-height: 0;
+            }
+            .layout.left-closed { --left: 40px; }
+            .layout.right-closed { --right: 0px; }
+            .left-closed #tree { display: none; }
+            .right-closed aside { display: none; }
+            nav {
+                overflow: auto;
+                border-right: 1px solid var(--border);
+                background: var(--surface);
+            }
+            nav > button { border: 0; width: 100%; padding: 12px; }
+            #tree { padding: 12px 8px; }
+            #tree h3 { font-size: 13px; padding: 6px 10px; margin: 4px 0; color: var(--muted); }
+            #tree button {
+                display: block;
+                width: 100%;
+                text-align: left;
+                border: 0;
+                white-space: normal;
+                margin: 2px 0;
+                font-size: 13px;
+                padding: 8px 16px;
+            }
+            #tree button[aria-current='true'] { background: var(--soft); color: var(--accent); }
+            .canvas { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+            iframe { border: 0; width: 100%; flex: 1; background: var(--surface); }
+            aside {
+                background: var(--surface);
+                overflow: auto;
+                border-left: 1px solid var(--border);
+                padding: 24px;
+            }
+            aside h2 { font-size: 17px; margin: 4px 0 16px; }
+            details { border-bottom: 1px solid var(--border); padding: 12px 0; }
+            summary { font-weight: 600; cursor: pointer; }
+            summary:focus-visible { outline:2px solid var(--accent);outline-offset:2px; }
+            .markdown { overflow-wrap: anywhere; }
+            .markdown h1 { font-size: 20px; }
+            .markdown h2 { font-size: 17px; }
+            .markdown h3 { font-size: 15px; }
+            .markdown h4 { font-size: 14px; }
+            .markdown pre { white-space: pre-wrap; background: var(--alt); padding: 10px; border-radius: 6px; }
+            .markdown code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; background: var(--alt); padding: 1px 5px; border-radius: 4px; }
+            .markdown pre code { background: none; padding: 0; }
+            .markdown table { border-collapse: collapse; width: 100%; }
+            .markdown th, .markdown td { border: 1px solid var(--border); padding: 6px; text-align: left; }
+            .markdown blockquote { border-left: 3px solid var(--border); margin: 8px 0; padding: 2px 12px; color: var(--muted); }
+            .markdown ul, .markdown ol { padding-left: 22px; }
+            .markdown li.task { list-style: none; margin-left: -20px; }
+            .markdown a { color: var(--accent); }
+            .markdown hr { border: 0; border-top: 1px solid var(--border); }
+            .note { border-bottom: 1px solid var(--border); padding: 14px 8px; margin: 0 -8px; border-radius: 8px; cursor: pointer; }
+            .note:hover { background: var(--alt); }
+            .note strong { color: var(--accent); font-size: 13px; }
+            .note .markdown { font-size: 14px; margin-top: 6px; }
+            .note .markdown > :first-child { margin-top: 0; }
+            .note .markdown > :last-child { margin-bottom: 0; }
+            .note.stale { opacity: .55; cursor: default; }
+            .stale-badge { margin-left: 6px; font-size: 11px; font-weight: 400; color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 0 6px; }
+            .note.flash { animation: note-flash 1.2s ease; }
+            @keyframes note-flash { 0%, 45% { background: var(--soft); } 100% { background: transparent; } }
+            .empty { margin: 40px; padding: 24px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
+            [hidden] { display: none !important; }
+            @media (max-width: 1100px) {
+                :root { --left: 180px; --right: 320px; }
+                .topbar .muted { display: none; }
+            }
+        </style>
+    </head>
+    <body>
+        <header class="topbar">
+            <span class="brand" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="m12 3 10 5-10 5L2 8Z M2 12l10 5 10-5 M2 16l10 5 10-5"/></svg></span>
+            <strong id="project">智批模型费用明细</strong><span id="scope" class="muted">请选择页面</span><span class="muted" id="generated"></span>
+            <a id="source" target="_blank" rel="noopener">交互原型 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M14 3h7v7 M21 3 10 14 M10 3H3v18h18v-7"/></svg></a><span class="muted">只读评审</span><button id="toggle-prd">收起 PRD</button>
+        </header>
+        <main class="layout" id="layout">
+            <nav aria-label="页面列表">
+                <button id="toggle-pages" aria-label="展开或收起页面列表"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
+                <div id="tree"></div>
+            </nav>
+            <section class="canvas">
+                <iframe id="frame" title="交互原型" sandbox="allow-same-origin allow-scripts" hidden></iframe>
+                <div id="empty" class="empty">选择左侧页面查看交互原型。</div>
+            </section>
+            <aside>
+                <h2>PRD</h2>
+                <details open>
+                    <summary>页面需求</summary>
+                    <div id="document" class="markdown"></div>
+                </details>
+                <details open>
+                    <summary>标注明细 <span class="muted" id="notes-count"></span></summary>
+                    <div id="notes"></div>
+                </details>
+            </aside>
+        </main>
+        <noscript>请开启 JavaScript 查看评审内容（页面树、PRD 与标注气泡均依赖脚本渲染）。</noscript>
+        <script type="application/json" id="review-data">{"name": "智批模型费用明细", "projectId": "p-1ab155ada1a45f16", "revision": 82, "publishedAt": "2026-09-26T14:02:27.853034+00:00", "pages": [{"id": "home", "title": "智批数据统计 - 新教育管理后台", "file": "index.html", "url": "file:///d:/ai%20project/qoder/%E7%8B%AC%E7%AB%8B%E9%A1%B9%E7%9B%AE/%E6%99%BA%E6%89%B9%E6%A8%A1%E5%9E%8B%E8%B4%B9%E7%94%A8%E6%98%8E%E7%BB%86/index.html", "states": [{"id": "default", "title": "默认页面", "kind": "default"}]}], "documents": [{"id": "doc-walk-1", "pageId": "home", "stateId": "default", "confirmed": true, "updatedAt": "2026-09-24T12:00:00+00:00", "markdown": "## 一、需求描述\n\n面向运营与财务的智批调用费用看板。管理员按业务、学校、时间等维度筛选，查看调用量与预估费用，并导出 Excel 对账。\n\n- 数据筛选：业务类型 / 学校类型 / 省份 / 地区 / 学校名称 / 年级 / 学科 7 个条件，加时间范围（昨天 / 本周 / 本月 / 上月快捷切换）。\n- 数据概览：调用总次数、成功次数、总消耗 tokens（含输入 / 输出拆分）、学校数量、预计总费用，共 5 张卡片。\n- 模型费用 Tab：模型为一级行，可展开查看下属智能体二级明细；表尾显示合计。\n- 使用量统计 Tab：按智能体维度汇总调用量与成功率。\n- 导出 Excel：导出当前筛选条件下的全量明细。\n\n## 二、研发实现\n\n- 数据口径：T+1 更新，每日凌晨同步，统计范围截至昨日 24:00。\n- 费用口径：Σ(输入 tokens × 输入单价 + 输出 tokens × 对应输出单价)，思考 / 非思考输出分别计价；按次计费模型单列。\n- 交互：模型行点击展开 / 收起，「全部展开」批量切换；快捷时间按钮联动起止日期；重置恢复默认（昨天）。\n- 异常：无数据显示空态；开始日期晚于结束日期时日期框标红并禁止查询。\n- 导出：异步生成，文件名携带时间范围与 Tab 类型。\n"}], "annotations": [{"id": "68ade4f4-7cf2-4bb3-8b73-581f94c07796", "pageId": "home", "stateId": "default", "number": 8, "body": "| col1                                                 | col2 | col3 |\n| ---------------------------------------------------- | ---- | ---- |\n| 是啊开了多久发卡量<br />爱丽丝的飞机克拉斯记得发链接 |      |      |\n| 阿斯蒂芬就阿斯利康打飞机啊                           |      |      |\n\n啊手动阀手动阀你好随时进行处理\n\n爱上的发生的\n\n      奥丝蓝黛放假啊三闾大夫    \n\n  1. 佛山大沥放假啊看来就\n\n  2. 拉萨的飞机凯夫拉就是\n", "anchor": {"protoId": "", "selector": "#costView > div:nth-of-type(2) > table > thead > tr > th:nth-of-type(10)", "tag": "th", "text": "输出tokens", "parentText": "模型厂商 模型名称 计费方式 输入单价 输出单价 （非思考） 输出单价 （思考） 调用总次数 成功次数 输入tokens 输出tokens 总消耗tokens 预估费用", "htmlSnippet": "<th scope=\"col\">输出tokens<\/th>", "rect": {"x": 1671, "y": 509, "width": 136, "height": 65}}, "placement": {"kind": "element", "x": 76.13200195312493, "y": 27.666656494140625}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-09-26T13:17:18.826Z"}, {"id": "9bdf3b98-8b86-412e-81aa-b9ac6440ac9b", "pageId": "home", "stateId": "default", "number": 9, "body": "项目启动后，左侧的项目列表做成 Tab 形式：\n第一个 Tab：用户自己选择的本地文件夹，直接读取。\n第二个 Tab：原生成器中生成的这些项目。\n\n另外，应该能读取像“我的独立项目”这个文件夹下，所有子文件夹中的原型文件。\n\n然后再有标注功能。", "anchor": {"protoId": "", "selector": "body > div:nth-of-type(1) > main > section:nth-of-type(1) > div:nth-of-type(4)", "tag": "div", "text": "学校数量 260", "parentText": "调用总次数 815,727 成功次数 815,727 总消耗tokens 5,663,194,860 输入 4,746,996,219 ｜ 输出 916,198,641 学校数量 260 预计总费用 ¥ 6,423.94 按token ¥ 6,423.94 ｜ 按次 ¥ 0", "htmlSnippet": "<div class=\"stat-card\"><div class=\"stat-title\">学校数量<button class=\"help\" data-tip=\"当前筛选范围内产生调用的去重学校数量\" aria-label=\"学校数量说明\"><svg class=\"icon\"><use href=\"#i-help\"><\/use><\/svg><\/button><\/div><div class=\"stat-icon\" style=\"color:#8439ef\"><svg class=\"icon\"><use href=\"#i-school\"><\/use><\/svg><\/div><div class=\"stat-number\" id=\"statSchools\">260<\/div><\/div>", "rect": {"x": 1386, "y": 217, "width": 349, "height": 150}}, "placement": {"kind": "element", "x": 54, "y": 41}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-09-25T13:33:55.446Z"}, {"id": "d4e88f46-e2d4-43c6-93ac-b9727556dd61", "pageId": "home", "stateId": "default", "number": 10, "body": "* 加油的很[链接说明](https://)\n", "anchor": {"protoId": "", "selector": "body > div:nth-of-type(1) > main > section:nth-of-type(1) > div:nth-of-type(2)", "tag": "div", "text": "成功次数 815,727", "parentText": "调用总次数 815,727 成功次数 815,727 总消耗tokens 5,663,194,860 输入 4,746,996,219 ｜ 输出 916,198,641 学校数量 260 预计总费用 ¥ 6,423.94 按token ¥ 6,423.94 ｜ 按次 ¥ 0", "htmlSnippet": "<div class=\"stat-card\"><div class=\"stat-title\">成功次数<button class=\"help\" data-tip=\"模型成功返回结果的调用次数\" aria-label=\"成功次数说明\"><svg class=\"icon\"><use href=\"#i-help\"><\/use><\/svg><\/button><\/div><div class=\"stat-icon\" style=\"color:#52c41a\"><svg class=\"icon\"><use href=\"#i-check\"><\/use><\/svg><\/div><div class=\"stat-number\" id=\"statSuccess\">815,727<\/div><\/div>", "rect": {"x": 647, "y": 217, "width": 349, "height": 150}}, "placement": {"kind": "element", "x": 307.6666259765625, "y": 66}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-09-25T13:27:23.733Z"}, {"id": "b736d6ac-e64f-401f-a5a5-bce17654cbf5", "pageId": "home", "stateId": "default", "number": 11, "body": "人情味我去even拉屎的飞机卡萨帝\n", "anchor": {"protoId": "", "selector": "#row-lite0428-hs-chinese-grade > td:nth-of-type(1) > div", "tag": "div", "text": "高中语文智批 智能体", "parentText": "高中语文智批 智能体", "htmlSnippet": "<div class=\"agent-label\"><span class=\"agent-icon\"><svg class=\"icon\" aria-hidden=\"true\"><use href=\"#i-agent\"><\/use><\/svg><\/span><span class=\"agent-name\">高中语文智批<\/span><span class=\"agent-type\">智能体<\/span><\/div>", "rect": {"x": 343, "y": 653, "width": 910, "height": 24}}, "placement": {"kind": "element", "x": 175.3363129882813, "y": 6.83362597656253}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-09-26T13:23:59.866Z"}, {"id": "2f24ee48-cabc-45a1-af89-cd1e7ee69896", "pageId": "home", "stateId": "default", "number": 12, "body": "啊上课了放假啊输了就分开浪费煎熬\n\n拉克丝就分开拉屎的减肥\n\n阿拉山口就分开拉屎简单快乐发\n\n克拉斯就分开拉屎经典复刻* 拉屎经典复刻拉屎京东方\n\n1. 垃圾圣诞快乐放假啊\n2. 拉屎觉得风口浪尖ask劳动纠纷\n3. aklsfjklasjfkjsd克拉斯减肥克拉斯酒店客房\n4. 卡拉萨的减肥开了撒娇的风口浪尖\n5. 拉到就付款拉屎简单快乐放假\n6. 哈哈哈哈\n", "anchor": {"protoId": "", "selector": "#row-lite0428-hs-math-grade > td:nth-of-type(4)", "tag": "td", "text": "873,804,743", "parentText": "高中数学智批 智能体 149,424 149,424 873,804,743 152,501,299 1,026,306,042 ¥ 1,073.30", "htmlSnippet": "<td class=\"num\">873,804,743<\/td>", "rect": {"x": 1535, "y": 742, "width": 136, "height": 51}}, "placement": {"kind": "element", "x": 31.0625, "y": 34}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-09-26T09:27:24.834Z"}]}</script>
+        <script>
+            'use strict';
+            const $ = (id) => document.getElementById(id);
+            /* 三脚本源码由发布流程以 JS 字符串字面量注入，经 iframe 内 script 标签执行。 */
+            const SRC = { anchors: "/* \u7a33\u5b9a\u951a\u70b9\u4e0e\u53ef\u89c1\u5143\u7d20\u9009\u62e9\uff1b\u4e0d\u5411\u4e1a\u52a1 DOM \u6ce8\u5165\u9ad8\u4eae class\u3002\n   \u590d\u7528\u81ea\u300c\u539f\u578b\u751f\u6210\u5168\u6d41\u7a0b\u300dextension/content/anchors.js\uff08\u539f\u6837\u672a\u6539\uff0c\u4fdd\u6301\u4e24\u5de5\u5177\u951a\u70b9\u884c\u4e3a\u4e00\u81f4\uff1b\n   \u5168\u6d41\u7a0b\u5df2\u4e8e 2026-09-26 \u5f52\u6863\u81f3 \u72ec\u7acb\u9879\u76ee\\_\u5f52\u6863\\\u539f\u578b\u751f\u6210\u5168\u6d41\u7a0b\\\uff09\u3002 */\n(() => {\n    'use strict';\n    if (globalThis.ProtoAnchors) return;\n    const owned = (el) => !!el?.closest?.('[data-prototype-owned]');\n    const text = (el) => (el?.innerText || el?.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 400);\n    const visible = (el) =>\n        !!el &&\n        !owned(el) &&\n        el.getClientRects().length > 0 &&\n        getComputedStyle(el).display !== 'none' &&\n        getComputedStyle(el).visibility !== 'hidden';\n    function selector(el) {\n        if (el.id && document.querySelectorAll('#' + CSS.escape(el.id)).length === 1)\n            return '#' + CSS.escape(el.id);\n        const path = [];\n        for (let n = el; n && n !== document.documentElement; n = n.parentElement) {\n            let part = n.tagName.toLowerCase();\n            if (n.id && document.querySelectorAll('#' + CSS.escape(n.id)).length === 1) {\n                path.unshift('#' + CSS.escape(n.id));\n                break;\n            }\n            const same = n.parentElement\n                ? [...n.parentElement.children].filter((x) => x.tagName === n.tagName)\n                : [];\n            if (same.length > 1) part += `:nth-of-type(${same.indexOf(n) + 1})`;\n            path.unshift(part);\n        }\n        return path.join(' > ');\n    }\n    function serialize(el) {\n        const r = el.getBoundingClientRect();\n        const clean = el.cloneNode(true);\n        clean.querySelectorAll('[data-prototype-owned],script').forEach((n) => n.remove());\n        return {\n            protoId: el.getAttribute('data-proto-id') || '',\n            selector: selector(el),\n            tag: el.tagName.toLowerCase(),\n            text: text(el),\n            parentText: text(el.parentElement),\n            htmlSnippet: clean.outerHTML.slice(0, 1800),\n            rect: {\n                x: Math.round(r.x + scrollX),\n                y: Math.round(r.y + scrollY),\n                width: Math.round(r.width),\n                height: Math.round(r.height),\n            },\n        };\n    }\n    function resolve(anchor) {\n        if (!anchor) return { element: null, reason: '\u5c1a\u672a\u7ed1\u5b9a\u5143\u7d20' };\n        if (anchor.protoId) {\n            const list = [\n                ...document.querySelectorAll(`[data-proto-id=\"${CSS.escape(anchor.protoId)}\"]`),\n            ].filter(visible);\n            if (list.length === 1 && (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag))\n                return { element: list[0] };\n            return {\n                element: null,\n                reason: list.length > 1 ? '\u7a33\u5b9a ID \u91cd\u590d\uff0c\u8bf7\u91cd\u65b0\u7ed1\u5b9a' : '\u76ee\u6807\u5df2\u79fb\u9664\u6216\u5f53\u524d\u72b6\u6001\u4e0d\u53ef\u89c1',\n            };\n        }\n        try {\n            const list = [...document.querySelectorAll(anchor.selector || ':not(*)')].filter(visible);\n            if (\n                list.length === 1 &&\n                (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag) &&\n                (!anchor.text || text(list[0]) === anchor.text)\n            )\n                return { element: list[0] };\n        } catch (_) {\n            /* \u65e7\u9009\u62e9\u5668\u53ef\u80fd\u5931\u6548\uff0c\u7ee7\u7eed\u5c1d\u8bd5\u552f\u4e00\u6587\u672c\u3002 */\n        }\n        if (anchor.text && /^[a-z][a-z0-9-]*$/i.test(anchor.tag || '')) {\n            const candidates = [...document.querySelectorAll(anchor.tag)].filter(\n                (el) =>\n                    visible(el) &&\n                    text(el) === anchor.text &&\n                    (!anchor.parentText || text(el.parentElement) === anchor.parentText),\n            );\n            if (candidates.length === 1) return { element: candidates[0] };\n            if (candidates.length > 1) return { element: null, reason: '\u5b58\u5728\u591a\u4e2a\u540c\u540d\u76ee\u6807\uff0c\u8bf7\u91cd\u65b0\u7ed1\u5b9a' };\n        }\n        return { element: null, reason: '\u76ee\u6807\u53d8\u5316\uff0c\u7b49\u5f85\u91cd\u65b0\u5b9a\u4f4d' };\n    }\n    function at(x, y) {\n        return (\n            document\n                .elementsFromPoint(x, y)\n                .find((el) => !owned(el) && !['HTML', 'BODY'].includes(el.tagName)) || null\n        );\n    }\n    function rect(el, fullDocument = false) {\n        const r = el.getBoundingClientRect();\n        let left = Math.max(fullDocument ? -scrollX : 0, r.left), top = Math.max(fullDocument ? -scrollY : 0, r.top),\n            right = Math.min(fullDocument ? document.documentElement.scrollWidth - scrollX : innerWidth, r.right),\n            bottom = Math.min(fullDocument ? document.documentElement.scrollHeight - scrollY : innerHeight, r.bottom);\n        for (let n = el.parentElement; n; n = n.parentElement) {\n            if (fullDocument && n === document.scrollingElement) continue;\n            const s = getComputedStyle(n), p = n.getBoundingClientRect();\n            if (/(auto|scroll|hidden|clip)/.test(s.overflowX)) {\n                left = Math.max(left, p.left + n.clientLeft);\n                right = Math.min(right, p.left + n.clientLeft + n.clientWidth);\n            }\n            if (/(auto|scroll|hidden|clip)/.test(s.overflowY)) {\n                top = Math.max(top, p.top + n.clientTop);\n                bottom = Math.min(bottom, p.top + n.clientTop + n.clientHeight);\n            }\n        }\n        return { x: left, y: top, width: Math.max(0, right - left), height: Math.max(0, bottom - top), visible: right > left && bottom > top };\n    }\n    function placement(el, x, y) {\n        if (!el) return { kind: 'document', x: x + scrollX, y: y + scrollY };\n        const r = el.getBoundingClientRect();\n        return { kind: 'element', x: x - r.left + el.scrollLeft, y: y - r.top + el.scrollTop };\n    }\n    function point(note, fullDocument = false) {\n        const p = note.placement;\n        if (p?.kind === 'document') {\n            const x = p.x - scrollX, y = p.y - scrollY;\n            if (p.x > document.documentElement.scrollWidth || p.y > document.documentElement.scrollHeight)\n                return { reason: '\u9875\u9762\u5c3a\u5bf8\u5df2\u53d8\u5316\uff0c\u8bf7\u91cd\u65b0\u5b9a\u4f4d', point: null, rect: null };\n            const visible = fullDocument || (x >= 0 && y >= 0 && x < innerWidth && y < innerHeight);\n            return { point: { x, y, visible }, rect: { x, y, width: 0, height: 0, visible } };\n        }\n        const found = resolve(note.anchor);\n        if (!found.element) return { reason: found.reason, point: null, rect: null };\n        const element = found.element, r = element.getBoundingClientRect(), clip = rect(element, fullDocument);\n        if (!p) return { element, rect: clip, point: { x: clip.x, y: clip.y, visible: clip.visible }, legacy: true };\n        if (p.x > Math.max(r.width, element.scrollWidth) || p.y > Math.max(r.height, element.scrollHeight))\n            return { element, reason: '\u843d\u70b9\u8d85\u51fa\u76ee\u6807\u8303\u56f4\uff0c\u8bf7\u91cd\u65b0\u5b9a\u4f4d', rect: clip, point: null };\n        const x = r.left + p.x - element.scrollLeft, y = r.top + p.y - element.scrollTop;\n        const visible = clip.visible && x >= clip.x && x <= clip.x + clip.width && y >= clip.y && y <= clip.y + clip.height;\n        return { element, rect: clip, point: { x, y, visible } };\n    }\n    function inBox(box) {\n        const nodes = [\n            ...document.querySelectorAll(\n                'button,input,img,a,p,h1,h2,h3,h4,li,label,select,textarea,[data-proto-id]',\n            ),\n        ].filter((el) => {\n            if (!visible(el)) return false;\n            const r = el.getBoundingClientRect();\n            return (\n                r.width &&\n                r.height &&\n                r.left < box.right &&\n                r.right > box.left &&\n                r.top < box.bottom &&\n                r.bottom > box.top &&\n                [[.5,.5],[.1,.1],[.9,.1],[.1,.9],[.9,.9]].some(([u,v]) => {\n                    const hit = at(r.left + r.width * u, r.top + r.height * v);\n                    return hit === el || (hit && el.contains(hit));\n                })\n            );\n        });\n        return nodes.filter((el) => !nodes.some((other) => other !== el && other.contains(el))).slice(0, 100);\n    }\n    function currentIds() {\n        return {\n            pageId: document.documentElement.dataset.protoPage || 'main',\n            stateId: document.documentElement.dataset.protoState || 'default',\n        };\n    }\n    async function enterState(stateId) {\n        if (typeof window.PrototypeBridge?.enter === 'function') await window.PrototypeBridge.enter(stateId);\n        return currentIds();\n    }\n    globalThis.ProtoAnchors = {\n        owned,\n        text,\n        visible,\n        selector,\n        serialize,\n        resolve,\n        rect,\n        placement,\n        point,\n        at,\n        inBox,\n        currentIds,\n        enterState,\n    };\n})();\n", order: "/* \u5c55\u793a\u7f16\u53f7\u6295\u5f71\uff1a\u4e0d\u6539\u5143\u6570\u636e number\uff0c\u6240\u6709\u5b9a\u4f4d\u4e0e\u7f16\u8f91\u59cb\u7ec8\u4f7f\u7528\u7a33\u5b9a id\u3002 */\n(() => {\n    'use strict';\n    const stable = (a, b) => String(a.id).localeCompare(String(b.id), 'en');\n    function logicalPoint(found, win) {\n        if (!found?.point) return null;\n        const { element, legacy } = found;\n        const point = legacy && element ? element.getBoundingClientRect() : found.point;\n        let x = point.x + win.scrollX, y = point.y + win.scrollY;\n        for (let node = legacy ? element?.parentElement : element; node && node !== win.document.scrollingElement; node = node.parentElement) {\n            x += node.scrollLeft || 0;\n            y += node.scrollTop || 0;\n        }\n        return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;\n    }\n    function arrange(records) {\n        const resolved = records.filter(r => r.point).sort((a, b) => a.point.y - b.point.y || a.point.x - b.point.x || stable(a.note, b.note));\n        const result = [];\n        for (let i = 0; i < resolved.length;) {\n            const top = resolved[i].point.y, row = [];\n            while (i < resolved.length && resolved[i].point.y - top <= 12) row.push(resolved[i++]);\n            row.sort((a, b) => a.point.x - b.point.x || a.point.y - b.point.y || stable(a.note, b.note));\n            result.push(...row);\n        }\n        result.push(...records.filter(r => !r.point).sort((a, b) => stable(a.note, b.note)));\n        return result.map((r, i) => ({ ...r.note, displayNumber: i + 1 }));\n    }\n    function project(notes, win, pendingPoint = null) {\n        const records = notes.map(note => {\n            let point = null;\n            try { point = logicalPoint(win.ProtoAnchors.point(note), win); } catch (_) { /* \u672a\u5c31\u7eea\u6216\u5931\u6548\u951a\u70b9 */ }\n            return { note, point };\n        });\n        if (pendingPoint) records.push({ note: {id: '~pending'}, point: pendingPoint });\n        return arrange(records);\n    }\n    function previewNumber(notes, win, x, y) {\n        const element = win.ProtoAnchors.at(x, y);\n        const point = logicalPoint({element, point: {x, y}}, win);\n        return project(notes, win, point).find(n => n.id === '~pending')?.displayNumber || notes.length + 1;\n    }\n    globalThis.ProtoOrder = { arrange, project, previewNumber, logicalPoint };\n})();\n", pins: "/* \u8bc4\u5ba1\u58f3\u53ea\u8bfb\u6c14\u6ce1\u5c42\uff1a\u7531 review_shell.html \u6ce8\u5165\u88ab\u8bc4\u5ba1\u539f\u578b\u9875\u9762\u3002\n   \u4f9d\u8d56\u540c\u9875\u5148\u6ce8\u5165\u7684 proto-anchors.js / proto-order.js\uff1b\u901a\u8fc7 window.__REVIEW__ \u4e0e\u58f3\u7236\u9875\u901a\u4fe1\u3002\n   \u53ea\u8bfb\uff1a\u65e0\u7f16\u8f91\u3001\u65e0\u62d6\u52a8\u3001\u65e0\u5220\u9664\u3002 */\n(() => {\n    'use strict';\n    if (window.__reviewPinsBoot) return;\n    window.__reviewPinsBoot = true;\n    const R = window.__REVIEW__;\n    if (!R || !window.ProtoAnchors || !window.ProtoOrder) return;\n\n    const style = document.createElement('style');\n    style.textContent = `\n.__review_pin{position:absolute;transform:translate(-50%,-50%);min-width:22px;height:22px;padding:0 5px;border:2px solid #fff;border-radius:999px;background:#1d4ed8;color:#fff;font:600 12px/18px system-ui,sans-serif;text-align:center;box-shadow:0 1px 6px rgba(16,24,40,.35);cursor:pointer;pointer-events:auto;}\n.__review_pin:hover{background:#1e40af;}\n.__review_pin.__stale{background:#9aa3af;cursor:default;}\n@media(prefers-color-scheme:dark){.__review_pin{border-color:#121519;}}\n`;\n    (document.head || document.documentElement).appendChild(style);\n\n    const layer = document.createElement('div');\n    layer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147482000;';\n    document.documentElement.appendChild(layer);\n\n    const stateOf = () => document.documentElement.dataset.protoState || 'default';\n    let lastState = '', lastX = -1, lastY = -1, lastW = 0, lastH = 0, lastHtml = '';\n    let lastOrder = '', lastStale = '';\n\n    function layout() {\n        const state = stateOf();\n        const notes = (R.notes || []).filter(n => n.stateId === state);\n        const arranged = window.ProtoOrder.project(notes, window);\n        const stale = [];\n        layer.replaceChildren();\n        for (const n of arranged) {\n            let found = null;\n            try { found = window.ProtoAnchors.point(n); } catch (_) { /* \u951a\u5b9a\u5f02\u5e38\u6309\u5931\u6548\u5904\u7406 */ }\n            if (!found?.point) { stale.push(n.id); continue; }\n            const pin = document.createElement('button');\n            pin.type = 'button';\n            pin.className = '__review_pin';\n            pin.textContent = n.displayNumber;\n            pin.setAttribute('aria-label', `\u6807\u6ce8 ${n.displayNumber}`);\n            pin.style.left = found.point.x + 'px';\n            pin.style.top = found.point.y + 'px';\n            pin.onclick = e => { e.preventDefault(); e.stopPropagation(); R.onFocus?.(n.id); };\n            layer.appendChild(pin);\n        }\n        const orderKey = JSON.stringify(arranged.map(n => [n.id, n.displayNumber]));\n        const staleKey = JSON.stringify(stale);\n        if (orderKey !== lastOrder || staleKey !== lastStale || state !== lastState) {\n            lastOrder = orderKey; lastStale = staleKey; lastState = state;\n            R.onSync?.(Object.fromEntries(arranged.map(n => [n.id, n.displayNumber])), state, stale);\n        }\n    }\n\n    setInterval(() => {\n        const html = document.documentElement.outerHTML.length;\n        if (stateOf() !== lastState || scrollX !== lastX || scrollY !== lastY ||\n            innerWidth !== lastW || innerHeight !== lastH || html !== lastHtml) {\n            lastX = scrollX; lastY = scrollY; lastW = innerWidth; lastH = innerHeight; lastHtml = html;\n            layout();\n        }\n    }, 350);\n\n    layout();\n})();\n" };
+
+            // ---------- 零依赖精简 Markdown 渲染器（先转义再变换，禁原始 HTML） ----------
+            function esc(s) {
+                return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            }
+            function inline(s) {
+                return esc(s)
+                    .replace(/`([^`]+)`/g, '<code>$1</code>')
+                    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+                    .replace(/~~([^~]+)~~/g, '<del>$1</del>')
+                    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, t, u) =>
+                        /^(https?:|mailto:|#)/.test(u) ? `<a href="${u}" target="_blank" rel="noopener">${t}</a>` : t);
+            }
+            function md(src) {
+                const lines = String(src || '').replace(/\r\n?/g, '\n').split('\n');
+                const out = [];
+                let i = 0, para = [];
+                const flushPara = () => {
+                    if (para.length) { out.push(`<p>${para.map(inline).join('<br>')}</p>`); para = []; }
+                };
+                while (i < lines.length) {
+                    const line = lines[i];
+                    let m = line.match(/^```\w*\s*$/);
+                    if (m) {
+                        flushPara();
+                        const buf = [];
+                        i++;
+                        while (i < lines.length && !/^```\s*$/.test(lines[i])) buf.push(lines[i++]);
+                        i++;
+                        out.push(`<pre><code>${esc(buf.join('\n'))}</code></pre>`);
+                        continue;
+                    }
+                    if (/^\|.*\|\s*$/.test(line) && i + 1 < lines.length && /^\|[\s:|-]+\|\s*$/.test(lines[i + 1]) && lines[i + 1].includes('-')) {
+                        flushPara();
+                        const parseRow = (r) => r.trim().replace(/^\||\|$/g, '').split('|').map((c) => inline(c.trim()));
+                        const head = parseRow(line);
+                        i += 2;
+                        const rows = [];
+                        while (i < lines.length && /^\|.*\|\s*$/.test(lines[i])) rows.push(parseRow(lines[i++]));
+                        out.push(`<table><thead><tr>${head.map((c) => `<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`);
+                        continue;
+                    }
+                    m = line.match(/^(#{1,4})\s+(.*)$/);
+                    if (m) { flushPara(); out.push(`<h${m[1].length}>${inline(m[2])}</h${m[1].length}>`); i++; continue; }
+                    if (/^\s*(-{3,}|\*{3,})\s*$/.test(line)) { flushPara(); out.push('<hr>'); i++; continue; }
+                    if (/^>\s?/.test(line)) {
+                        flushPara();
+                        const buf = [];
+                        while (i < lines.length && /^>\s?/.test(lines[i])) buf.push(lines[i++].replace(/^>\s?/, ''));
+                        out.push(`<blockquote>${md(buf.join('\n'))}</blockquote>`);
+                        continue;
+                    }
+                    if (/^\s*([-*+]|\d+\.)\s+/.test(line)) {
+                        flushPara();
+                        const ordered = /^\s*\d+\./.test(line);
+                        const itemRe = ordered ? /^\s*\d+\.\s+(.*)$/ : /^\s*[-*+]\s+(.*)$/;
+                        const items = [];
+                        while (i < lines.length && itemRe.test(lines[i])) {
+                            const t = lines[i].match(itemRe)[1];
+                            i++;
+                            const task = t.match(/^\[([ xX])\]\s+(.*)$/);
+                            items.push(task
+                                ? `<li class="task"><input type="checkbox" disabled${task[1] !== ' ' ? ' checked' : ''}> ${inline(task[2])}</li>`
+                                : `<li>${inline(t)}</li>`);
+                        }
+                        out.push(ordered ? `<ol>${items.join('')}</ol>` : `<ul>${items.join('')}</ul>`);
+                        continue;
+                    }
+                    if (!line.trim()) { flushPara(); i++; continue; }
+                    para.push(line);
+                    i++;
+                }
+                flushPara();
+                return out.join('\n');
+            }
+
+            // ---------- 数据与状态 ----------
+            let data = null;
+            try { data = JSON.parse($('review-data').textContent); } catch (_) { data = null; }
+            const frame = $('frame');
+            let current = { page: null, stateId: null };
+            let orders = {};            // stateId -> { map: noteId -> displayNumber, stale: Set }
+            let pendingState = null;    // 跨页切换时，等 iframe 加载完成后再进入的状态
+            let loadedFile = null;
+
+            const safePath = (path) => {
+                const parts = String(path || '').replace(/\\/g, '/').split('/');
+                if (parts.some((p) => !p || p.startsWith('.') || p.includes(':'))) throw new Error('原型文件路径无效');
+                return parts.map(encodeURIComponent).join('/');
+            };
+
+            function inject(win, src) {
+                const doc = win.document;
+                const s = doc.createElement('script');
+                s.textContent = src;
+                (doc.head || doc.documentElement).appendChild(s);
+                s.remove();
+            }
+
+            // ---------- 左栏页面树 ----------
+            function buildTree() {
+                const tree = $('tree');
+                tree.replaceChildren();
+                for (const page of data.pages) {
+                    if ((page.states || []).length <= 1) {
+                        tree.append(treeButton(page.title, page, page.states?.[0]?.id || 'default'));
+                    } else {
+                        const h = document.createElement('h3');
+                        h.textContent = page.title;
+                        tree.append(h);
+                        for (const st of page.states) tree.append(treeButton(st.title, page, st.id));
+                    }
+                }
+            }
+            function treeButton(text, page, stateId) {
+                const b = document.createElement('button');
+                b.textContent = text;
+                b.dataset.scope = page.id + '\n' + stateId;
+                b.onclick = () => selectPage(page, stateId);
+                return b;
+            }
+
+            // ---------- 页面 / 状态切换 ----------
+            function selectPage(page, stateId) {
+                const samePage = current.page?.id === page.id && loadedFile === page.file;
+                current = { page, stateId };
+                if (!samePage) orders = {};
+                syncChrome();
+                renderAside();
+                const win = frame.contentWindow;
+                if (samePage && win?.ProtoAnchors) {
+                    try { win.ProtoAnchors.enterState(stateId)?.catch?.(() => {}); } catch (_) { /* 原型未就绪 */ }
+                } else {
+                    pendingState = stateId;
+                    loadedFile = page.file;
+                    frame.hidden = false;
+                    $('empty').hidden = true;
+                    frame.src = 'proto/' + safePath(page.file);
+                }
+            }
+            function syncChrome() {
+                const { page, stateId } = current;
+                const st = page.states?.find((s) => s.id === stateId);
+                $('scope').textContent = (page.states?.length || 0) > 1 ? `${page.title} / ${st?.title || stateId}` : page.title;
+                try { $('source').href = 'proto/' + safePath(page.file); } catch (_) { $('source').removeAttribute('href'); }
+                for (const b of $('tree').querySelectorAll('button'))
+                    b.setAttribute('aria-current', String(b.dataset.scope === page.id + '\n' + stateId));
+                history.replaceState(null, '', '#' + new URLSearchParams({ p: page.id, s: stateId }).toString());
+            }
+
+            // ---------- iframe 加载：注入锚点层，跟随真实页面 / 状态 ----------
+            frame.addEventListener('load', () => {
+                if (!current.page || !loadedFile) return;
+                const win = frame.contentWindow;
+                if (!win) return;
+                try {
+                    inject(win, SRC.anchors);
+                    inject(win, SRC.order);
+                    const ids = win.ProtoAnchors?.currentIds?.() || {};
+                    const actual = data.pages.find((p) => p.id === ids.pageId);
+                    if (actual && actual.id !== current.page.id) {
+                        /* 原型内部导航到了另一个已登记页面：跟随。 */
+                        current = { page: actual, stateId: actual.states.some((s) => s.id === ids.stateId) ? ids.stateId : actual.states[0].id };
+                        orders = {};
+                        pendingState = null;
+                        syncChrome();
+                    } else if (ids.stateId && ids.stateId !== current.stateId && current.page.states?.some((s) => s.id === ids.stateId)) {
+                        current.stateId = ids.stateId;
+                        syncChrome();
+                    }
+                    win.__REVIEW__ = {
+                        notes: data.annotations.filter((n) => n.pageId === current.page.id),
+                        onSync: onPinSync,
+                        onFocus: onPinFocus,
+                    };
+                    inject(win, SRC.pins);
+                    if (pendingState) {
+                        const target = pendingState;
+                        pendingState = null;
+                        if (target !== (ids.stateId || 'default'))
+                            win.ProtoAnchors?.enterState?.(target)?.catch?.(() => {});
+                    }
+                } catch (_) { /* 非可标注原型：仅展示，无气泡。 */ }
+                renderAside();
+            });
+
+            // ---------- 气泡层回调 ----------
+            function onPinSync(map, state, stale) {
+                orders[state] = { map, stale: new Set(stale) };
+                if (current.page && state !== current.stateId && current.page.states?.some((s) => s.id === state)) {
+                    /* 原型自身切换了状态（页内交互）：右栏与页面树跟随。 */
+                    current.stateId = state;
+                    syncChrome();
+                }
+                if (state === current.stateId) renderAside();
+            }
+            function onPinFocus(noteId) {
+                const row = $('notes').querySelector(`[data-note-id="${CSS.escape(noteId)}"]`);
+                if (!row) return;
+                row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                row.classList.remove('flash');
+                void row.offsetWidth;
+                row.classList.add('flash');
+            }
+            function reveal(note) {
+                const win = frame.contentWindow;
+                try {
+                    const found = win?.ProtoAnchors?.point(note);
+                    if (found?.element) found.element.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    else if (found?.point) win.scrollTo({ top: Math.max(0, found.point.y + win.scrollY - win.innerHeight / 2), behavior: 'smooth' });
+                } catch (_) { /* 原型未就绪 */ }
+            }
+
+            // ---------- 右栏 PRD ----------
+            function renderAside() {
+                const { page, stateId } = current;
+                if (!page) return;
+                const doc = data.documents.find((d) => d.pageId === page.id && d.stateId === stateId);
+                $('document').innerHTML = md(doc?.markdown?.trim() ? doc.markdown : '*暂无页面需求*');
+                const notes = data.annotations.filter((n) => n.pageId === page.id && n.stateId === stateId);
+                $('notes-count').textContent = notes.length ? `（${notes.length}）` : '';
+                const cache = orders[stateId];
+                let rows;
+                if (cache) {
+                    const pos = (n) => (cache.map[n.id] ?? 1e9);
+                    const byPos = (a, b) => pos(a) - pos(b) || a.number - b.number;
+                    rows = [
+                        ...notes.filter((n) => !cache.stale.has(n.id)).sort(byPos).map((n) => [n, cache.map[n.id] ?? '–', false]),
+                        ...notes.filter((n) => cache.stale.has(n.id)).sort(byPos).map((n) => [n, cache.map[n.id] ?? '–', true]),
+                    ];
+                } else {
+                    rows = notes.slice().sort((a, b) => a.number - b.number).map((n) => [n, n.number, false]);
+                }
+                const host = $('notes');
+                host.replaceChildren();
+                if (!rows.length) {
+                    const p = document.createElement('p');
+                    p.className = 'muted';
+                    p.textContent = '本状态暂无标注。';
+                    host.append(p);
+                }
+                for (const [note, num, stale] of rows) {
+                    const row = document.createElement('section');
+                    row.className = 'note' + (stale ? ' stale' : '');
+                    row.dataset.noteId = note.id;
+                    row.tabIndex = 0;
+                    row.setAttribute('aria-label', `标注 ${num}${stale ? '，已失锚' : '，回车定位到原型位置'}`);
+                    const head = document.createElement('strong');
+                    head.textContent = `${num} · 标注`;
+                    if (stale) {
+                        const badge = document.createElement('span');
+                        badge.className = 'stale-badge';
+                        badge.textContent = '失锚';
+                        head.append(badge);
+                    }
+                    const body = document.createElement('div');
+                    body.className = 'markdown';
+                    body.innerHTML = md(note.body || '');
+                    row.append(head, body);
+                    if (!stale) {
+                        row.onclick = () => reveal(note);
+                        row.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); reveal(note); } };
+                    }
+                    host.append(row);
+                }
+            }
+
+            // ---------- 启动 ----------
+            if (!data?.pages?.length) {
+                $('empty').textContent = '评审数据缺失或无效，请重新发布。';
+            } else {
+                $('project').textContent = data.name || '原型项目';
+                document.title = `${data.name || '原型项目'} · 原型评审`;
+                $('generated').textContent = data.publishedAt ? '发布于 ' + String(data.publishedAt).slice(0, 16).replace('T', ' ') : '';
+                buildTree();
+                const params = new URLSearchParams(location.hash.slice(1));
+                const page = data.pages.find((p) => p.id === params.get('p')) || data.pages[0];
+                const stateId = page.states?.some((s) => s.id === params.get('s')) ? params.get('s') : (page.states?.[0]?.id || 'default');
+                selectPage(page, stateId);
+            }
+            $('toggle-pages').onclick = () => $('layout').classList.toggle('left-closed');
+            $('toggle-prd').onclick = () => {
+                const closed = $('layout').classList.toggle('right-closed');
+                $('toggle-prd').textContent = closed ? '显示 PRD' : '收起 PRD';
+            };
+        </script>
+    </body>
+</html>
