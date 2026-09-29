@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>扫描管理</title>
+<style>
+/* ============ ① 原始层 ============ */
+:root {
+  --blue-400: #40a9ff;          /* hover 亮蓝 */
+  --blue-500: #1890ff;          /* 生产品牌蓝（填充态） */
+  --blue-700: #096dd9;          /* 文字态蓝，白底 5.00:1 */
+  --blue-50:  #e6f4ff;
+  --green-700: #046c4e;
+  --green-500: #52c41a;
+  --green-50: #e6f6f0;
+  --red-700: #b42318;
+  --orange-700: #b45309;
+  --orange-50: #fdf3e3;
+  --gray-900: #1a1d23;
+  --gray-700: #4e5560;
+  --gray-600: #626b78;
+  --gray-500: #808790;
+  --gray-300: #c3c9ce;
+  --gray-200: #d8dee3;
+  --gray-100: #ebedf0;
+  --gray-50:  #f1f2f4;
+  --white: #ffffff;
+}
+/* ============ ② 语义层 ============ */
+:root {
+  --bg: var(--gray-50);
+  --page-bg: #f0f2f5;
+  --surface: var(--white);
+  --surface-alt: var(--gray-50);
+  --surface-hover: var(--gray-100);
+  --border: var(--gray-200);
+  --border-strong: var(--gray-300);
+  --border-interactive: var(--gray-500);
+  --text: var(--gray-900);
+  --text-secondary: var(--gray-700);
+  --text-tertiary: var(--gray-600);
+  --accent: var(--blue-500);
+  --accent-hover: var(--blue-400);
+  --accent-text: var(--blue-700);
+  --accent-soft: var(--blue-50);
+  --on-accent: var(--white);
+  --success: var(--green-700);
+  --success-soft: var(--green-50);
+  --error: var(--red-700);
+  --warning: var(--orange-700);
+  --warning-soft: var(--orange-50);
+  --font-sans: "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei UI", "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Consolas, "JetBrains Mono", "Noto Sans Mono CJK SC", monospace;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+  --radius: 4px;
+  --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+  --dur-fast: 120ms; --dur-base: 180ms; --dur-slow: 260ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+/* ============ ③ 组件层 ============ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 14px; }
+body {
+  font-family: var(--font-sans);
+  font-size: 14px; line-height: 1.7; letter-spacing: 0.02em;
+  color: var(--text); background: var(--page-bg);
+  -webkit-font-smoothing: antialiased;
+}
+button { font-family: inherit; letter-spacing: inherit; cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+a { color: var(--accent-text); text-decoration: none; cursor: pointer; }
+a:hover { text-decoration: underline; }
+:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+
+/* ---------- 工作区 Tab 栏 ---------- */
+.tabbar {
+  display: flex; align-items: center; gap: var(--space-2);
+  background: var(--surface); padding: var(--space-2) var(--space-4) 0;
+  border-bottom: 1px solid var(--border);
+}
+.wtab {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-size: 14px; color: var(--text-secondary);
+  background: var(--surface-alt); border: 1px solid var(--border); border-bottom: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.wtab.current {
+  color: var(--accent-text); background: var(--surface);
+  position: relative; font-weight: 500;
+}
+.wtab.current::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px;
+  height: 2px; background: var(--surface);
+}
+.wtab .dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--accent); }
+.wtab .close {
+  border: none; background: none; color: var(--text-tertiary);
+  font-size: 14px; line-height: 1; padding: 2px; border-radius: var(--radius);
+}
+.wtab .close:hover { color: var(--text); background: var(--surface-hover); }
+.tabbar .lock { margin-left: auto; color: var(--accent-text); padding-bottom: var(--space-2); }
+
+/* ---------- 筛选面板 ---------- */
+.panel {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  margin: var(--space-4); padding: var(--space-5);
+}
+.panel-title { font-size: 16px; font-weight: 600; margin-bottom: var(--space-5); }
+.filter-grid {
+  display: grid; grid-template-columns: repeat(6, 1fr);
+  gap: var(--space-4) var(--space-5);
+}
+.f-item { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.f-item label {
+  flex: none; font-size: 13px; color: var(--text-secondary); white-space: nowrap;
+}
+.f-item .ctl { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--space-2); }
+.input, .select {
+  width: 100%; height: 32px; padding: 0 var(--space-3);
+  font-size: 13px; font-family: inherit; color: var(--text);
+  background: var(--surface); border: 1px solid var(--border-interactive);
+  border-radius: var(--radius); transition: border-color var(--dur-fast) var(--ease-out);
+}
+.input::placeholder { color: var(--text-tertiary); }
+.input:hover, .select:hover { border-color: var(--accent); }
+.input:focus, .select:focus { outline: 2px solid var(--accent-text); outline-offset: 0; border-color: var(--accent); }
+.select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23626b78' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+  padding-right: 28px;
+}
+.select.placeholder { color: var(--text-tertiary); }
+.range-sep { color: var(--text-tertiary); flex: none; }
+
+/* ---------- 智批题型选择器（选「智能体」后注入） ---------- */
+#aiTypeItem.show { animation: pop var(--dur-base) var(--ease-out); }
+.zp-picker { position: relative; flex: 1; min-width: 0; }
+.zp-control {
+  width: 100%; min-height: 32px; padding: 3px 28px 3px var(--space-2);
+  display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-1);
+  background: var(--surface); border: 1px solid var(--border-interactive);
+  border-radius: var(--radius); cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23626b78' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+.zp-control:hover { border-color: var(--accent); }
+.zp-picker.open .zp-control { border-color: var(--accent); outline: 2px solid var(--accent-text); outline-offset: 0; }
+.zp-placeholder { color: var(--text-tertiary); font-size: 13px; padding: 0 var(--space-1); }
+.zp-chip {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  height: 22px; padding: 0 var(--space-1) 0 var(--space-2);
+  background: var(--accent-soft); color: var(--accent-text);
+  border-radius: var(--radius); font-size: 12px; line-height: 1; letter-spacing: 0;
+}
+.zp-chip .x {
+  border: none; background: none; color: var(--accent-text);
+  font-size: 13px; line-height: 1; padding: 2px; border-radius: var(--radius); display: inline-flex;
+}
+.zp-chip .x:hover { color: var(--text); }
+.zp-chip.more { background: var(--surface-alt); color: var(--text-secondary); padding-right: var(--space-2); }
+.zp-pop {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 80;
+  width: 660px; max-width: calc(100vw - 48px);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow-md);
+  display: none; overflow: hidden;
+}
+.zp-pop.open { display: block; animation: pop var(--dur-base) var(--ease-out); }
+.zp-pop-head {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-3); border-bottom: 1px solid var(--border);
+}
+.zp-search { position: relative; }
+.zp-search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-tertiary); pointer-events: none; }
+.zp-search input {
+  width: 100%; height: 32px; padding: 0 var(--space-3) 0 30px;
+  font-size: 13px; font-family: inherit; color: var(--text);
+  background: var(--surface); border: 1px solid var(--border-interactive); border-radius: var(--radius);
+}
+.zp-search input:focus { outline: 2px solid var(--accent-text); outline-offset: 0; border-color: var(--accent); }
+.zp-link-note {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-size: 12px; color: var(--text-secondary);
+  background: var(--accent-soft); border-radius: var(--radius);
+  padding: var(--space-1) var(--space-2);
+}
+.zp-link-note svg { flex: none; color: var(--accent-text); }
+.zp-link-note .link-btn { margin-left: auto; font-size: 12px; }
+/* 平铺视图：学段分组（分组头吸顶）→ 学科行 → 题型 chip */
+.zp-flat { max-height: 300px; overflow-y: auto; padding: 0 var(--space-1); }
+.zp-group-head {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  font-size: 13px; font-weight: 600; color: var(--text);
+  cursor: pointer; user-select: none;
+}
+.zp-group-head .g-name { flex: 1; }
+.zp-group-head .cnt { flex: none; font-weight: 400; color: var(--text-tertiary); font-size: 12px; font-variant-numeric: tabular-nums; }
+.zp-subj {
+  display: flex; align-items: flex-start; gap: var(--space-3);
+  padding: var(--space-1) var(--space-2);
+}
+.zp-subj:hover { background: var(--surface-hover); }
+.subj-label {
+  flex: none; width: 100px; min-height: 26px;
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  font-size: 13px; color: var(--text); cursor: pointer; user-select: none;
+}
+.zp-types { flex: 1; display: flex; flex-wrap: wrap; gap: var(--space-2); padding: 1px 0; }
+.type-chip {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  height: 26px; padding: 0 var(--space-2);
+  background: var(--surface); border: 1px solid var(--border-interactive); border-radius: var(--radius);
+  font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer; user-select: none;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.type-chip:hover { border-color: var(--accent); }
+.type-chip.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-text); }
+.type-chip .t-n { font-size: 11px; font-weight: 400; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+.type-chip.on .t-n { color: var(--accent-text); }
+.zp-node {
+  display: flex; align-items: center; gap: var(--space-2);
+  width: 100%; min-height: 32px; padding: 0 var(--space-2);
+  border-radius: var(--radius); font-size: 13px; color: var(--text);
+  cursor: pointer; user-select: none;
+}
+.zp-node:hover { background: var(--surface-hover); }
+.zp-node.active { background: var(--accent-soft); color: var(--accent-text); font-weight: 500; }
+.zp-node .lbl { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.zp-node .cnt { flex: none; color: var(--text-tertiary); font-size: 12px; font-variant-numeric: tabular-nums; }
+.zp-node.leaf .lbl { letter-spacing: 0.02em; }
+.zp-node.rich { align-items: flex-start; padding: var(--space-2); }
+.zp-node.rich input { margin-top: 4px; }
+.zp-node .rich-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.zp-node .path { font-size: 13px; color: var(--text); }
+.zp-node .path b { color: var(--accent-text); font-weight: 600; }
+.zp-node .targets {
+  font-size: 12px; color: var(--text-tertiary); line-height: 1.5;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.zp-results { max-height: 264px; overflow-y: auto; padding: var(--space-1); }
+.zp-empty { padding: var(--space-6) var(--space-4); text-align: center; color: var(--text-tertiary); font-size: 13px; line-height: 1.8; }
+.zp-pop-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-2) var(--space-3); border-top: 1px solid var(--border);
+  background: var(--surface-alt);
+}
+.zp-pop-foot .n { font-size: 12px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.zp-pop-foot .ops { display: flex; align-items: center; gap: var(--space-3); }
+.link-btn:disabled { color: var(--text-tertiary); cursor: not-allowed; }
+.link-btn:disabled:hover { text-decoration: none; }
+.btn.sm { height: 28px; padding: 0 var(--space-3); font-size: 13px; }
+
+/* ---------- 列表区 ---------- */
+.list-panel { padding: 0; overflow: hidden; }
+.list-head {
+  display: flex; align-items: center; gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+.list-title { font-size: 16px; font-weight: 600; }
+.check-line { display: inline-flex; align-items: center; gap: var(--space-2); font-size: 13px; color: var(--text-secondary); cursor: pointer; user-select: none; }
+.total-tip { font-size: 13px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+.list-head .actions { margin-left: auto; display: flex; align-items: center; gap: var(--space-3); }
+
+/* 按钮 */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  height: 32px; padding: 0 var(--space-4);
+  font-size: 14px; border-radius: var(--radius);
+  border: 1px solid transparent;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  white-space: nowrap;
+}
+.btn.primary { background: var(--accent); color: var(--on-accent); }
+.btn.primary:hover:not(:disabled) { background: var(--accent-hover); }
+.btn.primary:active:not(:disabled) { background: var(--blue-700); }
+.btn.ghost { background: var(--surface); border-color: var(--border-interactive); color: var(--text); }
+.btn.ghost:hover:not(:disabled) { border-color: var(--accent); color: var(--accent-text); }
+.btn.ghost:disabled { background: var(--surface-alt); border-color: var(--border); color: var(--text-tertiary); opacity: 0.7; }
+.btn .spinner {
+  width: 14px; height: 14px; flex: none;
+  border: 2px solid rgba(255, 255, 255, 0.35); border-top-color: var(--on-accent);
+  border-radius: 9999px; animation: spin 0.8s linear infinite;
+}
+.btn.ghost .spinner { border-color: var(--gray-300); border-top-color: var(--accent-text); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.link-btn {
+  border: none; background: none; padding: 0;
+  color: var(--accent-text); font-size: 14px;
+}
+.link-btn:hover { text-decoration: underline; }
+
+/* 列表展示项下拉 */
+.col-setting { position: relative; }
+.col-menu {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 60;
+  width: 220px; max-height: 320px; overflow-y: auto;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow-md);
+  padding: var(--space-2);
+  display: none;
+}
+.col-menu.open { display: block; animation: pop var(--dur-base) var(--ease-out); }
+@keyframes pop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.col-menu .cm-item {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-1) var(--space-2); font-size: 13px;
+  border-radius: var(--radius); cursor: pointer; user-select: none;
+}
+.col-menu .cm-item:hover { background: var(--surface-hover); }
+
+/* 表格 */
+.table-wrap { overflow: auto; max-height: calc(100vh - 330px); }
+table.grid { border-collapse: collapse; width: max-content; min-width: 100%; }
+table.grid th, table.grid td {
+  border: 1px solid var(--border);
+  padding: var(--space-2) var(--space-2);
+  font-size: 13px; line-height: 1.6;
+  text-align: center; vertical-align: middle;
+  word-break: break-all;
+}
+table.grid thead th {
+  position: sticky; top: 0; z-index: 5;
+  background: var(--surface-alt); color: var(--text-secondary); font-weight: 500;
+  white-space: normal;
+}
+table.grid tbody tr:hover td { background: var(--accent-soft); }
+table.grid tbody tr.checked td { background: var(--accent-soft); }
+table.grid td .num { font-variant-numeric: tabular-nums; }
+table.grid .timecell { white-space: pre-line; font-variant-numeric: tabular-nums; font-size: 12px; line-height: 1.5; }
+.sort-mark { display: inline-block; margin-left: 2px; color: var(--text-tertiary); font-size: 10px; cursor: pointer; }
+.sort-mark.on { color: var(--accent-text); }
+.st-ok { color: var(--success); }
+.st-warn { color: var(--warning); }
+.zp-tag {
+  display: inline-block; padding: 0 var(--space-1);
+  background: var(--success-soft); color: var(--success);
+  border: 1px solid currentColor; border-radius: var(--radius);
+  font-size: 12px; line-height: 1.5; letter-spacing: 0;
+}
+.zp-tag.agent {
+  background: var(--accent-soft); color: var(--accent-text);
+}
+.op-cell a { display: inline-block; margin: 0 var(--space-1); white-space: nowrap; }
+.mono { font-family: var(--font-mono); font-size: 12px; }
+
+/* checkbox 统一 */
+input[type="checkbox"] {
+  width: 14px; height: 14px; accent-color: var(--accent); cursor: pointer;
+}
+
+/* 空态 */
+.empty-row td { padding: var(--space-7) var(--space-4); color: var(--text-tertiary); }
+
+/* toast */
+.toast-box {
+  position: fixed; top: var(--space-5); left: 50%; transform: translateX(-50%);
+  z-index: 200; display: flex; flex-direction: column; gap: var(--space-2); align-items: center;
+  pointer-events: none;
+}
+.toast {
+  display: flex; align-items: center; gap: var(--space-2);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow-md);
+  padding: var(--space-2) var(--space-4); font-size: 14px;
+  animation: toastIn var(--dur-slow) var(--ease-out);
+}
+.toast.out { opacity: 0; transform: translateY(-8px); transition: all var(--dur-slow) var(--ease-out); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+.toast .ok-ico { color: var(--success); display: inline-flex; }
+.toast .info-ico { color: var(--accent-text); display: inline-flex; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- 工作区 Tab -->
+<div class="tabbar">
+  <div class="wtab">属性集管理 <button class="close" aria-label="关闭属性集管理">×</button></div>
+  <div class="wtab current"><span class="dot"></span>扫描管理 <button class="close" aria-label="关闭扫描管理">×</button></div>
+  <div class="wtab">智批题型管理 <button class="close" aria-label="关闭智批题型管理">×</button></div>
+  <span class="lock" title="已锁定">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+  </span>
+</div>
+
+<!-- 筛选面板 -->
+<section class="panel" aria-label="筛选面板">
+  <h1 class="panel-title">筛选面板</h1>
+  <div class="filter-grid">
+    <div class="f-item" style="grid-column: span 2;"><label>选择时间：</label><div class="ctl"><input class="input" value="2026年09月28日" aria-label="开始日期"><span class="range-sep">~</span><input class="input" value="2026年09月28日" aria-label="结束日期"></div></div>
+    <div class="f-item"><label>题卡来源：</label><div class="ctl"><select class="select placeholder"><option>选择状态</option><option>用户自制</option><option>校本高中作业校</option><option>校本作业（新）</option></select></div></div>
+    <div class="f-item"><label>题卡页：</label><div class="ctl"><select class="select"><option>全部</option><option>A</option><option>B</option><option>AB</option><option>CD</option></select></div></div>
+    <div class="f-item"><label>识别信息：</label><div class="ctl"><select class="select"><option>全部</option><option>重复扫描覆盖</option><option>正常</option></select></div></div>
+    <div class="f-item"><label>状态：</label><div class="ctl"><select class="select" id="fStatus"><option>全部</option><option>已挂接</option><option>未挂接</option><option>已取消</option></select></div></div>
+    <div class="f-item"><label>作业名称：</label><div class="ctl"><input class="input" id="fKw" placeholder="搜索作业"></div></div>
+    <div class="f-item"><label>学生学号：</label><div class="ctl"><input class="input" placeholder="搜索学号"></div></div>
+    <div class="f-item"><label>学校类型：</label><div class="ctl"><select class="select"><option>全部</option><option>高中</option><option>初中</option><option>小学</option></select></div></div>
+    <div class="f-item"><label>学校名称：</label><div class="ctl"><input class="input" placeholder="搜索学校"></div></div>
+    <div class="f-item"><label>年级：</label><div class="ctl"><select class="select placeholder" id="fGrade">
+      <option value="">选择年级</option>
+      <optgroup label="小学"><option>一年级</option><option>二年级</option><option>三年级</option><option>四年级</option><option>五年级</option><option>六年级</option></optgroup>
+      <optgroup label="初中"><option>七年级</option><option>八年级</option><option>九年级</option></optgroup>
+      <optgroup label="高中"><option>高一</option><option>高二</option><option>高三</option></optgroup>
+    </select></div></div>
+    <div class="f-item"><label>学科：</label><div class="ctl"><select class="select" id="fSubject"><option value="">全部</option><option>语文</option><option>数学</option><option>英语</option><option>物理</option><option>化学</option><option>生物</option><option>历史</option><option>地理</option><option>道德与法治</option></select></div></div>
+    <div class="f-item"><label>教师：</label><div class="ctl"><select class="select placeholder"><option>选择教师</option></select></div></div>
+    <div class="f-item"><label>学生班级：</label><div class="ctl"><input class="input" placeholder="搜索班级"></div></div>
+    <div class="f-item"><label>学生姓名：</label><div class="ctl"><input class="input" placeholder="搜索姓名"></div></div>
+    <div class="f-item"><label>识别机器：</label><div class="ctl"><input class="input" placeholder="搜索识别机器"></div></div>
+    <div class="f-item"><label>设备编号：</label><div class="ctl"><input class="input" placeholder="搜索设备编号"></div></div>
+    <div class="f-item"><label>扫描批次：</label><div class="ctl"><input class="input" placeholder="搜索扫描批次"></div></div>
+    <div class="f-item"><label>上传用时&gt;=</label><div class="ctl"><input class="input" placeholder="搜索上传用时"></div></div>
+    <div class="f-item"><label>识别用时&gt;=</label><div class="ctl"><input class="input" placeholder="搜索识别用时"></div></div>
+    <div class="f-item"><label>落地用时&gt;=</label><div class="ctl"><input class="input" placeholder="搜索识别用时"></div></div>
+    <div class="f-item"><label>总用时=&gt;</label><div class="ctl"><input class="input" placeholder="搜索总用时"></div></div>
+    <div class="f-item" id="aiSourceItem"><label>智批题卡筛选：</label><div class="ctl"><select class="select" id="fAiSource"><option>全部</option><option>自研填空</option><option>自研作文</option><option>有道</option><option>智能体</option></select></div></div>
+    <div class="f-item" id="aiTypeItem" style="grid-column: span 2; display: none;">
+      <label>选择智批题型：</label>
+      <div class="zp-picker" id="zpPicker">
+        <div class="zp-control" id="zpControl" tabindex="0" role="combobox" aria-haspopup="dialog" aria-expanded="false" aria-label="选择智批题型"></div>
+        <div class="zp-pop" id="zpPop" role="dialog" aria-label="选择智批题型">
+          <div class="zp-pop-head">
+            <div class="zp-search">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <input id="zpSearch" placeholder="搜索学段 / 学科 / 题型 / 对应题型" aria-label="搜索智批题型" autocomplete="off">
+            </div>
+            <div class="zp-link-note" id="zpNote" hidden></div>
+          </div>
+          <div id="zpBody"></div>
+          <div class="zp-pop-foot">
+            <span class="n" id="zpCount">已选 0 项</span>
+            <div class="ops">
+              <button class="link-btn" id="zpClear" disabled>清空</button>
+              <button class="btn primary sm" id="zpDone">完成</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="f-item" style="grid-column: span 2;"><label>模板类型筛选：</label><div class="ctl"><input class="input"></div></div>
+  </div>
+</section>
+
+<!-- 扫描列表 -->
+<section class="panel list-panel" aria-label="扫描列表">
+  <div class="list-head">
+    <span class="list-title">扫描列表</span>
+    <label class="check-line"><input type="checkbox" id="onlyZp">只看智批题卡</label>
+    <span class="total-tip" id="totalTip"></span>
+    <div class="actions">
+      <div class="col-setting">
+        <button class="link-btn" id="colSettingBtn">列表展示项</button>
+        <div class="col-menu" id="colMenu" role="menu" aria-label="列表展示项设置"></div>
+      </div>
+      <button class="btn ghost" id="btnServerRecog" disabled>指定服务器重新识别</button>
+      <button class="btn ghost" id="btnRecog" disabled>重新识别</button>
+      <button class="btn ghost" id="btnRegrade" disabled>重新智批</button>
+      <button class="btn ghost" id="btnUnlink" disabled>批量取消挂接</button>
+      <button class="btn ghost" id="btnDelete">删 除</button>
+      <button class="btn primary" id="btnRefresh">刷 新</button>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table class="grid" id="scanTable">
+      <thead><tr id="theadRow"></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</section>
+
+<div class="toast-box" id="toastBox" aria-live="polite"></div>
+
+<script>
+/* ================= 列定义 ================= */
+const COLS = [
+  { k: 'school',   t: '学校名称',   w: 86 },
+  { k: 'homework', t: '作业名称',   w: 100 },
+  { k: 'status',   t: '状态',       w: 52 },
+  { k: 'source',   t: '题卡来源',   w: 64 },
+  { k: 'page',     t: '题卡页',     w: 48 },
+  { k: 'recog',    t: '识别信息',   w: 62 },
+  { k: 'stuNo',    t: '学号',       w: 66, sort: true },
+  { k: 'name',     t: '姓名',       w: 60 },
+  { k: 'subject',  t: '学科',       w: 46 },
+  { k: 'scanTime', t: '扫描时间',   w: 92 },
+  { k: 'recogDone',t: '识别完成时间', w: 92 },
+  { k: 'enterLand',t: '进入落地时间', w: 92 },
+  { k: 'startLand',t: '开始落地时间', w: 92 },
+  { k: 'landDone', t: '落地完成时间', w: 92 },
+  { k: 'upCost',   t: '上传用时',   w: 48 },
+  { k: 'recogCost',t: '识别用时',   w: 48 },
+  { k: 'landCost', t: '落地用时',   w: 48 },
+  { k: 'totalCost',t: '总用时',     w: 48 },
+  { k: 'machine',  t: '识别机器',   w: 96 },
+  { k: 'device',   t: '设备编号',   w: 130 },
+  { k: 'batch',    t: '扫描批次',   w: 210 },
+  { k: 'serial',   t: '扫描序号',   w: 84 },
+  { k: 'op',       t: '操作',       w: 104 }
+];
+
+/* ================= 智批题型数据（来自「智批题型管理」） ================= */
+const ZB_TYPES = [
+  { stage: '小学', subject: '语文',   type: '作文',     targets: ['习作(1201)', '看图写话(1202)'] },
+  { stage: '小学', subject: '数学',   type: '解答题',   targets: ['解决问题(1203)', '计算题(1043)'] },
+  { stage: '小学', subject: '英语',   type: '作文',     targets: ['小作文(1204)'] },
+  { stage: '初中', subject: '语文',   type: '作文',     targets: ['写作(1030)', '作文(1055)'] },
+  { stage: '初中', subject: '语文',   type: '阅读理解', targets: ['积累与运用(1067)', '现代文阅读(1003)', '名著阅读(1011)', '整本书阅读(1060)', '语言文字运用(1066)', '现当代诗歌阅读(1132)', '古代诗歌阅读(1002)', '文言文阅读(1004)', '古代诗文阅读(1001)'] },
+  { stage: '初中', subject: '数学',   type: '解答题',   targets: ['解答题(1016)', '计算题(1043)', '证明题(1041)'] },
+  { stage: '初中', subject: '数学',   type: '填空题',   targets: ['填空题(1010)'] },
+  { stage: '初中', subject: '英语',   type: '作文',     targets: ['书面表达(1054)', '应用文写作(1144)'] },
+  { stage: '初中', subject: '物理',   type: '解答题',   targets: ['解答题(1016)', '实验题(1038)', '计算题(1043)'] },
+  { stage: '初中', subject: '化学',   type: '简答题',   targets: ['简答题(1039)', '实验题(1038)', '推断题(1121)'] },
+  { stage: '初中', subject: '道德与法治', type: '非选择题', targets: ['辨析类(1115)', '措施类(1116)', '原因类(1117)', '意义类(1118)', '开放类(1119)', '其他(1120)', '分析说明类(1158)', '非选择题(1046)', '材料综合题(1130)'] },
+  { stage: '初中', subject: '地理',   type: '非选择题', targets: ['辨析类(1115)', '措施类(1116)', '原因类(1117)', '意义类(1118)', '开放类(1119)', '分析说明类(1158)', '非选择题(1046)'] },
+  { stage: '初中', subject: '地理',   type: '填空题',   targets: ['填空题(1010)'] },
+  { stage: '初中', subject: '历史',   type: '非选择题', targets: ['辨析类(1115)', '措施类(1116)', '原因类(1117)', '意义类(1118)', '开放类(1119)', '其他(1120)', '非选择题(1046)', '材料综合题(1130)', '开放性试题(1131)'] },
+  { stage: '高中', subject: '语文',   type: '作文',     targets: ['写作(1030)', '作文(1055)', '微写作(1160)'] },
+  { stage: '高中', subject: '语文',   type: '阅读理解', targets: ['现代文阅读(1003)', '文言文阅读(1004)', '古代诗歌阅读(1002)', '名著阅读(1011)'] },
+  { stage: '高中', subject: '数学',   type: '解答题',   targets: ['解答题(1016)', '证明题(1041)'] },
+  { stage: '高中', subject: '英语',   type: '作文',     targets: ['书面表达(1054)', '读后续写(1100)', '读后续写(1058)', '应用文写作(1144)', '应用文写作(1176)'] },
+  { stage: '高中', subject: '物理',   type: '解答题',   targets: ['填空题(1010)', '解答题(1016)', '辨析类(1115)', '措施类(1116)', '原因类(1117)', '意义类(1118)', '开放类(1119)', '其他(1120)', '分析说明类(1158)', '选做题(1052)'] },
+  { stage: '高中', subject: '化学',   type: '简答题',   targets: ['实验题(1038)', '解答题(1016)', '简答题(1039)'] },
+  { stage: '高中', subject: '生物',   type: '简答题',   targets: ['简答题(1039)', '实验题(1038)'] }
+];
+const GRADE_STAGE = {
+  '一年级': '小学', '二年级': '小学', '三年级': '小学', '四年级': '小学', '五年级': '小学', '六年级': '小学',
+  '七年级': '初中', '八年级': '初中', '九年级': '初中',
+  '高一': '高中', '高二': '高中', '高三': '高中'
+};
+const leafId = t => t.stage + '|' + t.subject + '|' + t.type;
+
+/* ================= 列表数据 ================= */
+const T = (d, t) => d + '\n' + t;
+const ROWS = [
+  { id: 1, ai: '', school: '进步中学', homework: '原卷留痕-A4', status: '已挂接', source: '用户自制', page: 'CD', recog: '重复扫描覆盖', stuNo: '89113', name: '陈砚秋', subject: '数学', grade: '高二',
+    scanTime: T('2026-09-28','16:54:40'), recogDone: T('2026-09-28','16:54:46'), enterLand: T('2026-09-28','16:54:47'), startLand: T('2026-09-28','16:54:47'), landDone: T('2026-09-28','16:54:47'),
+    upCost: '0秒', recogCost: '4秒', landCost: '0秒', totalCost: '7秒', machine: '阿里云识别\n(197.202)', device: 'XCVK002059', batch: 'XCVK002059_20260928_165421', serial: '0001,0002' },
+  { id: 2, ai: '自研作文', school: '进步中学', homework: '语文作文1', status: '已挂接', source: '校本高中作业校', page: 'AB', recog: '-', stuNo: '99444', name: '苏子墨', subject: '语文', grade: '高三',
+    scanTime: T('2026-09-28','14:02:39'), recogDone: T('2026-09-28','14:02:48'), enterLand: T('2026-09-28','14:02:49'), startLand: T('2026-09-28','14:02:49'), landDone: T('2026-09-28','14:02:49'),
+    upCost: '0秒', recogCost: '7秒', landCost: '0秒', totalCost: '10秒', machine: '阿里云识别\n(197.202)', device: '041A23370233AZ', batch: '041A23370233AZ_20260928_140227', serial: '0007,0008' },
+  { id: 3, ai: '智能体', aiKey: '高中|化学|简答题', school: '河北联邦外国语学校', homework: '第一章 作业3 离子方程式的书写与正误判断', status: '已挂接', source: '校本作业（新）', page: 'AB', recog: '-', stuNo: '23911', name: '王泽昊', subject: '化学', grade: '高一', card: true,
+    scanTime: T('2026-09-28','14:33:15'), recogDone: T('2026-09-28','14:33:26'), enterLand: T('2026-09-28','14:33:27'), startLand: T('2026-09-28','14:33:27'), landDone: T('2026-09-28','14:33:29'),
+    upCost: '2秒', recogCost: '9秒', landCost: '2秒', totalCost: '14秒', machine: '阿里云识别\n(197.202)', device: 'XCVK002059', batch: 'XCVK002059_20260928_143254', serial: '0015,0016' },
+  { id: 4, ai: '', school: '衡水志臻实验中学', homework: '高二数学周测卷（九）', status: '已挂接', source: '用户自制', page: 'A', recog: '-', stuNo: '10287', name: '林知夏', subject: '数学', grade: '高二',
+    scanTime: T('2026-09-28','13:58:11'), recogDone: T('2026-09-28','13:58:19'), enterLand: T('2026-09-28','13:58:20'), startLand: T('2026-09-28','13:58:20'), landDone: T('2026-09-28','13:58:21'),
+    upCost: '1秒', recogCost: '6秒', landCost: '1秒', totalCost: '9秒', machine: '本地识别机-02', device: 'BJSB2025110036', batch: 'BJSB2025110036_20260928_135749', serial: '0042' },
+  { id: 5, ai: '有道', school: '石家庄第二十三中学', homework: '英语读后续写专项训练 04', status: '已挂接', source: '校本高中作业校', page: 'AB', recog: '-', stuNo: '30912', name: '赵启铭', subject: '英语', grade: '高一',
+    scanTime: T('2026-09-28','13:41:52'), recogDone: T('2026-09-28','13:42:03'), enterLand: T('2026-09-28','13:42:04'), startLand: T('2026-09-28','13:42:04'), landDone: T('2026-09-28','13:42:06'),
+    upCost: '2秒', recogCost: '9秒', landCost: '2秒', totalCost: '14秒', machine: '阿里云识别\n(197.202)', device: '041A23370233AZ', batch: '041A23370233AZ_20260928_134108', serial: '0031,0032' },
+  { id: 6, ai: '', school: '保定市第三中学', homework: '物理必修一 第三章 单元卷', status: '未挂接', source: '用户自制', page: 'B', recog: '学号未识别', stuNo: '-', name: '-', subject: '物理', grade: '高一',
+    scanTime: T('2026-09-28','13:22:07'), recogDone: T('2026-09-28','13:22:15'), enterLand: '-', startLand: '-', landDone: '-',
+    upCost: '1秒', recogCost: '7秒', landCost: '-', totalCost: '8秒', machine: '本地识别机-01', device: 'BJSB2025110021', batch: 'BJSB2025110021_20260928_132155', serial: '0019' },
+  { id: 7, ai: '自研填空', school: '河北联邦外国语学校', homework: '第三章 作业1 钠及其化合物', status: '已挂接', source: '校本作业（新）', page: 'AB', recog: '-', stuNo: '23845', name: '沈亦楠', subject: '化学', grade: '高一',
+    scanTime: T('2026-09-28','11:17:40'), recogDone: T('2026-09-28','11:17:52'), enterLand: T('2026-09-28','11:17:53'), startLand: T('2026-09-28','11:17:53'), landDone: T('2026-09-28','11:17:55'),
+    upCost: '2秒', recogCost: '10秒', landCost: '2秒', totalCost: '15秒', machine: '阿里云识别\n(197.202)', device: 'XCVK002059', batch: 'XCVK002059_20260928_111702', serial: '0009,0010' },
+  { id: 8, ai: '', school: '唐山外国语学校', homework: '历史选择性必修二 阶段检测', status: '已挂接', source: '校本高中作业校', page: 'AB', recog: '重复扫描覆盖', stuNo: '77120', name: '顾清让', subject: '历史', grade: '高二',
+    scanTime: T('2026-09-28','10:05:26'), recogDone: T('2026-09-28','10:05:38'), enterLand: T('2026-09-28','10:05:39'), startLand: T('2026-09-28','10:05:40'), landDone: T('2026-09-28','10:05:41'),
+    upCost: '3秒', recogCost: '9秒', landCost: '2秒', totalCost: '15秒', machine: '阿里云识别\n(197.202)', device: 'TJWG2025060118', batch: 'TJWG2025060118_20260928_100513', serial: '0026,0027' },
+  { id: 9, ai: '智能体', aiKey: '初中|语文|作文', school: '沧州市第八中学', homework: '八年级上册 第三单元作文训练', status: '已挂接', source: '校本作业（新）', page: 'AB', recog: '-', stuNo: '33045', name: '孟雨桐', subject: '语文', grade: '八年级',
+    scanTime: T('2026-09-28','09:48:12'), recogDone: T('2026-09-28','09:48:21'), enterLand: T('2026-09-28','09:48:22'), startLand: T('2026-09-28','09:48:22'), landDone: T('2026-09-28','09:48:24'),
+    upCost: '1秒', recogCost: '8秒', landCost: '2秒', totalCost: '12秒', machine: '阿里云识别\n(197.202)', device: 'CZBS2026031207', batch: 'CZBS2026031207_20260928_094801', serial: '0051,0052' },
+  { id: 10, ai: '智能体', aiKey: '初中|语文|阅读理解', school: '沧州市第八中学', homework: '文言文阅读专项（七年级）', status: '已挂接', source: '用户自制', page: 'AB', recog: '-', stuNo: '33012', name: '宋祁年', subject: '语文', grade: '七年级',
+    scanTime: T('2026-09-28','09:31:05'), recogDone: T('2026-09-28','09:31:14'), enterLand: T('2026-09-28','09:31:15'), startLand: T('2026-09-28','09:31:15'), landDone: T('2026-09-28','09:31:16'),
+    upCost: '1秒', recogCost: '8秒', landCost: '1秒', totalCost: '11秒', machine: '本地识别机-02', device: 'BJSB2025110036', batch: 'BJSB2025110036_20260928_093044', serial: '0033,0034' },
+  { id: 11, ai: '智能体', aiKey: '初中|历史|非选择题', school: '唐山外国语学校', homework: '九年级历史材料分析专题', status: '已挂接', source: '校本作业（新）', page: 'AB', recog: '-', stuNo: '77088', name: '温叙白', subject: '历史', grade: '九年级',
+    scanTime: T('2026-09-28','09:12:47'), recogDone: T('2026-09-28','09:12:56'), enterLand: T('2026-09-28','09:12:57'), startLand: T('2026-09-28','09:12:57'), landDone: T('2026-09-28','09:12:59'),
+    upCost: '2秒', recogCost: '8秒', landCost: '2秒', totalCost: '13秒', machine: '阿里云识别\n(197.202)', device: 'TJWG2025060118', batch: 'TJWG2025060118_20260928_091230', serial: '0061,0062' },
+  { id: 12, ai: '智能体', aiKey: '高中|英语|作文', school: '石家庄第二十三中学', homework: '高三应用文写作集训 02', status: '已挂接', source: '校本高中作业校', page: 'AB', recog: '-', stuNo: '30977', name: '许清商', subject: '英语', grade: '高三',
+    scanTime: T('2026-09-28','08:55:19'), recogDone: T('2026-09-28','08:55:30'), enterLand: T('2026-09-28','08:55:31'), startLand: T('2026-09-28','08:55:31'), landDone: T('2026-09-28','08:55:33'),
+    upCost: '2秒', recogCost: '9秒', landCost: '2秒', totalCost: '14秒', machine: '阿里云识别\n(197.202)', device: '041A23370233AZ', batch: '041A23370233AZ_20260928_085502', serial: '0073,0074' },
+  { id: 13, ai: '智能体', aiKey: '初中|地理|填空题', school: '沧州市第八中学', homework: '八年级地理填图作业 05', status: '已挂接', source: '用户自制', page: 'CD', recog: '-', stuNo: '33105', name: '陆见深', subject: '地理', grade: '八年级',
+    scanTime: T('2026-09-28','08:40:33'), recogDone: T('2026-09-28','08:40:41'), enterLand: T('2026-09-28','08:40:42'), startLand: T('2026-09-28','08:40:42'), landDone: T('2026-09-28','08:40:43'),
+    upCost: '1秒', recogCost: '7秒', landCost: '1秒', totalCost: '10秒', machine: '本地识别机-01', device: 'BJSB2025110021', batch: 'BJSB2025110021_20260928_084018', serial: '0005,0006' },
+  { id: 14, ai: '智能体', aiKey: '小学|数学|解答题', school: '光明小学', homework: '五年级小数乘除法练习', status: '已挂接', source: '校本作业（新）', page: 'AB', recog: '-', stuNo: '55021', name: '方禾', subject: '数学', grade: '五年级',
+    scanTime: T('2026-09-28','08:21:58'), recogDone: T('2026-09-28','08:22:06'), enterLand: T('2026-09-28','08:22:07'), startLand: T('2026-09-28','08:22:07'), landDone: T('2026-09-28','08:22:08'),
+    upCost: '1秒', recogCost: '7秒', landCost: '1秒', totalCost: '10秒', machine: '阿里云识别\n(197.202)', device: 'GMXX2026040322', batch: 'GMXX2026040322_20260928_082141', serial: '0012,0013' }
+];
+
+/* ================= 状态 ================= */
+const state = {
+  checked: new Set(), onlyZp: false, sortKey: null, sortDir: 0, hidden: new Set(),
+  status: '全部', kw: '', grade: '', subject: '',
+  aiSource: '全部', aiTypes: new Set(),
+  picker: { open: false, q: '' }
+};
+
+/* ================= 过滤 ================= */
+function currentRows() {
+  return ROWS.filter(r =>
+    (!state.onlyZp || r.ai) &&
+    (state.status === '全部' || r.status === state.status) &&
+    (!state.kw || r.homework.includes(state.kw)) &&
+    (!state.grade || r.grade === state.grade) &&
+    (!state.subject || r.subject === state.subject) &&
+    (state.aiSource === '全部' || r.ai === state.aiSource) &&
+    !(state.aiSource === '智能体' && state.aiTypes.size > 0 && !state.aiTypes.has(r.aiKey))
+  );
+}
+function visibleTypes() {
+  const st = state.grade ? GRADE_STAGE[state.grade] : null;
+  return ZB_TYPES.filter(t => (!st || t.stage === st) && (!state.subject || t.subject === state.subject));
+}
+
+/* ================= 渲染 ================= */
+const theadRow = document.getElementById('theadRow');
+const tbody = document.getElementById('tbody');
+const totalTip = document.getElementById('totalTip');
+
+function renderHead() {
+  let html = '<th style="width:36px"><input type="checkbox" id="checkAll" aria-label="全选"></th>';
+  COLS.forEach(c => {
+    if (state.hidden.has(c.k)) return;
+    const sort = c.sort ? `<span class="sort-mark ${state.sortKey === c.k ? 'on' : ''}" data-sort="${c.k}" title="按学号排序">${state.sortKey === c.k && state.sortDir === -1 ? '▲' : state.sortKey === c.k && state.sortDir === 1 ? '▼' : '⇅'}</span>` : '';
+    html += `<th style="width:${c.w}px">${c.t}${sort}</th>`;
+  });
+  theadRow.innerHTML = html;
+  document.getElementById('checkAll').addEventListener('change', onCheckAll);
+  const sm = theadRow.querySelector('.sort-mark');
+  if (sm) sm.addEventListener('click', () => toggleSort(sm.dataset.sort));
+}
+
+function cellHtml(c, r) {
+  switch (c.k) {
+    case 'school': return (r.ai ? `<span class="zp-tag ${r.ai === '智能体' ? 'agent' : ''}">${r.ai}</span> ` : '') + r.school;
+    case 'status': return `<span class="${r.status === '已挂接' ? 'st-ok' : 'st-warn'}">${r.status}</span>`;
+    case 'recog':  return r.recog === '-' ? '-' : `<span class="st-warn">${r.recog}</span>`;
+    case 'stuNo':  return `<span class="num">${r.stuNo}</span>`;
+    case 'scanTime': case 'recogDone': case 'enterLand': case 'startLand': case 'landDone':
+      return `<span class="timecell">${r[c.k]}</span>`;
+    case 'upCost': case 'recogCost': case 'landCost': case 'totalCost':
+      return `<span class="num">${r[c.k]}</span>`;
+    case 'machine': return `<span class="timecell">${r.machine}</span>`;
+    case 'device': case 'batch': return `<span class="mono">${r[c.k]}</span>`;
+    case 'serial': return `<span class="num mono">${r.serial}</span>`;
+    case 'op': return `<span class="op-cell"><a href="card.html">查看答题卡</a><a data-unlink="${r.id}">取消挂接</a></span>`;
+    default: return r[c.k] ?? '-';
+  }
+}
+
+function renderBody() {
+  let rows = currentRows();
+  if (state.sortKey === 'stuNo' && state.sortDir !== 0) {
+    rows = [...rows].sort((a, b) => {
+      const x = parseInt(a.stuNo) || 0, y = parseInt(b.stuNo) || 0;
+      return (x - y) * state.sortDir;
+    });
+  }
+  totalTip.textContent = `共 ${rows.length} 条`;
+  const colspan = COLS.filter(c => !state.hidden.has(c.k)).length + 1;
+  if (!rows.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="${colspan}">暂无符合条件的题卡，请调整筛选条件</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(r => {
+    const tds = COLS.filter(c => !state.hidden.has(c.k))
+      .map(c => `<td>${cellHtml(c, r)}</td>`).join('');
+    return `<tr class="${state.checked.has(r.id) ? 'checked' : ''}" data-id="${r.id}"><td><input type="checkbox" class="row-check" data-id="${r.id}" ${state.checked.has(r.id) ? 'checked' : ''} aria-label="选择 ${r.name || r.stuNo} 的题卡"></td>${tds}</tr>`;
+  }).join('');
+  tbody.querySelectorAll('.row-check').forEach(cb => cb.addEventListener('change', onRowCheck));
+  tbody.querySelectorAll('[data-unlink]').forEach(a => a.addEventListener('click', () => toast('已取消挂接')));
+}
+
+function renderColMenu() {
+  const menu = document.getElementById('colMenu');
+  menu.innerHTML = COLS.map(c =>
+    `<label class="cm-item"><input type="checkbox" data-col="${c.k}" ${state.hidden.has(c.k) ? '' : 'checked'}>${c.t}</label>`
+  ).join('');
+  menu.querySelectorAll('input').forEach(cb => cb.addEventListener('change', () => {
+    cb.checked ? state.hidden.delete(cb.dataset.col) : state.hidden.add(cb.dataset.col);
+    renderHead(); renderBody();
+  }));
+}
+
+/* ================= 智批题型选择器 ================= */
+const fGrade = document.getElementById('fGrade');
+const fSubject = document.getElementById('fSubject');
+const fAiSource = document.getElementById('fAiSource');
+const aiTypeItem = document.getElementById('aiTypeItem');
+const zpPicker = document.getElementById('zpPicker');
+const zpControl = document.getElementById('zpControl');
+const zpPop = document.getElementById('zpPop');
+const zpSearch = document.getElementById('zpSearch');
+const zpNote = document.getElementById('zpNote');
+const zpBody = document.getElementById('zpBody');
+const zpCount = document.getElementById('zpCount');
+const zpClear = document.getElementById('zpClear');
+
+const escH = s => s.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+
+function renderChips() {
+  const sel = ZB_TYPES.filter(t => state.aiTypes.has(leafId(t)));
+  if (!sel.length) {
+    zpControl.innerHTML = '<span class="zp-placeholder">请选择智批题型</span>';
+    return;
+  }
+  const chips = sel.slice(0, 2).map(t =>
+    `<span class="zp-chip">${t.stage}·${t.subject}·${t.type}<button class="x" data-rm="${leafId(t)}" aria-label="移除 ${t.stage}${t.subject}${t.type}">×</button></span>`
+  ).join('');
+  const more = sel.length > 2 ? `<span class="zp-chip more">+${sel.length - 2} 项</span>` : '';
+  zpControl.innerHTML = chips + more;
+  zpControl.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', e => {
+    e.stopPropagation();
+    state.aiTypes.delete(b.dataset.rm);
+    afterPick();
+  }));
+}
+
+function renderNote() {
+  const parts = [];
+  if (state.grade) parts.push(`学段 = ${GRADE_STAGE[state.grade]}（年级：${state.grade}）`);
+  if (state.subject) parts.push(`学科 = ${state.subject}`);
+  if (!parts.length) { zpNote.hidden = true; return; }
+  zpNote.hidden = false;
+  zpNote.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16l-6 7v5l-4 2v-7L4 5z"/></svg><span>已按页面筛选联动：${parts.join('、')}，仅显示匹配题型</span><button class="link-btn zp-clear-link">清除联动</button>`;
+}
+
+function renderFlat(vis) {
+  if (!vis.length) {
+    zpBody.innerHTML = `<div class="zp-empty">当前年级 / 学科联动条件下暂无可选智批题型<br><button class="link-btn zp-clear-link">清除联动条件</button></div>`;
+    return;
+  }
+  const stages = [...new Set(vis.map(t => t.stage))];
+  zpBody.innerHTML = '<div class="zp-flat">' + stages.map(st => {
+    const leaves = vis.filter(t => t.stage === st);
+    const subjs = [...new Set(leaves.map(t => t.subject))];
+    const rows = subjs.map(sb => {
+      const types = leaves.filter(t => t.subject === sb);
+      const chips = types.map(t => {
+        const id = leafId(t);
+        const on = state.aiTypes.has(id);
+        return `<label class="type-chip ${on ? 'on' : ''}" data-leaf="${id}" title="对应题型：${t.targets.join('，')}"><input type="checkbox" tabindex="-1" ${on ? 'checked' : ''} aria-label="选择 ${st}${sb}${t.type}">${t.type}<span class="t-n">${t.targets.length} 个题型</span></label>`;
+      }).join('');
+      return `<div class="zp-subj"><label class="subj-label" data-subject-of="${st}" data-subject="${sb}"><input type="checkbox" tabindex="-1" aria-label="全选 ${st}${sb} 全部题型">${sb}</label><div class="zp-types">${chips}</div></div>`;
+    }).join('');
+    return `<div class="zp-group"><label class="zp-group-head" data-stage="${st}"><input type="checkbox" tabindex="-1" aria-label="全选 ${st} 全部题型"><span class="g-name">${st}</span><span class="cnt">${leaves.length} 项</span></label>${rows}</div>`;
+  }).join('') + '</div>';
+  syncGroupChecks(vis);
+}
+
+function syncGroupChecks(vis) {
+  zpBody.querySelectorAll('.zp-group-head').forEach(node => {
+    const leaves = vis.filter(t => t.stage === node.dataset.stage);
+    const sel = leaves.filter(t => state.aiTypes.has(leafId(t))).length;
+    const cb = node.querySelector('input');
+    cb.checked = leaves.length > 0 && sel === leaves.length;
+    cb.indeterminate = sel > 0 && sel < leaves.length;
+  });
+  zpBody.querySelectorAll('.subj-label').forEach(node => {
+    const leaves = vis.filter(t => t.stage === node.dataset.subjectOf && t.subject === node.dataset.subject);
+    const sel = leaves.filter(t => state.aiTypes.has(leafId(t))).length;
+    const cb = node.querySelector('input');
+    cb.checked = leaves.length > 0 && sel === leaves.length;
+    cb.indeterminate = sel > 0 && sel < leaves.length;
+  });
+}
+
+function hitQ(t, q) {
+  q = q.toLowerCase();
+  return [t.stage, t.subject, t.type, ...t.targets].some(s => s.toLowerCase().includes(q));
+}
+
+function renderResults(vis, q) {
+  const m = vis.filter(t => hitQ(t, q));
+  if (!m.length) {
+    zpBody.innerHTML = `<div class="zp-empty">未找到匹配「${escH(q)}」的智批题型</div>`;
+    return;
+  }
+  zpBody.innerHTML = '<div class="zp-results">' + m.map(t => {
+    const id = leafId(t);
+    return `<div class="zp-node leaf rich" data-leaf="${id}"><input type="checkbox" tabindex="-1" ${state.aiTypes.has(id) ? 'checked' : ''} aria-label="选择 ${t.stage}${t.subject}${t.type}"><span class="rich-main"><span class="path">${t.stage} / ${t.subject} / <b>${t.type}</b></span><span class="targets">对应题型：${t.targets.join('，')}</span></span></div>`;
+  }).join('') + '</div>';
+}
+
+function renderFoot() {
+  zpCount.textContent = `已选 ${state.aiTypes.size} 项`;
+  zpClear.disabled = state.aiTypes.size === 0;
+}
+
+function renderPicker(keepScroll) {
+  renderNote();
+  const q = state.picker.q.trim();
+  const vis = visibleTypes();
+  const scroller = zpBody.querySelector('.zp-flat, .zp-results');
+  const top = keepScroll && scroller ? scroller.scrollTop : 0;
+  if (q) renderResults(vis, q); else renderFlat(vis);
+  if (top) {
+    const ns = zpBody.querySelector('.zp-flat, .zp-results');
+    if (ns) ns.scrollTop = top;
+  }
+  renderFoot();
+}
+
+function openPicker() {
+  state.picker.open = true;
+  zpPicker.classList.add('open');
+  zpPop.classList.add('open');
+  zpControl.setAttribute('aria-expanded', 'true');
+  renderPicker();
+  zpSearch.focus();
+}
+
+function closePicker() {
+  state.picker.open = false;
+  state.picker.q = '';
+  zpSearch.value = '';
+  zpPicker.classList.remove('open');
+  zpPop.classList.remove('open');
+  zpControl.setAttribute('aria-expanded', 'false');
+}
+
+function setLeaf(id, on) {
+  on ? state.aiTypes.add(id) : state.aiTypes.delete(id);
+  afterPick();
+}
+
+function setGroup(leaves, on) {
+  leaves.forEach(t => on ? state.aiTypes.add(leafId(t)) : state.aiTypes.delete(leafId(t)));
+  afterPick();
+}
+
+function afterPick() {
+  renderChips();
+  if (state.picker.open) renderPicker(true);
+  renderBody();
+  refreshActionState();
+}
+
+/* 选择器弹出层内的事件代理 */
+zpControl.addEventListener('click', () => state.picker.open ? closePicker() : openPicker());
+zpControl.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); state.picker.open ? closePicker() : openPicker(); }
+});
+zpSearch.addEventListener('input', () => { state.picker.q = zpSearch.value; renderPicker(); });
+document.getElementById('zpDone').addEventListener('click', closePicker);
+zpClear.addEventListener('click', () => { state.aiTypes.clear(); afterPick(); });
+
+/* 平铺视图的 chip / 分组头均为原生 label+checkbox，走 change 即可；仅搜索结果项需要点击整行切换 */
+zpBody.addEventListener('click', e => {
+  if (e.target.closest('.zp-clear-link')) return;
+  const node = e.target.closest('.zp-node[data-leaf]');
+  if (!node || e.target.matches('input[type="checkbox"]')) return;
+  const cb = node.querySelector('input');
+  cb.checked = !cb.checked;
+  setLeaf(node.dataset.leaf, cb.checked);
+});
+zpBody.addEventListener('change', e => {
+  const cb = e.target;
+  if (cb.type !== 'checkbox') return;
+  const vis = visibleTypes();
+  const chip = cb.closest('[data-leaf]');
+  if (chip) { setLeaf(chip.dataset.leaf, cb.checked); return; }
+  const head = cb.closest('.zp-group-head');
+  if (head) { setGroup(vis.filter(t => t.stage === head.dataset.stage), cb.checked); return; }
+  const subj = cb.closest('.subj-label');
+  if (subj) { setGroup(vis.filter(t => t.stage === subj.dataset.subjectOf && t.subject === subj.dataset.subject), cb.checked); }
+});
+
+/* 清除联动（提示条与空态里各有一处，统一代理） */
+zpPop.addEventListener('click', e => {
+  if (!e.target.closest('.zp-clear-link')) return;
+  fGrade.value = '';
+  fSubject.value = '';
+  fGrade.dispatchEvent(new Event('change'));
+  fSubject.dispatchEvent(new Event('change'));
+});
+
+/* 外部点击 / Esc 关闭（重绘后被点节点已脱离 DOM，isConnected 为假，不视为外部点击） */
+document.addEventListener('click', e => {
+  if (state.picker.open && e.target.isConnected && !zpPicker.contains(e.target)) closePicker();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && state.picker.open) closePicker();
+});
+
+/* ================= 筛选联动 ================= */
+function pruneAiTypes() {
+  if (state.aiSource !== '智能体' || !state.aiTypes.size) return;
+  const visIds = new Set(visibleTypes().map(leafId));
+  let n = 0;
+  [...state.aiTypes].forEach(id => {
+    if (!visIds.has(id)) { state.aiTypes.delete(id); n++; }
+  });
+  if (n) toast(`已按年级 / 学科联动移除 ${n} 项不匹配的智批题型`, 'info');
+}
+
+fGrade.addEventListener('change', () => {
+  state.grade = fGrade.value;
+  fGrade.classList.toggle('placeholder', !fGrade.value);
+  pruneAiTypes();
+  renderChips();
+  if (state.picker.open) renderPicker();
+  renderBody(); refreshActionState();
+});
+fSubject.addEventListener('change', () => {
+  state.subject = fSubject.value;
+  pruneAiTypes();
+  renderChips();
+  if (state.picker.open) renderPicker();
+  renderBody(); refreshActionState();
+});
+document.getElementById('fStatus').addEventListener('change', function () {
+  state.status = this.value;
+  renderBody(); refreshActionState();
+});
+document.getElementById('fKw').addEventListener('input', function () {
+  state.kw = this.value.trim();
+  renderBody(); refreshActionState();
+});
+
+/* 智批题卡筛选：选「智能体」才出现「选择智批题型」 */
+fAiSource.addEventListener('change', () => {
+  state.aiSource = fAiSource.value;
+  if (state.aiSource === '智能体') {
+    aiTypeItem.style.display = 'flex';
+    aiTypeItem.classList.remove('show');
+    void aiTypeItem.offsetWidth;
+    aiTypeItem.classList.add('show');
+    openPicker();
+  } else {
+    aiTypeItem.style.display = 'none';
+    if (state.picker.open) closePicker();
+    if (state.aiTypes.size) { state.aiTypes.clear(); renderChips(); }
+  }
+  renderBody(); refreshActionState();
+});
+
+/* ================= 列表交互 ================= */
+function refreshActionState() {
+  const n = state.checked.size;
+  ['btnServerRecog', 'btnRecog', 'btnRegrade', 'btnUnlink'].forEach(id => {
+    document.getElementById(id).disabled = n === 0;
+  });
+  const all = document.getElementById('checkAll');
+  if (all) {
+    const visible = currentRows();
+    all.checked = visible.length > 0 && visible.every(r => state.checked.has(r.id));
+  }
+}
+
+function onCheckAll(e) {
+  const visible = currentRows();
+  visible.forEach(r => e.target.checked ? state.checked.add(r.id) : state.checked.delete(r.id));
+  renderBody(); refreshActionState();
+}
+
+function onRowCheck(e) {
+  const id = Number(e.target.dataset.id);
+  e.target.checked ? state.checked.add(id) : state.checked.delete(id);
+  e.target.closest('tr').classList.toggle('checked', e.target.checked);
+  refreshActionState();
+}
+
+function toggleSort(k) {
+  if (state.sortKey !== k) { state.sortKey = k; state.sortDir = 1; }
+  else { state.sortDir = state.sortDir === 1 ? -1 : state.sortDir === -1 ? 0 : 1; if (!state.sortDir) state.sortKey = null; }
+  renderHead(); renderBody();
+}
+
+/* toast */
+function toast(msg, kind) {
+  const box = document.getElementById('toastBox');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  const ico = kind === 'info'
+    ? '<span class="info-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-opacity="0.35"/><path d="M12 8h.01M12 11v5"/></svg></span>'
+    : '<span class="ok-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-opacity="0.35"/><path d="M8.5 12.5l2.5 2.5 4.5-5.5"/></svg></span>';
+  el.innerHTML = ico + escH(msg);
+  box.appendChild(el);
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 300); }, 2400);
+}
+
+/* 重新智批：loading → 完成 toast */
+document.getElementById('btnRegrade').addEventListener('click', function () {
+  if (this.disabled) return;
+  const origin = this.textContent;
+  this.disabled = true;
+  this.innerHTML = '<span class="spinner" aria-hidden="true"></span>智批中…';
+  setTimeout(() => {
+    this.innerHTML = origin;
+    this.disabled = false;
+    toast('智批完成');
+  }, 1600);
+});
+
+/* 其他按钮的轻反馈 */
+document.getElementById('btnRecog').addEventListener('click', () => toast('已提交重新识别'));
+document.getElementById('btnServerRecog').addEventListener('click', () => toast('已提交指定服务器重新识别'));
+document.getElementById('btnUnlink').addEventListener('click', () => toast('已批量取消挂接'));
+document.getElementById('btnDelete').addEventListener('click', function () {
+  if (state.checked.size === 0) { toast('请先勾选要删除的题卡', 'info'); return; }
+  toast('已删除所选记录');
+});
+document.getElementById('btnRefresh').addEventListener('click', function () {
+  const origin = this.textContent;
+  this.disabled = true;
+  this.innerHTML = '<span class="spinner" aria-hidden="true"></span>刷新中';
+  setTimeout(() => { this.innerHTML = origin; this.disabled = false; toast('列表已刷新'); }, 800);
+});
+
+/* 只看智批题卡 */
+document.getElementById('onlyZp').addEventListener('change', function () {
+  state.onlyZp = this.checked;
+  renderHead(); renderBody(); refreshActionState();
+});
+
+/* 列表展示项 */
+const colBtn = document.getElementById('colSettingBtn');
+const colMenu = document.getElementById('colMenu');
+colBtn.addEventListener('click', e => { e.stopPropagation(); colMenu.classList.toggle('open'); });
+document.addEventListener('click', e => { if (!colMenu.contains(e.target)) colMenu.classList.remove('open'); });
+
+/* ================= 启动 ================= */
+renderChips();
+renderHead(); renderBody(); renderColMenu(); refreshActionState();
+</script>
+<!-- proto-review-bundle -->
+<script data-proto-review="anchors">
+/* 稳定锚点与可见元素选择；不向业务 DOM 注入高亮 class。
+   基线复用自「原型生成全流程」extension/content/anchors.js；标注工作台增补折叠引导、条件显现路径与响应式落点。
+   全流程已于 2026-09-26 归档至 独立项目\_归档\原型生成全流程\。 */
+(() => {
+    'use strict';
+    if (globalThis.ProtoAnchors) return;
+    const owned = (el) => !!el?.closest?.('[data-prototype-owned]');
+    const text = (el) => (el?.innerText || el?.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 400);
+    const visible = (el) =>
+        !!el &&
+        !owned(el) &&
+        el.getClientRects().length > 0 &&
+        getComputedStyle(el).display !== 'none' &&
+        getComputedStyle(el).visibility !== 'hidden';
+    function selector(el) {
+        if (el.id && document.querySelectorAll('#' + CSS.escape(el.id)).length === 1)
+            return '#' + CSS.escape(el.id);
+        const path = [];
+        for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
+            let part = n.tagName.toLowerCase();
+            if (n.id && document.querySelectorAll('#' + CSS.escape(n.id)).length === 1) {
+                path.unshift('#' + CSS.escape(n.id));
+                break;
+            }
+            const same = n.parentElement
+                ? [...n.parentElement.children].filter((x) => x.tagName === n.tagName)
+                : [];
+            if (same.length > 1) part += `:nth-of-type(${same.indexOf(n) + 1})`;
+            path.unshift(part);
+        }
+        return path.join(' > ');
+    }
+    function controlLabel(el) {
+        const byFor = el.id ? document.querySelector(`label[for="${CSS.escape(el.id)}"]`) : null;
+        const label = el.labels?.[0] || byFor || el.closest('label') || el.closest('.f-item,.form-item,.form-group,.field')?.querySelector('label');
+        return text(label).replace(/[：:]$/, '').slice(0, 80);
+    }
+    function conditionRow(el, kind, value, option, targetRect, explicit = false, label = '') {
+        if (!el || owned(el) || !visible(el) || el.disabled || el.getAttribute?.('aria-disabled') === 'true') return null;
+        const r = el.getBoundingClientRect();
+        const dx = r.left + r.width / 2 - (targetRect.left + targetRect.width / 2);
+        const dy = r.top + r.height / 2 - (targetRect.top + targetRect.height / 2);
+        return { selector: selector(el), kind, value, option: String(option || '').slice(0, 80),
+            label: String(label || controlLabel(el)).slice(0, 80), explicit, distance: explicit ? -1 : Math.hypot(dx, dy) };
+    }
+    function captureConditions(target, targetRect) {
+        /* 通用“显现路径”：记录创建标注时使目标可见的状态控件，目标日后 display:none 或被动态移出 DOM，
+           仍能把引导挂回条件控件并恢复当时状态。自动覆盖 native select/checkbox/radio 与常见 ARIA 控件；
+           任意自定义 JS 控件用祖先 data-proto-reveal-by/value/label 显式声明，避免靠文案猜业务动作。 */
+        const rows = [], seen = new Set();
+        const add = row => {
+            if (!row) return;
+            const key = `${row.selector}\n${row.kind}\n${row.value}`;
+            if (!seen.has(key)) { seen.add(key); rows.push(row); }
+        };
+        for (let n = target; n && n !== document.documentElement; n = n.parentElement) {
+            const by = n.getAttribute?.('data-proto-reveal-by');
+            if (!by) continue;
+            let control = null;
+            try { control = document.querySelector(by); } catch (_) { /* 声明选择器失效 */ }
+            if (!control) continue;
+            const raw = n.getAttribute('data-proto-reveal-value') ?? '';
+            const kind = control.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control.type) ? control.type : 'click';
+            const value = kind === 'select' ? raw : kind === 'click' ? raw || 'true' : raw === 'true';
+            add(conditionRow(control, kind, value, raw || text(control), targetRect, true, n.getAttribute('data-proto-reveal-label') || ''));
+        }
+        for (const el of document.querySelectorAll('select,input[type="checkbox"],input[type="radio"]')) {
+            if (!visible(el)) continue;
+            let kind, value, initial, option = '';
+            if (el.tagName === 'SELECT') {
+                kind = 'select'; value = el.value;
+                const def = [...el.options].find(o => o.defaultSelected) || el.options[0];
+                initial = def?.value ?? '';
+                option = el.selectedOptions?.[0]?.textContent?.trim() || value;
+                if (value === initial) continue;
+            } else {
+                kind = el.type; value = !!el.checked; initial = !!el.defaultChecked;
+                if (value === initial || (kind === 'radio' && !value)) continue;
+                // checkbox 同时记录「由默认勾选切为未勾选」；radio 只记录当前选中的新项，避免同组旧项制造反向条件。
+                option = el.value || controlLabel(el);
+            }
+            add(conditionRow(el, kind, value, option, targetRect));
+        }
+        const aria = '[role="tab"][aria-selected="true"],[aria-pressed="true"],[aria-expanded="true"][aria-controls],[role="radio"][aria-checked="true"],[role="checkbox"][aria-checked="true"]';
+        for (const el of document.querySelectorAll(aria)) {
+            const kind = el.matches('[role="tab"]') ? 'aria-selected' : el.hasAttribute('aria-pressed') ? 'aria-pressed' :
+                el.hasAttribute('aria-expanded') ? 'aria-expanded' : 'aria-checked';
+            add(conditionRow(el, kind, 'true', text(el) || controlLabel(el), targetRect));
+        }
+        return rows.sort((a, b) => a.distance - b.distance).slice(0, 12).map(({ distance, ...row }) => row);
+    }
+    function serialize(el) {
+        const r = el.getBoundingClientRect();
+        const clean = el.cloneNode(true);
+        clean.querySelectorAll('[data-prototype-owned],script').forEach((n) => n.remove());
+        const conditions = captureConditions(el, r);
+        const anchor = {
+            protoId: el.getAttribute('data-proto-id') || '',
+            selector: selector(el),
+            tag: el.tagName.toLowerCase(),
+            text: text(el),
+            parentText: text(el.parentElement),
+            htmlSnippet: clean.outerHTML.slice(0, 1800),
+            rect: {
+                x: Math.round(r.x + scrollX),
+                y: Math.round(r.y + scrollY),
+                width: Math.round(r.width),
+                height: Math.round(r.height),
+            },
+        };
+        if (conditions.length) anchor.conditions = conditions;
+        return anchor;
+    }
+    function resolve(anchor) {
+        if (!anchor) return { element: null, reason: '尚未绑定元素' };
+        if (anchor.protoId) {
+            const list = [
+                ...document.querySelectorAll(`[data-proto-id="${CSS.escape(anchor.protoId)}"]`),
+            ].filter(visible);
+            if (list.length === 1 && (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag))
+                return { element: list[0] };
+            return {
+                element: null,
+                reason: list.length > 1 ? '稳定 ID 重复，请重新绑定' : '目标已移除或当前状态不可见',
+            };
+        }
+        try {
+            const list = [...document.querySelectorAll(anchor.selector || ':not(*)')].filter(visible);
+            if (
+                list.length === 1 &&
+                (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag) &&
+                (!anchor.text || text(list[0]) === anchor.text)
+            )
+                return { element: list[0] };
+        } catch (_) {
+            /* 旧选择器可能失效，继续尝试唯一文本。 */
+        }
+        if (anchor.text && /^[a-z][a-z0-9-]*$/i.test(anchor.tag || '')) {
+            const candidates = [...document.querySelectorAll(anchor.tag)].filter(
+                (el) =>
+                    visible(el) &&
+                    text(el) === anchor.text &&
+                    (!anchor.parentText || text(el.parentElement) === anchor.parentText),
+            );
+            if (candidates.length === 1) return { element: candidates[0] };
+            if (candidates.length > 1) return { element: null, reason: '存在多个同名目标，请重新绑定' };
+        }
+        return { element: null, reason: '目标变化，等待重新定位' };
+    }
+    function at(x, y) {
+        return (
+            document
+                .elementsFromPoint(x, y)
+                .find((el) => !owned(el) && !['HTML', 'BODY'].includes(el.tagName)) || null
+        );
+    }
+    function rect(el, fullDocument = false) {
+        const r = el.getBoundingClientRect();
+        let left = Math.max(fullDocument ? -scrollX : 0, r.left), top = Math.max(fullDocument ? -scrollY : 0, r.top),
+            right = Math.min(fullDocument ? document.documentElement.scrollWidth - scrollX : innerWidth, r.right),
+            bottom = Math.min(fullDocument ? document.documentElement.scrollHeight - scrollY : innerHeight, r.bottom);
+        for (let n = el.parentElement; n; n = n.parentElement) {
+            if (fullDocument && n === document.scrollingElement) continue;
+            const s = getComputedStyle(n), p = n.getBoundingClientRect();
+            if (/(auto|scroll|hidden|clip)/.test(s.overflowX)) {
+                left = Math.max(left, p.left + n.clientLeft);
+                right = Math.min(right, p.left + n.clientLeft + n.clientWidth);
+            }
+            if (/(auto|scroll|hidden|clip)/.test(s.overflowY)) {
+                top = Math.max(top, p.top + n.clientTop);
+                bottom = Math.min(bottom, p.top + n.clientTop + n.clientHeight);
+            }
+        }
+        return { x: left, y: top, width: Math.max(0, right - left), height: Math.max(0, bottom - top), visible: right > left && bottom > top };
+    }
+    function placement(el, x, y) {
+        if (!el) return { kind: 'document', x: x + scrollX, y: y + scrollY };
+        const r = el.getBoundingClientRect(), px = x - r.left + el.scrollLeft, py = y - r.top + el.scrollTop;
+        // 同存绝对偏移与比例：绝对值保持旧行为，rx/ry 让响应式控件变窄/变高后仍能落在同一相对位置。
+        return { kind: 'element', x: px, y: py,
+            rx: r.width > 0 ? Math.max(0, Math.min(1, px / r.width)) : 0,
+            ry: r.height > 0 ? Math.max(0, Math.min(1, py / r.height)) : 0 };
+    }
+    function point(note, fullDocument = false) {
+        const p = note.placement;
+        if (p?.kind === 'document') {
+            const x = p.x - scrollX, y = p.y - scrollY;
+            if (p.x > document.documentElement.scrollWidth || p.y > document.documentElement.scrollHeight)
+                return { reason: '页面尺寸已变化，请重新定位', point: null, rect: null };
+            const visible = fullDocument || (x >= 0 && y >= 0 && x < innerWidth && y < innerHeight);
+            return { point: { x, y, visible }, rect: { x, y, width: 0, height: 0, visible } };
+        }
+        const found = resolve(note.anchor);
+        if (!found.element) return { reason: found.reason, point: null, rect: null };
+        const element = found.element, r = element.getBoundingClientRect(), clip = rect(element, fullDocument);
+        if (!p) return { element, rect: clip, point: { x: clip.x, y: clip.y, visible: clip.visible }, legacy: true };
+        const ew = Math.max(r.width, element.scrollWidth), eh = Math.max(r.height, element.scrollHeight);
+        let px = p.x, py = p.y;
+        if (Number.isFinite(p.rx) && Number.isFinite(p.ry)) {
+            px = p.rx * ew; py = p.ry * eh;
+        } else {
+            // 旧锚点无 rx/ry：仅当当前响应式尺寸缩小导致绝对偏移越界、且偏移在创建时 rect 内时，按原尺寸比例回退。
+            const base = note.anchor?.rect;
+            if (px > ew && base?.width > 0 && px <= base.width) px = px / base.width * ew;
+            if (py > eh && base?.height > 0 && py <= base.height) py = py / base.height * eh;
+        }
+        if (px > ew || py > eh)
+            return { element, reason: '落点超出目标范围，请重新定位', rect: clip, point: null };
+        const x = r.left + px - element.scrollLeft, y = r.top + py - element.scrollTop;
+        const visible = clip.visible && x >= clip.x && x <= clip.x + clip.width && y >= clip.y && y <= clip.y + clip.height;
+        return { element, rect: clip, point: { x, y, visible } };
+    }
+    function inBox(box) {
+        const nodes = [
+            ...document.querySelectorAll(
+                'button,input,img,a,p,h1,h2,h3,h4,li,label,select,textarea,[data-proto-id]',
+            ),
+        ].filter((el) => {
+            if (!visible(el)) return false;
+            const r = el.getBoundingClientRect();
+            return (
+                r.width &&
+                r.height &&
+                r.left < box.right &&
+                r.right > box.left &&
+                r.top < box.bottom &&
+                r.bottom > box.top &&
+                [[.5,.5],[.1,.1],[.9,.1],[.1,.9],[.9,.9]].some(([u,v]) => {
+                    const hit = at(r.left + r.width * u, r.top + r.height * v);
+                    return hit === el || (hit && el.contains(hit));
+                })
+            );
+        });
+        return nodes.filter((el) => !nodes.some((other) => other !== el && other.contains(el))).slice(0, 100);
+    }
+    function currentIds() {
+        return {
+            pageId: document.documentElement.dataset.protoPage || 'main',
+            stateId: document.documentElement.dataset.protoState || 'default',
+        };
+    }
+    async function enterState(stateId) {
+        if (typeof window.PrototypeBridge?.enter === 'function') await window.PrototypeBridge.enter(stateId);
+        return currentIds();
+    }
+    // ---------- 折叠区展开 / 引导（标注工作台“点序号联动展开”与“点击引导”复用；全流程已归档，此为标注侧增补） ----------
+    function hidden(el) {
+        if (!el) return true;
+        const cs = getComputedStyle(el);
+        return cs.display === 'none' || cs.visibility === 'hidden' || el.getClientRects().length === 0;
+    }
+    function resolveHidden(anchor) {
+        // 与 resolve 同规则但不过滤可见性：定位被折叠/隐藏的目标元素
+        if (!anchor) return null;
+        const all = (sel) => { try { return [...document.querySelectorAll(sel)].filter((el) => !owned(el)); } catch (_) { return []; } };
+        // 隐藏子树的 innerText 退化为 textContent，丢掉渲染时 span 之间的空格（「高中语文智批 智能体」→「高中语文智批智能体」），
+        // 严格比对会让折叠行里的标注既无序号也无引导；这里去掉全部空白再比。
+        const loose = (s) => (s || '').replace(/\s+/g, '');
+        const sameText = (el, t) => !t || loose(text(el)) === loose(t);
+        if (anchor.protoId) {
+            const list = all(`[data-proto-id="${CSS.escape(anchor.protoId)}"]`);
+            return list.length === 1 && (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag) ? list[0] : null;
+        }
+        const list = all(anchor.selector || ':not(*)');
+        if (list.length === 1 && (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag) && sameText(list[0], anchor.text)) return list[0];
+        if (anchor.text && /^[a-z][a-z0-9-]*$/i.test(anchor.tag || '')) {
+            const c = all(anchor.tag).filter((el) => sameText(el, anchor.text) && sameText(el.parentElement, anchor.parentText));
+            if (c.length === 1) return c[0];
+        }
+        return null;
+    }
+    function conditionValue(el, condition) {
+        if (condition.kind === 'select') return el.value;
+        if (condition.kind === 'checkbox' || condition.kind === 'radio') return !!el.checked;
+        if (condition.kind.startsWith('aria-')) return el.getAttribute(condition.kind);
+        return null;
+    }
+    function conditionGuideLabel(condition) {
+        const value = condition.option || condition.value || condition.label || '条件';
+        if (condition.kind === 'select') return `选择 ${value}`;
+        if (condition.kind === 'aria-selected') return `切换到 ${value}`;
+        if (condition.kind === 'aria-expanded') return `展开 ${condition.label || value}`;
+        return `开启 ${condition.label || value}`;
+    }
+    function conditionTrigger(anchor) {
+        const rows = Array.isArray(anchor?.conditions) ? anchor.conditions : [];
+        let fallback = null;
+        for (const condition of rows) {
+            let el = null;
+            try { el = document.querySelector(condition.selector || ':not(*)'); } catch (_) { /* 旧条件选择器失效 */ }
+            if (!el || owned(el) || !visible(el)) continue;
+            const hit = { element: el, condition, label: conditionGuideLabel(condition) };
+            if (conditionValue(el, condition) !== condition.value) return hit;
+            // 原生 change 与显式声明允许重放同值事件；ARIA 同值点击可能反向关闭，不作为 fallback。
+            if (!fallback && (condition.explicit || ['select', 'checkbox', 'radio'].includes(condition.kind))) fallback = hit;
+        }
+        return fallback;
+    }
+    function applyCondition(hit) {
+        if (!hit?.element) return false;
+        const { element, condition } = hit;
+        if (condition.kind === 'select') element.value = condition.value;
+        else if (condition.kind === 'checkbox' || condition.kind === 'radio') element.checked = !!condition.value;
+        else { element.click(); return true; }
+        element.dispatchEvent(new Event('input', { bubbles: true }));
+        element.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+    }
+    function revealTrigger(el, strongOnly = false) {
+        // 找到能让 el 显现的折叠触发器：原生 details / aria-controls 是强关联；邻近按钮仅作旧锚点退路
+        for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+            if (n.tagName === 'DETAILS' && !n.open) return n;
+            if (n.id) {
+                const ctrls = [...document.querySelectorAll('[aria-controls]')].filter((c) =>
+                    !owned(c) && (c.getAttribute('aria-controls') || '').split(/\s+/).includes(n.id));
+                const hit = ctrls.find((c) => c.getAttribute('aria-expanded') === 'false') || ctrls.find((c) => visible(c));
+                if (hit && visible(hit)) return hit;
+            }
+        }
+        if (strongOnly) return null;
+        for (let n = el; n && n !== document.body; n = n.parentElement) {
+            if (!hidden(n)) continue;
+            const scope = n.parentElement || document;
+            const cand = [...scope.querySelectorAll('[aria-expanded="false"], summary, button, [role="button"]')]
+                .find((t) => !owned(t) && !n.contains(t) && visible(t));
+            if (cand) return cand;
+        }
+        return null;
+    }
+    function revealHint(anchor, el = resolveHidden(anchor)) {
+        if (el && !hidden(el)) return null; // 目标已显现；若落点异常应走失锚/响应式回退，不能继续显示条件引导
+        // 优先语义明确的 details / aria-controls；其次用创建标注时记录的状态条件；最后才用邻近按钮弱推断。
+        const direct = el ? revealTrigger(el, true) : null;
+        if (direct) return { trigger: direct, target: el, label: '展开', kind: 'disclosure' };
+        const condition = conditionTrigger(anchor);
+        if (condition) return { trigger: condition.element, target: anchor, label: condition.label, kind: 'condition' };
+        if (!el) return null;
+        const fallback = revealTrigger(el);
+        return fallback ? { trigger: fallback, target: el, label: '展开', kind: 'disclosure' } : null;
+    }
+    function reveal(target) {
+        const anchor = target && target.nodeType === 1 ? null : target;
+        let el = target && target.nodeType === 1 ? target : resolveHidden(target);
+        // 条件控件先恢复到创建标注时的值；change/click 处理器可同步显现，也可由 MutationObserver 在异步渲染后接力。
+        if (anchor && applyCondition(conditionTrigger(anchor))) el = resolveHidden(anchor) || el;
+        if (!el) return null;
+        // 同一触发器只点一次：Vue/React 类原型点击后 DOM 在 nextTick 才更新，同步判定仍为隐藏，
+        // 循环里重复点同一个按钮会把刚展开的区域再折回去（偶数次 = 没展开）。多层折叠靠后续重排接力。
+        const clicked = new Set();
+        for (let g = 0; g < 10 && hidden(el); g++) {
+            const trig = revealTrigger(el);
+            if (!trig || clicked.has(trig)) break;
+            clicked.add(trig);
+            if (trig.tagName === 'DETAILS') trig.open = true; else trig.click();
+        }
+        return hidden(el) ? null : el;
+    }
+    globalThis.ProtoAnchors = {
+        owned,
+        text,
+        visible,
+        hidden,
+        selector,
+        serialize,
+        resolve,
+        resolveHidden,
+        revealTrigger,
+        revealHint,
+        reveal,
+        rect,
+        placement,
+        point,
+        at,
+        inBox,
+        currentIds,
+        enterState,
+    };
+})();
+
+</script>
+<script data-proto-review="order">
+/* 展示编号投影：不改元数据 number，所有定位与编辑始终使用稳定 id。 */
+(() => {
+    'use strict';
+    const stable = (a, b) => String(a.id).localeCompare(String(b.id), 'en');
+    function logicalPoint(found, win) {
+        if (!found?.point) return null;
+        const { element, legacy } = found;
+        const point = legacy && element ? element.getBoundingClientRect() : found.point;
+        let x = point.x + win.scrollX, y = point.y + win.scrollY;
+        for (let node = legacy ? element?.parentElement : element; node && node !== win.document.scrollingElement; node = node.parentElement) {
+            x += node.scrollLeft || 0;
+            y += node.scrollTop || 0;
+        }
+        return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;
+    }
+    function arrange(records) {
+        const resolved = records.filter(r => r.point).sort((a, b) => a.point.y - b.point.y || a.point.x - b.point.x || stable(a.note, b.note));
+        const result = [];
+        for (let i = 0; i < resolved.length;) {
+            const top = resolved[i].point.y, row = [];
+            while (i < resolved.length && resolved[i].point.y - top <= 12) row.push(resolved[i++]);
+            row.sort((a, b) => a.point.x - b.point.x || a.point.y - b.point.y || stable(a.note, b.note));
+            result.push(...row);
+        }
+        result.push(...records.filter(r => !r.point).sort((a, b) => stable(a.note, b.note)));
+        return result.map((r, i) => ({ ...r.note, displayNumber: i + 1 }));
+    }
+    function project(notes, win, pendingPoint = null) {
+        const records = notes.map(note => {
+            let point = null;
+            try { point = logicalPoint(win.ProtoAnchors.point(note), win); } catch (_) { /* 未就绪或失效锚点 */ }
+            return { note, point };
+        });
+        if (pendingPoint) records.push({ note: {id: '~pending'}, point: pendingPoint });
+        return arrange(records);
+    }
+    function previewNumber(notes, win, x, y) {
+        const element = win.ProtoAnchors.at(x, y);
+        const point = logicalPoint({element, point: {x, y}}, win);
+        return project(notes, win, point).find(n => n.id === '~pending')?.displayNumber || notes.length + 1;
+    }
+    globalThis.ProtoOrder = { arrange, project, previewNumber, logicalPoint };
+})();
+
+</script>
+<script data-proto-review="bridge">
+/* 评审壳 ↔ 原型页桥：随导出内嵌进每个原型 HTML，跑在 iframe 内。
+   壳与原型改用 postMessage 通信，不再由壳跨文档注入脚本——ZIP 解压后 file:// 直接打开时
+   每个 file 都是独立源，壳拿不到 iframe 的 document，旧注入方式静默失效（无序号、无引导、右栏乱序）。
+   加载顺序：proto-anchors.js → proto-order.js → 本文件 → review-pins.js。
+   独立打开原型（不在壳内）时本文件不做任何事。 */
+(() => {
+    'use strict';
+    if (window.__reviewBridgeBoot) return;
+    window.__reviewBridgeBoot = true;
+    if (window.parent === window || !window.ProtoAnchors) return;
+
+    const post = (msg) => { try { window.parent.postMessage(Object.assign({ __review: 1 }, msg), '*'); } catch (_) { /* 壳未就绪 */ } };
+    const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    let asideOpen = true;
+
+    // review-pins.js 启动时读取的宿主对象：标注在 init 消息到达后填充，正文 HTML 由壳预渲染（气泡层无 Markdown 渲染器）。
+    window.__REVIEW__ = {
+        notes: [],
+        asideOpen: () => asideOpen,
+        onSync: (map, state, stale) => post({ type: 'sync', map, state, stale }),
+        onFocus: (noteId) => post({ type: 'focus', noteId }),
+        renderBody: (note) => note.bodyHtml || '<p>' + esc(note.body || '') + '</p>',
+    };
+
+    // 气泡层在本文件之后加载；init 早到时等它就位再重排（最多等 5s）。
+    function relayout(tries) {
+        if (window.__reviewRelayout) { window.__reviewRelayout(); return; }
+        if ((tries || 0) < 50) setTimeout(() => relayout((tries || 0) + 1), 100);
+    }
+
+    function reveal(note) {
+        const A = window.ProtoAnchors;
+        let found = null;
+        try { found = A.point(note); } catch (_) { /* 锚定异常 */ }
+        if (!found?.element && !found?.point) {
+            // 目标被折叠/隐藏：先联动展开对应折叠区，再重新定位与重排气泡
+            try { A.reveal?.(note.anchor); } catch (_) { /* ignore */ }
+            try { window.__reviewRelayout?.(); } catch (_) { /* ignore */ }
+            try { found = A.point(note); } catch (_) { /* ignore */ }
+        }
+        if (found?.element) found.element.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        else if (found?.point) window.scrollTo({ top: Math.max(0, found.point.y + window.scrollY - window.innerHeight / 2), behavior: 'smooth' });
+    }
+
+    window.addEventListener('message', (e) => {
+        if (e.source !== window.parent || !e.data || e.data.__review !== 1) return;
+        const m = e.data;
+        switch (m.type) {
+            case 'init':
+                window.__REVIEW__.notes = Array.isArray(m.notes) ? m.notes : [];
+                asideOpen = m.asideOpen !== false;
+                if (m.enterState) { try { window.ProtoAnchors.enterState?.(m.enterState)?.catch?.(() => {}); } catch (_) { /* ignore */ } }
+                relayout();
+                break;
+            case 'aside':
+                asideOpen = !!m.open;
+                try { window.__reviewHidePop?.(); } catch (_) { /* ignore */ }
+                break;
+            case 'enterState':
+                try { window.ProtoAnchors.enterState?.(m.stateId)?.catch?.(() => {}); } catch (_) { /* ignore */ }
+                break;
+            case 'reveal':
+                if (m.note) reveal(m.note);
+                break;
+            case 'hidePop':
+                try { window.__reviewHidePop?.(); } catch (_) { /* ignore */ }
+                break;
+            default:
+                break;
+        }
+    });
+
+    let ids = {};
+    try { ids = window.ProtoAnchors.currentIds?.() || {}; } catch (_) { /* ignore */ }
+    post({ type: 'ready', ids });
+})();
+
+</script>
+<script data-proto-review="pins">
+/* 评审壳只读气泡层：随导出内嵌进每个原型 HTML（review_export.inject_bundle），跑在被评审原型页面内。
+   依赖同页先加载的 proto-anchors.js / proto-order.js / review-bridge.js；通过 window.__REVIEW__（由 bridge 建立，内部走 postMessage）与壳父页通信。
+   只读：无编辑、无拖动、无删除。 */
+(() => {
+    'use strict';
+    if (window.__reviewPinsBoot) return;
+    window.__reviewPinsBoot = true;
+    const R = window.__REVIEW__;
+    if (!R || !window.ProtoAnchors || !window.ProtoOrder) return;
+
+    const style = document.createElement('style');
+    style.textContent = `
+.__review_pin{position:absolute;display:grid;place-items:center;min-width:36px;height:36px;padding:0 8px;border:3px solid #fff;border-radius:50% 50% 50% 2px;background:#2563eb;color:#fff;font:600 13px/1 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;box-shadow:0 8px 24px rgba(16,24,40,.24);transform:translateY(-100%);cursor:pointer;pointer-events:auto;}
+.__review_pin:hover{background:#1d4ed8;}
+.__review_pin.__stale{background:#626b78;cursor:default;}
+@media(prefers-color-scheme:dark){.__review_pin{border-color:#121519;}}
+.__review_pop{position:fixed;z-index:2147482001;max-width:min(360px,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow:auto;padding:12px 14px;border:1px solid #d8dee3;border-radius:10px;background:#fff;color:#1a1d23;font:14px/1.7 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;letter-spacing:.02em;box-shadow:0 8px 24px rgba(16,24,40,.24);display:none;}
+@media(prefers-color-scheme:dark){.__review_pop{background:#121519;color:#f2f4f7;border-color:#363c44;}}
+.__review_pop>:first-child{margin-top:0;}.__review_pop>:last-child{margin-bottom:0;}
+.__review_pop p{margin:0 0 10px;overflow-wrap:anywhere;}
+.__review_pop h1{font-size:18px;}.__review_pop h2{font-size:16px;}.__review_pop h3,.__review_pop h4{font-size:14px;}
+.__review_pop ul,.__review_pop ol{padding-left:20px;margin:6px 0 10px;}.__review_pop li.task{list-style:none;margin-left:-18px;}
+.__review_pop code{font-family:ui-monospace,Consolas,monospace;font-size:13px;background:rgba(127,127,127,.16);padding:1px 5px;border-radius:4px;}
+.__review_pop pre{background:rgba(127,127,127,.14);padding:10px;border-radius:6px;white-space:pre-wrap;overflow-wrap:anywhere;}.__review_pop pre code{background:none;padding:0;}
+.__review_pop table{border-collapse:collapse;width:100%;}.__review_pop th,.__review_pop td{border:1px solid #d8dee3;padding:6px;text-align:left;}
+@media(prefers-color-scheme:dark){.__review_pop th,.__review_pop td{border-color:#363c44;}}
+.__review_pop blockquote{border-left:3px solid #d8dee3;margin:8px 0;padding:2px 12px;color:#4e5560;}.__review_pop a{color:#2563eb;}.__review_pop hr{border:0;border-top:1px solid #d8dee3;}
+/* 点击引导：与操作界面 .pa-guide 同式——亮黄色系，与蓝色水滴序号在 色相 / 形状 / 动效 三方面区分。
+   框 = 透明可点区：虚线、静态不呼吸；悬停转实线 + 加深底色 + 外环。标签 = 与框左上角拼成一体的选区式标签，只有标签呼吸。
+   偏离 DESIGN_MASTER --accent-amber #b45309（实看发褐）：框线 #d97706（白底 3.19:1），标签 #fbbf24 配深棕字 #5c3300（6.52:1）。
+   固定浅色、不随 prefers-color-scheme 切换：引导叠在原型页面上，颜色跟随页面而非系统。 */
+.__review_guide{--g-line:#d97706;--g-fill:#fbbf24;--g-ink:#5c3300;position:absolute;box-sizing:border-box;margin:0;padding:0;border:2px dashed var(--g-line);border-radius:0 8px 8px 8px;background:rgba(251,191,36,.10);cursor:pointer;pointer-events:auto;transition:background-color 150ms ease-out,box-shadow 150ms ease-out;}
+.__review_guide:hover{border-style:solid;background:rgba(251,191,36,.30);box-shadow:0 0 0 3px rgba(251,191,36,.38);}
+.__review_guide:active{background:rgba(251,191,36,.45);}
+.__review_guide:focus-visible{outline:2px solid var(--g-line);outline-offset:2px;}
+.__review_guide_tag{position:absolute;box-sizing:border-box;left:-2px;top:-2px;transform:translateY(-100%);display:inline-flex;align-items:center;gap:3px;height:18px;padding:0 7px 0 5px;border:1px solid var(--g-line);border-radius:6px 6px 6px 0;background:var(--g-fill);color:var(--g-ink);font:600 11px/1 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;white-space:nowrap;pointer-events:none;animation:__rvGuideTag 1.8s ease-in-out infinite;animation-delay:var(--g-delay,0s);}
+.__review_guide_tag svg{width:10px;height:10px;animation:__rvGuideBob 1.8s ease-in-out infinite;animation-delay:var(--g-delay,0s);}
+.__review_guide:hover .__review_guide_tag{animation:none;box-shadow:0 0 0 3px rgba(251,191,36,.38);}
+.__review_guide.__review_guide_below{border-radius:8px 8px 8px 0;}
+.__review_guide.__review_guide_below .__review_guide_tag{top:auto;bottom:-2px;transform:translateY(100%);border-radius:0 6px 6px 6px;}
+.__review_guide.__review_guide_end{border-radius:8px 0 8px 8px;}
+.__review_guide.__review_guide_end .__review_guide_tag{left:auto;right:-2px;border-radius:6px 6px 0 6px;}
+.__review_guide.__review_guide_below.__review_guide_end{border-radius:8px 8px 0 8px;}
+.__review_guide.__review_guide_below.__review_guide_end .__review_guide_tag{border-radius:6px 0 6px 6px;}
+@keyframes __rvGuideTag{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0),0 1px 2px rgba(92,51,0,.18);}50%{box-shadow:0 0 0 4px rgba(251,191,36,.42),0 1px 2px rgba(92,51,0,.18);}}
+@keyframes __rvGuideBob{0%,100%{transform:translateY(-1px);}50%{transform:translateY(1px);}}
+@media(prefers-reduced-motion:reduce){.__review_guide_tag,.__review_guide_tag svg{animation:none;}}
+`;
+    (document.head || document.documentElement).appendChild(style);
+
+    const layer = document.createElement('div');
+    layer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147482000;';
+    document.documentElement.appendChild(layer);
+    // 引导框独立图层：序号层每次重排 replaceChildren 整体重建，引导框要按触发器复用（保住悬停态、呼吸相位与点击）
+    const glayer = document.createElement('div');
+    glayer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147481999;';
+    glayer.setAttribute('data-prototype-owned', '');   // 引导框是 <button>，标记自有以免 revealTrigger 兜底搜索把它当成原型触发器
+    document.documentElement.appendChild(glayer);
+
+    // 收起态气泡：PRD 侧栏收起时，点序号在原型上就地展示该标注内容（展开态则改为定位右栏）。
+    let pop = null;
+    function hidePop() { if (pop) pop.style.display = 'none'; }
+    function showPop(note, pin) {
+        if (!pop) {
+            pop = document.createElement('div');
+            pop.className = '__review_pop';
+            pop.setAttribute('data-prototype-owned', '');
+            pop.addEventListener('click', e => e.stopPropagation());
+            document.documentElement.appendChild(pop);
+        }
+        pop.innerHTML = R.renderBody ? R.renderBody(note) : (note.body || '');
+        pop.style.display = 'block';
+        pop.style.visibility = 'hidden';
+        pop.style.left = '0px'; pop.style.top = '0px';
+        const pw = pop.offsetWidth, ph = pop.offsetHeight;
+        const px = parseFloat(pin.style.left) || 0, py = parseFloat(pin.style.top) || 0;
+        const W = innerWidth, H = innerHeight;
+        let left = px + 16, top = py - ph - 8;
+        if (left + pw > W - 8) left = px - pw - 16;
+        left = Math.max(8, Math.min(left, W - pw - 8));
+        if (top < 8) top = py + 8;
+        top = Math.max(8, Math.min(top, H - ph - 8));
+        pop.style.left = left + 'px'; pop.style.top = top + 'px';
+        pop.style.visibility = 'visible';
+    }
+    window.__reviewHidePop = hidePop;
+    window.__reviewRelayout = () => { try { layout(); } catch (_) { /* ignore */ } };
+    document.addEventListener('click', e => {
+        if (pop && pop.style.display === 'block' && !pop.contains(e.target) && !e.target.closest?.('.__review_pin')) hidePop();
+    }, true);
+    window.addEventListener('scroll', hidePop, { passive: true, capture: true });
+    window.addEventListener('resize', hidePop, { passive: true });
+
+    const stateOf = () => document.documentElement.dataset.protoState || 'default';
+    let lastState = '', lastX = -1, lastY = -1, lastW = 0, lastH = 0, lastHtml = '';
+    let lastOrder = '', lastStale = '';
+
+    function layout() {
+        const state = stateOf();
+        if (state !== lastState) hidePop(); // 只在原型状态切换时关气泡；纯几何重排不关（避免侧栏收起引发的 reflow 误关刚弹出的气泡）
+        const notes = (R.notes || []).filter(n => n.stateId === state);
+        const arranged = window.ProtoOrder.project(notes, window);
+        const stale = [], noPoint = [];
+        layer.replaceChildren();
+        for (const n of arranged) {
+            let found = null;
+            try { found = window.ProtoAnchors.point(n); } catch (_) { /* 锚定异常按失效处理 */ }
+            if (!found?.point) { noPoint.push(n); continue; }
+            const pin = document.createElement('button');
+            pin.type = 'button';
+            pin.className = '__review_pin';
+            pin.textContent = n.displayNumber;
+            pin.setAttribute('aria-label', `标注 ${n.displayNumber}`);
+            pin.style.left = found.point.x + 'px';
+            pin.style.top = found.point.y + 'px';
+            pin.onclick = e => {
+                e.preventDefault(); e.stopPropagation();
+                // PRD 侧栏展开：定位到右栏对应内容；收起：就地弹气泡展示内容。
+                if (R.asideOpen && R.asideOpen()) { hidePop(); R.onFocus?.(n.id); }
+                else showPop(n, pin);
+            };
+            layer.appendChild(pin);
+        }
+        // 无落点分流（Feature 1 引导 + 失锚判定）：元素还在且被折叠/隐藏 → 正常颜色，可展开的盖透明脉冲描边框引导；
+        // 元素真找不到、或可见但落点失效（目标变化）才算失锚（右栏灰显、置底、不可点）。
+        const groups = new Map();
+        for (const n of noPoint) {
+            let el = null; try { el = window.ProtoAnchors.resolveHidden(n.anchor); } catch (_) { /* ignore */ }
+            let hint = null;
+            try { hint = window.ProtoAnchors.revealHint?.(n.anchor, el); } catch (_) { /* ignore */ }
+            if (!hint && el && window.ProtoAnchors.hidden(el)) {
+                let trigger = null; try { trigger = window.ProtoAnchors.revealTrigger(el); } catch (_) { /* ignore */ }
+                if (trigger) hint = { trigger, target: el, label: '展开', kind: 'disclosure' };
+            }
+            if (!hint?.trigger) {
+                if (!el || !window.ProtoAnchors.hidden(el)) stale.push(n.id); // 元素仍在但隐藏、只是暂无可操作引导时也不算失锚
+                continue;
+            }
+            let g = groups.get(hint.trigger);
+            const actionKey = `${hint.kind}\n${hint.label}`;
+            if (!g) groups.set(hint.trigger, (g = { target: hint.target, label: hint.label, actionKey, notes: [] }));
+            if (g.actionKey === actionKey) g.notes.push(n);
+        }
+        const GICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+        const existing = [...glayer.querySelectorAll('.__review_guide')];
+        const alive = new Set();
+        let gi = existing.length;   // 新建引导错峰呼吸（与 proto-annotate.js 一致）：负 delay 立处不同相位
+        groups.forEach((g, trig) => {
+            const r = trig.getBoundingClientRect();
+            if (r.width === 0 && r.height === 0) return;
+            // 描边框套在触发器外 4px，小图标至少 22px 保证可点；裁到视口内，完全出视口就不画（与 proto-annotate.js layoutGuides 同算法）
+            const pad = 4, w = Math.max(r.width + pad * 2, 22), h = Math.max(r.height + pad * 2, 22);
+            let left = r.left + r.width / 2 - w / 2, top = r.top + r.height / 2 - h / 2;
+            const right = Math.min(innerWidth - 2, left + w), bottom = Math.min(innerHeight - 2, top + h);
+            left = Math.max(2, left); top = Math.max(2, top);
+            if (right - left < 8 || bottom - top < 8) return;
+            let guide = existing.find(x => x.__rvTrig === trig);
+            if (!guide) {
+                guide = document.createElement('button');
+                guide.type = 'button'; guide.className = '__review_guide';
+                guide.__rvTrig = trig;
+                guide.style.setProperty('--g-delay', (-(gi++ % 4) * 0.45) + 's');
+                guide.onclick = e => { e.preventDefault(); e.stopPropagation(); try { window.ProtoAnchors.reveal(guide.__rvTarget); } catch (_) { /* ignore */ } layout(); };
+                glayer.appendChild(guide);
+            }
+            guide.__rvTarget = g.target;
+            const html = '<span class="__review_guide_tag">' + GICON + '<span>' + g.label + ' · ' + g.notes.length + '</span></span>';
+            if (guide.__rvHtml !== html) { guide.innerHTML = html; guide.__rvHtml = html; }
+            guide.title = '点击“' + g.label + '”以显示 ' + g.notes.length + ' 处标注（' + g.notes.map(n => n.displayNumber).join(' ') + '）';
+            guide.setAttribute('aria-label', guide.title);
+            guide.style.left = left + 'px'; guide.style.top = top + 'px';
+            guide.style.width = (right - left) + 'px'; guide.style.height = (bottom - top) + 'px';
+            guide.classList.toggle('__review_guide_below', top < 24);            // 贴顶时标签改挂底边，不被视口切掉
+            guide.classList.toggle('__review_guide_end', left + 84 > innerWidth); // 贴右时标签改挂右角
+            alive.add(guide);
+        });
+        existing.forEach(x => { if (!alive.has(x)) x.remove(); });
+        const orderKey = JSON.stringify(arranged.map(n => [n.id, n.displayNumber]));
+        const staleKey = JSON.stringify(stale);
+        if (orderKey !== lastOrder || staleKey !== lastStale || state !== lastState) {
+            lastOrder = orderKey; lastStale = staleKey; lastState = state;
+            R.onSync?.(Object.fromEntries(arranged.map(n => [n.id, n.displayNumber])), state, stale);
+        }
+    }
+
+    setInterval(() => {
+        const html = document.documentElement.outerHTML.length;
+        if (stateOf() !== lastState || scrollX !== lastX || scrollY !== lastY ||
+            innerWidth !== lastW || innerHeight !== lastH || html !== lastHtml) {
+            lastX = scrollX; lastY = scrollY; lastW = innerWidth; lastH = innerHeight; lastHtml = html;
+            layout();
+        }
+    }, 350);
+
+    layout();
+})();
+
+</script>
+</body>
+</html>
