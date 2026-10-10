@@ -10,9 +10,10 @@
                 --surface: #fff;
                 --alt: #f1f2f4;
                 --border: #d8dee3;
+                --note-divider: color-mix(in srgb, var(--border) 60%, var(--surface));
                 --text: #1a1d23;
                 --muted: #4e5560;
-                --accent: #1d4ed8;
+                --accent: #2563eb;
                 --soft: #eef2ff;
                 --control: #808790;
                 --on-accent: #fff;
@@ -22,6 +23,11 @@
             }
             * { box-sizing: border-box; }
             @media (prefers-color-scheme: dark) { :root { --bg:#0b0d10;--surface:#121519;--alt:#1a1e23;--border:#363c44;--text:#f2f4f7;--muted:#a8b0ba;--accent:#7ba2ff;--soft:#1b2946;--control:#7e8795;--on-accent:#0b0d10;color-scheme:dark; } }
+            /* 文字颜色：正文存浅色 token，暗底按 DESIGN_MASTER 暗色对应色映射（与工作台 proto-markdown.css 同一张表） */
+            @media (prefers-color-scheme: dark) {
+                [style="color:#b42318"] { color: #ff8a8a !important; } [style="color:#b45309"] { color: #f0a35e !important; } [style="color:#046c4e"] { color: #5fd39b !important; }
+                [style="color:#1d4ed8"] { color: #7ba2ff !important; } [style="color:#0f766e"] { color: #4fd1c5 !important; } [style="color:#626b78"] { color: #a8b0ba !important; }
+            }
             body {
                 margin: 0;
                 background: var(--bg);
@@ -74,8 +80,9 @@
             }
             .layout.left-closed { --left: 40px; }
             .layout.right-closed { --right: 0px; }
+            .layout.prd-empty { grid-template-columns: var(--left) minmax(0, 1fr) 0; }
             .left-closed #tree { display: none; }
-            .right-closed aside { display: none; }
+            .right-closed aside, .prd-empty aside { display: none; }
             nav {
                 overflow: auto;
                 border-right: 1px solid var(--border);
@@ -98,20 +105,35 @@
             .canvas { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
             iframe { border: 0; width: 100%; flex: 1; background: var(--surface); }
             aside {
+                position: relative;
                 background: var(--surface);
                 overflow: auto;
                 border-left: 1px solid var(--border);
-                padding: 24px;
+                padding: 12px 16px 16px;
             }
-            aside h2 { font-size: 17px; margin: 4px 0 16px; }
-            details { border-bottom: 1px solid var(--border); padding: 12px 0; }
-            summary { font-weight: 600; cursor: pointer; }
+            /* PRD 区左缘拖拽条：拖动放大/缩小右栏（与编辑态一致）。中部常显一枚短握把，让“可拖”可被发现；悬停/拖动时整条亮主色。 */
+            #prd-resizer { position: absolute; left: 0; top: 0; bottom: 0; width: 10px; margin-left: -5px; cursor: ew-resize; touch-action: none; z-index: 6; }
+            #prd-resizer::before { content: ""; position: absolute; left: 4px; top: 0; bottom: 0; width: 2px; background: transparent; transition: background .12s ease-out; }
+            #prd-resizer::after { content: ""; position: absolute; left: 3px; top: 50%; width: 4px; height: 40px; margin-top: -20px; border-radius: 2px; background: var(--control); opacity: .55; transition: background .12s ease-out, opacity .12s ease-out; }
+            @media (hover: hover) { #prd-resizer:hover::before { background: var(--accent); } #prd-resizer:hover::after { background: var(--accent); opacity: 1; } }
+            #prd-resizer.resizing::before { background: var(--accent); }
+            #prd-resizer.resizing::after { background: var(--accent); opacity: 1; }
+            .right-closed #prd-resizer, .prd-empty #prd-resizer { display: none; }
+            aside h2 { font-size: 17px; margin: 0 0 4px; }
+            details { border-bottom: 1px solid var(--border); padding: 7px 0; }
+            details:last-of-type { border-bottom: 0; }
+            summary { font-weight: 600; cursor: pointer; line-height: 1.5; }
+            details[open] > summary { margin-bottom: 6px; }
             summary:focus-visible { outline:2px solid var(--accent);outline-offset:2px; }
             .markdown { overflow-wrap: anywhere; }
             .markdown h1 { font-size: 20px; }
             .markdown h2 { font-size: 17px; }
             .markdown h3 { font-size: 15px; }
             .markdown h4 { font-size: 14px; }
+            .markdown :is(h1,h2,h3,h4) { margin: 12px 0 6px; line-height: 1.55; }
+            .markdown p { margin: 0; } /* 与工作台同口径：Enter 换段与自然折行间距一致 */
+            .markdown > :first-child { margin-top: 0; }
+            .markdown > :last-child { margin-bottom: 0; }
             .markdown pre { white-space: pre-wrap; background: var(--alt); padding: 10px; border-radius: 6px; }
             .markdown code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; background: var(--alt); padding: 1px 5px; border-radius: 4px; }
             .markdown pre code { background: none; padding: 0; }
@@ -122,11 +144,15 @@
             .markdown li.task { list-style: none; margin-left: -20px; }
             .markdown a { color: var(--accent); }
             .markdown hr { border: 0; border-top: 1px solid var(--border); }
-            .note { display: flow-root; border-bottom: 1px solid var(--border); padding: 14px 8px; margin: 0 -8px; border-radius: 8px; cursor: pointer; }
+            .note { display: block; border-bottom: 1px dashed var(--note-divider); padding: 14px 8px; margin: 0 -8px; border-radius: 8px; cursor: pointer; }
             .note:hover { background: var(--alt); }
-            /* 序号与操作台同式：20px 小圆内联首行行首，正文环绕 */
-            .note-no { float: left; min-width: 20px; height: 20px; margin: 2px 8px 2px 0; padding: 0 5px; border-radius: 50% 50% 50% 4px; background: var(--accent); color: var(--on-accent); font-size: 11px; font-weight: 600; line-height: 20px; text-align: center; font-variant-numeric: tabular-nums; }
+            /* 与操作台右栏同式：序号单独首行，正文另起一行（预览与导出一致） */
+            .note-head { display: flex; align-items: center; margin-bottom: 8px; }
+            .note-no { min-width: 20px; height: 20px; margin: 0; padding: 0 5px; border-radius: 50% 50% 50% 4px; background: var(--accent); color: var(--on-accent); font-size: 11px; font-weight: 600; line-height: 20px; text-align: center; font-variant-numeric: tabular-nums; }
             .note.stale .note-no { background: var(--muted); }
+            .note-no { --pin-custom-ink: #191919; }
+            .note:not(.stale) .note-no { background: var(--pin-fill,var(--accent)); color: var(--pin-ink,var(--on-accent)); }
+            .markdown img { display: block; max-width: 100%; height: auto; margin: 8px 0; border-radius: 6px; }
             .note .markdown { font-size: 14px; }
             .note .markdown > :first-child { margin-top: 0; }
             .note .markdown > :last-child { margin-bottom: 0; }
@@ -157,37 +183,50 @@
                 <div id="empty" class="empty">选择左侧页面查看交互原型。</div>
             </section>
             <aside>
+                <div id="prd-resizer" title="拖拽调节 PRD 宽度" aria-hidden="true"></div>
                 <h2>PRD</h2>
-                <details open>
+                <details id="document-section" open>
                     <summary>页面需求</summary>
                     <div id="document" class="markdown"></div>
                 </details>
-                <details open>
+                <details id="notes-section" open>
                     <summary>标注明细 <span class="muted" id="notes-count"></span></summary>
                     <div id="notes"></div>
                 </details>
             </aside>
         </main>
         <noscript>请开启 JavaScript 查看评审内容（页面树、PRD 与标注气泡均依赖脚本渲染）。</noscript>
-        <script type="application/json" id="review-data">{"name": "智批模型费用明细", "projectId": "p-1ab155ada1a45f16", "revision": 123, "publishedAt": "2026-09-27T10:08:31.018221+00:00", "pages": [{"id": "home", "title": "智批数据统计 - 新教育管理后台", "file": "index.html", "url": "file:///d:/ai%20project/qoder/%E7%8B%AC%E7%AB%8B%E9%A1%B9%E7%9B%AE/%E6%99%BA%E6%89%B9%E6%A8%A1%E5%9E%8B%E8%B4%B9%E7%94%A8%E6%98%8E%E7%BB%86/index.html", "states": [{"id": "default", "title": "默认页面", "kind": "default"}]}], "documents": [{"id": "doc-walk-1", "pageId": "home", "stateId": "default", "confirmed": true, "updatedAt": "2026-09-24T12:00:00+00:00", "markdown": "## 一、需求描述\n\n面向运营与财务的智批调用费用看板。管理员按业务、学校、时间等维度筛选，查看调用量与预估费用，并导出 Excel 对账。\n\n- 数据筛选：业务类型 / 学校类型 / 省份 / 地区 / 学校名称 / 年级 / 学科 7 个条件，加时间范围（昨天 / 本周 / 本月 / 上月快捷切换）。\n- 数据概览：调用总次数、成功次数、总消耗 tokens（含输入 / 输出拆分）、学校数量、预计总费用，共 5 张卡片。\n- 模型费用 Tab：模型为一级行，可展开查看下属智能体二级明细；表尾显示合计。\n- 使用量统计 Tab：按智能体维度汇总调用量与成功率。\n- 导出 Excel：导出当前筛选条件下的全量明细。\n\n## 二、研发实现\n\n- 数据口径：T+1 更新，每日凌晨同步，统计范围截至昨日 24:00。\n- 费用口径：Σ(输入 tokens × 输入单价 + 输出 tokens × 对应输出单价)，思考 / 非思考输出分别计价；按次计费模型单列。\n- 交互：模型行点击展开 / 收起，「全部展开」批量切换；快捷时间按钮联动起止日期；重置恢复默认（昨天）。\n- 异常：无数据显示空态；开始日期晚于结束日期时日期框标红并禁止查询。\n- 导出：异步生成，文件名携带时间范围与 Tab 类型。\n"}], "annotations": [{"id": "68ade4f4-7cf2-4bb3-8b73-581f94c07796", "pageId": "home", "stateId": "default", "number": 8, "body": "| col1                                                 | col2 | col3 |\n| ---------------------------------------------------- | ---- | ---- |\n| 是啊开了多久发卡量<br />爱丽丝的飞机克拉斯记得发链接 |      |      |\n| 阿斯蒂芬就阿斯利康打飞机啊                           |      |      |\n\n啊手动阀手动阀你好随时进行处理\n\n爱上的发生的\n\n      奥丝蓝黛放假啊三闾大夫    \n\n  1. 佛山大沥放假啊看来就\n\n##   2. 拉萨的飞机凯夫拉就是j渔鸥很难阿斯蒂芬届奥斯卡劳动纠纷\n\n## 暗示大家发生的快乐到家反馈垃圾\n\n阿斯**利康都放假啦睡觉**了\n\n### 1. 啊看来放假啦睡觉的浪费\n\n奥丝蓝黛放假克拉斯剪短发了\n\n卢卡斯京东方克拉斯基督教快乐福\n\n爱流口水的飞机老实交代放假\n\n* [ ]  阿斯蒂芬阿萨德发生的发阿萨德发生的\n\n* 啦看手机罚款老实交代\n* 拉数据反馈拉屎京东方\n* 奥丝蓝黛开房间阿阿斯利康打飞机啊老地方\n* 阿里斯顿就流口水\n\n阿斯蒂芬撒\n", "anchor": {"protoId": "", "selector": "#costView > div:nth-of-type(2) > table > thead > tr > th:nth-of-type(10)", "tag": "th", "text": "输出tokens", "parentText": "模型厂商 模型名称 计费方式 输入单价 输出单价 （非思考） 输出单价 （思考） 调用总次数 成功次数 输入tokens 输出tokens 总消耗tokens 预估费用", "htmlSnippet": "<th scope=\"col\">输出tokens<\/th>", "rect": {"x": 1671, "y": 509, "width": 136, "height": 65}}, "placement": {"kind": "element", "x": 76.13200195312493, "y": 27.666656494140625}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-09-27T10:04:19.494Z"}, {"id": "9bdf3b98-8b86-412e-81aa-b9ac6440ac9b", "pageId": "home", "stateId": "default", "number": 9, "body": "项目启动后，左侧的项目列表做成 Tab 形式：\n第一个 Tab：用户自己选择的本地文件夹，直接读取。\n第二个 Tab：原生成器中生成的这些项目。\n\n另外，应该能读取像“我的独立项目”这个文件夹下，所有子文件夹中的原型文件。\n\n然后再有标注功能。", "anchor": {"protoId": "", "selector": "body > div:nth-of-type(1) > main > section:nth-of-type(1) > div:nth-of-type(4)", "tag": "div", "text": "学校数量 260", "parentText": "调用总次数 815,727 成功次数 815,727 总消耗tokens 5,663,194,860 输入 4,746,996,219 ｜ 输出 916,198,641 学校数量 260 预计总费用 ¥ 6,423.94 按token ¥ 6,423.94 ｜ 按次 ¥ 0", "htmlSnippet": "<div class=\"stat-card\"><div class=\"stat-title\">学校数量<button class=\"help\" data-tip=\"当前筛选范围内产生调用的去重学校数量\" aria-label=\"学校数量说明\"><svg class=\"icon\"><use href=\"#i-help\"><\/use><\/svg><\/button><\/div><div class=\"stat-icon\" style=\"color:#8439ef\"><svg class=\"icon\"><use href=\"#i-school\"><\/use><\/svg><\/div><div class=\"stat-number\" id=\"statSchools\">260<\/div><\/div>", "rect": {"x": 1386, "y": 217, "width": 349, "height": 150}}, "placement": {"kind": "element", "x": 54, "y": 41}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-09-25T13:33:55.446Z"}, {"id": "d4e88f46-e2d4-43c6-93ac-b9727556dd61", "pageId": "home", "stateId": "default", "number": 10, "body": "* 加油的很[链接说明](https://)\n", "anchor": {"protoId": "", "selector": "body > div:nth-of-type(1) > main > section:nth-of-type(1) > div:nth-of-type(2)", "tag": "div", "text": "成功次数 815,727", "parentText": "调用总次数 815,727 成功次数 815,727 总消耗tokens 5,663,194,860 输入 4,746,996,219 ｜ 输出 916,198,641 学校数量 260 预计总费用 ¥ 6,423.94 按token ¥ 6,423.94 ｜ 按次 ¥ 0", "htmlSnippet": "<div class=\"stat-card\"><div class=\"stat-title\">成功次数<button class=\"help\" data-tip=\"模型成功返回结果的调用次数\" aria-label=\"成功次数说明\"><svg class=\"icon\"><use href=\"#i-help\"><\/use><\/svg><\/button><\/div><div class=\"stat-icon\" style=\"color:#52c41a\"><svg class=\"icon\"><use href=\"#i-check\"><\/use><\/svg><\/div><div class=\"stat-number\" id=\"statSuccess\">815,727<\/div><\/div>", "rect": {"x": 647, "y": 217, "width": 349, "height": 150}}, "placement": {"kind": "element", "x": 307.6666259765625, "y": 66}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-09-25T13:27:23.733Z"}, {"id": "b736d6ac-e64f-401f-a5a5-bce17654cbf5", "pageId": "home", "stateId": "default", "number": 11, "body": "人情味我去even拉屎的飞机卡萨帝\n", "anchor": {"protoId": "", "selector": "#row-lite0428-hs-chinese-grade > td:nth-of-type(1) > div", "tag": "div", "text": "高中语文智批 智能体", "parentText": "高中语文智批 智能体", "htmlSnippet": "<div class=\"agent-label\"><span class=\"agent-icon\"><svg class=\"icon\" aria-hidden=\"true\"><use href=\"#i-agent\"><\/use><\/svg><\/span><span class=\"agent-name\">高中语文智批<\/span><span class=\"agent-type\">智能体<\/span><\/div>", "rect": {"x": 343, "y": 653, "width": 910, "height": 24}}, "placement": {"kind": "element", "x": 175.3363129882813, "y": 6.83362597656253}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-09-26T13:23:59.866Z"}, {"id": "2f24ee48-cabc-45a1-af89-cd1e7ee69896", "pageId": "home", "stateId": "default", "number": 12, "body": "### 啊上课了放假啊输了就分开浪费煎熬\n\n拉克丝就分开拉屎的减肥\n\n阿拉山口就分开拉屎简单快乐发\n\n克拉斯就分开拉屎经典复刻* 拉屎经典复刻拉屎京东方\n\n### 1. 垃圾圣诞快乐放假啊\n\n### 2. 拉屎觉得风口浪尖ask劳动纠纷\n\n# ## ### ### ### ### ### ### ### ### ### ### ### ### 3. aklsfjklasjfkjsd克拉斯减肥克拉斯酒店客房\n\n* 卡拉萨的减肥开了撒娇的风口浪尖\n* 拉到就付款拉屎简单快乐放假\n* 哈哈哈哈\n* 阿水发顺丰拉屎肯德基发\n* 啦快速减肥克拉斯记得发链接\n* 阿里看手机flask京东方\n* 啊螺蛳粉金坷垃圣诞节反馈\n* 克拉斯登记反馈拉屎\n* 阿萨德发生的发生的\n* 阿萨阿萨德发生的发德发生的发烧地方\n* 阿萨德发生的发a是 撒地方阿萨德发生\n\n\n  | col1             | col2           | col3 |\n  | ---------------- | -------------- | ---- |\n  | 阿萨德发生的发生 | 阿萨德发生的发 |      |\n  |                  |                |      |\n\n  ---\n", "anchor": {"protoId": "", "selector": "#row-lite0428-hs-math-grade > td:nth-of-type(4)", "tag": "td", "text": "873,804,743", "parentText": "高中数学智批 智能体 149,424 149,424 873,804,743 152,501,299 1,026,306,042 ¥ 1,073.30", "htmlSnippet": "<td class=\"num\">873,804,743<\/td>", "rect": {"x": 1535, "y": 742, "width": 136, "height": 51}}, "placement": {"kind": "element", "x": 31.0625, "y": 34}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-09-26T14:19:23.194Z"}, {"id": "30c6ad83-1ae4-43f7-af55-64448d96e88e", "pageId": "home", "stateId": "default", "number": 13, "body": "发烧的\n", "anchor": {"protoId": "", "selector": "body > div:nth-of-type(1) > main > section:nth-of-type(2) > div:nth-of-type(1)", "tag": "div", "text": "使用量统计 模型费用 导出Excel", "parentText": "使用量统计 模型费用 导出Excel 模型费用汇总 4 个模型 全部展开 模型厂商 模型名称 计费方式 输入单价 输出单价 （非思考） 输出单价 （思考） 调用总次数 成功次数 输入tokens 输出tokens 总消耗tokens 预估费用 − 字节火山方舟 doubao-seed-2-0-lite-260428 8 个智能体 按token 0.6元/百万tokens 3.6元/百万 tokens 3.6元/百万 tokens 747,123 747,123 4,369,023,714 762,506,498 5,131,530,212 ¥ 5,366.48 高中语文智批 智能体 224,137 224,137 1,310,707,114 228,751,949 1,539,459,063 ¥ 1,609.94 高中语文评分标准 智能体 89,655 89,655 524,282,846", "htmlSnippet": "<div class=\"panel-tabs\" role=\"tablist\" aria-label=\"统计类型\"><button class=\"panel-tab\" id=\"usageTab\" data-tab=\"usage\" role=\"tab\" aria-selected=\"false\" aria-controls=\"usageView\" tabindex=\"-1\">使用量统计<\/button><button class=\"panel-tab active\" id=\"costTab\" data-tab=\"cost\" role=\"tab\" aria-selected=\"true\" aria-controls=\"costView\">模型费用<\/button><button class=\"btn export-btn\" id=\"exportButton\" data-proto-id=\"export-excel\"><svg class=\"icon\"><use href=\"#i-export\"><\/use><\/svg>导出Excel<\/button><\/div>", "rect": {"x": 302, "y": 423, "width": 1520, "height": 45}}, "placement": {"kind": "element", "x": 744, "y": 11}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-09-27T10:05:00.304Z"}, {"id": "82c53203-5678-4504-bf65-c599719cff0c", "pageId": "home", "stateId": "default", "number": 14, "body": "阿萨德发大水\n", "anchor": {"protoId": "", "selector": "#row-lite0428-hs-chinese-grade > td:nth-of-type(1) > div", "tag": "div", "text": "高中语文智批 智能体", "parentText": "高中语文智批 智能体", "htmlSnippet": "<div class=\"agent-label\"><span class=\"agent-icon\"><svg class=\"icon\" aria-hidden=\"true\"><use href=\"#i-agent\"><\/use><\/svg><\/span><span class=\"agent-name\">高中语文智批<\/span><span class=\"agent-type\">智能体<\/span><\/div>", "rect": {"x": 343, "y": 653, "width": 814, "height": 24}}, "placement": {"kind": "element", "x": 405.33331298828125, "y": 6.1666259765625}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-09-27T10:05:20.183Z"}, {"id": "d8d82108-e148-4e6a-a97a-973a248780e5", "pageId": "home", "stateId": "default", "number": 15, "body": "发烧的打法就是地方了\n", "anchor": {"protoId": "", "selector": "body > div:nth-of-type(1) > main > section:nth-of-type(1) > div:nth-of-type(5) > div:nth-of-type(1)", "tag": "div", "text": "预计总费用", "parentText": "预计总费用 ¥ 6,423.94 按token ¥ 6,423.94 ｜ 按次 ¥ 0", "htmlSnippet": "<div class=\"stat-title\">预计总费用<button class=\"help\" data-tip=\"当前筛选范围内所有模型的预估费用合计\" aria-label=\"预计总费用说明\"><svg class=\"icon\"><use href=\"#i-help\"><\/use><\/svg><\/button><\/div>", "rect": {"x": 1570, "y": 237, "width": 256, "height": 21}}, "placement": {"kind": "element", "x": 58.6041259765625, "y": 14.333328247070312}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-09-27T10:05:42.308Z"}]}</script>
+        <script type="application/json" id="review-data">{"name": "智批模型费用明细", "projectId": "p-1ab155ada1a45f16", "revision": 178, "publishedAt": "2026-10-10T03:44:13.568852+00:00", "pages": [{"id": "home", "title": "智批数据统计 - 新教育管理后台", "file": "index.html", "url": "file:///d:/ai%20project/qoder/%E7%8B%AC%E7%AB%8B%E9%A1%B9%E7%9B%AE/%E6%99%BA%E6%89%B9%E6%A8%A1%E5%9E%8B%E8%B4%B9%E7%94%A8%E6%98%8E%E7%BB%86/index.html", "states": [{"id": "default", "title": "默认页面", "kind": "default"}]}], "documents": [{"id": "doc-walk-1", "pageId": "home", "stateId": "default", "confirmed": true, "updatedAt": "2026-10-10T03:43:52.567Z", "markdown": "\n"}], "annotations": [{"id": "cdec37ff-5b6d-430f-8f5c-b556b20dccab", "pageId": "home", "stateId": "default", "number": 16, "body": "顶部品牌切换为分段控件：度学 ｜ 新教育两段（无「全部」，必选其一），默认度学，选中段蓝底白字。切换即联动重建「学校类型」菜单；点「查询」后按品牌过滤全部统计与明细。", "anchor": {"protoId": "brand-filter", "selector": "[data-proto-id=\"brand-filter\"]", "tag": "div", "text": "品牌:全部度学新教育"}, "placement": {"kind": "element", "x": 0, "y": 0, "rx": 0, "ry": 0.5}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-10T02:23:42.900+00:00"}, {"id": "360c7046-2344-496e-9c09-4bb562874e7d", "pageId": "home", "stateId": "default", "number": 17, "body": "学校类型菜单由品牌决定：度学→度学高中 / 智慧课堂 / 备课资源 / 度学初中；新教育→新教育高中 / 智慧课堂 / 备课资源 / 新教育初中（智慧课堂、备课资源为两品牌共有项）。切换品牌后，已选类型不在新菜单中时自动归位「全部」；共有项保留选中。", "anchor": {"protoId": "school-type-filter", "selector": "[data-proto-id=\"school-type-filter\"]", "tag": "div", "text": "学校类型:全部度学高中度学初中新教育高中新教育初中新教育小学智慧课堂备课资源"}, "placement": {"kind": "element", "x": 0, "y": 0, "rx": 0, "ry": 0.5}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-10T03:39:12.169+00:00"}, {"id": "488c7763-ef27-454f-8168-f480e09f6e44", "pageId": "home", "stateId": "default", "number": 18, "body": "规则变更（原型形态不变）：「使用量统计」「模型费用」两个菜单走中台的菜单配置，入口显示由中台配置下发，前端不硬编码。", "anchor": {"protoId": "stats-tabs", "selector": "[data-proto-id=\"stats-tabs\"]", "tag": "div", "text": "使用量统计模型费用导出Excel"}, "placement": {"kind": "element", "x": 0, "y": 0, "rx": 0, "ry": 0.5}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-08T10:06:14.022299+00:00"}]}</script>
         <script>
             'use strict';
             const $ = (id) => document.getElementById(id);
-            /* 三脚本源码由发布流程以 JS 字符串字面量注入，经 iframe 内 script 标签执行。 */
-            const SRC = { anchors: "/* \u7a33\u5b9a\u951a\u70b9\u4e0e\u53ef\u89c1\u5143\u7d20\u9009\u62e9\uff1b\u4e0d\u5411\u4e1a\u52a1 DOM \u6ce8\u5165\u9ad8\u4eae class\u3002\n   \u590d\u7528\u81ea\u300c\u539f\u578b\u751f\u6210\u5168\u6d41\u7a0b\u300dextension/content/anchors.js\uff08\u539f\u6837\u672a\u6539\uff0c\u4fdd\u6301\u4e24\u5de5\u5177\u951a\u70b9\u884c\u4e3a\u4e00\u81f4\uff1b\n   \u5168\u6d41\u7a0b\u5df2\u4e8e 2026-09-26 \u5f52\u6863\u81f3 \u72ec\u7acb\u9879\u76ee\\_\u5f52\u6863\\\u539f\u578b\u751f\u6210\u5168\u6d41\u7a0b\\\uff09\u3002 */\n(() => {\n    'use strict';\n    if (globalThis.ProtoAnchors) return;\n    const owned = (el) => !!el?.closest?.('[data-prototype-owned]');\n    const text = (el) => (el?.innerText || el?.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 400);\n    const visible = (el) =>\n        !!el &&\n        !owned(el) &&\n        el.getClientRects().length > 0 &&\n        getComputedStyle(el).display !== 'none' &&\n        getComputedStyle(el).visibility !== 'hidden';\n    function selector(el) {\n        if (el.id && document.querySelectorAll('#' + CSS.escape(el.id)).length === 1)\n            return '#' + CSS.escape(el.id);\n        const path = [];\n        for (let n = el; n && n !== document.documentElement; n = n.parentElement) {\n            let part = n.tagName.toLowerCase();\n            if (n.id && document.querySelectorAll('#' + CSS.escape(n.id)).length === 1) {\n                path.unshift('#' + CSS.escape(n.id));\n                break;\n            }\n            const same = n.parentElement\n                ? [...n.parentElement.children].filter((x) => x.tagName === n.tagName)\n                : [];\n            if (same.length > 1) part += `:nth-of-type(${same.indexOf(n) + 1})`;\n            path.unshift(part);\n        }\n        return path.join(' > ');\n    }\n    function serialize(el) {\n        const r = el.getBoundingClientRect();\n        const clean = el.cloneNode(true);\n        clean.querySelectorAll('[data-prototype-owned],script').forEach((n) => n.remove());\n        return {\n            protoId: el.getAttribute('data-proto-id') || '',\n            selector: selector(el),\n            tag: el.tagName.toLowerCase(),\n            text: text(el),\n            parentText: text(el.parentElement),\n            htmlSnippet: clean.outerHTML.slice(0, 1800),\n            rect: {\n                x: Math.round(r.x + scrollX),\n                y: Math.round(r.y + scrollY),\n                width: Math.round(r.width),\n                height: Math.round(r.height),\n            },\n        };\n    }\n    function resolve(anchor) {\n        if (!anchor) return { element: null, reason: '\u5c1a\u672a\u7ed1\u5b9a\u5143\u7d20' };\n        if (anchor.protoId) {\n            const list = [\n                ...document.querySelectorAll(`[data-proto-id=\"${CSS.escape(anchor.protoId)}\"]`),\n            ].filter(visible);\n            if (list.length === 1 && (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag))\n                return { element: list[0] };\n            return {\n                element: null,\n                reason: list.length > 1 ? '\u7a33\u5b9a ID \u91cd\u590d\uff0c\u8bf7\u91cd\u65b0\u7ed1\u5b9a' : '\u76ee\u6807\u5df2\u79fb\u9664\u6216\u5f53\u524d\u72b6\u6001\u4e0d\u53ef\u89c1',\n            };\n        }\n        try {\n            const list = [...document.querySelectorAll(anchor.selector || ':not(*)')].filter(visible);\n            if (\n                list.length === 1 &&\n                (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag) &&\n                (!anchor.text || text(list[0]) === anchor.text)\n            )\n                return { element: list[0] };\n        } catch (_) {\n            /* \u65e7\u9009\u62e9\u5668\u53ef\u80fd\u5931\u6548\uff0c\u7ee7\u7eed\u5c1d\u8bd5\u552f\u4e00\u6587\u672c\u3002 */\n        }\n        if (anchor.text && /^[a-z][a-z0-9-]*$/i.test(anchor.tag || '')) {\n            const candidates = [...document.querySelectorAll(anchor.tag)].filter(\n                (el) =>\n                    visible(el) &&\n                    text(el) === anchor.text &&\n                    (!anchor.parentText || text(el.parentElement) === anchor.parentText),\n            );\n            if (candidates.length === 1) return { element: candidates[0] };\n            if (candidates.length > 1) return { element: null, reason: '\u5b58\u5728\u591a\u4e2a\u540c\u540d\u76ee\u6807\uff0c\u8bf7\u91cd\u65b0\u7ed1\u5b9a' };\n        }\n        return { element: null, reason: '\u76ee\u6807\u53d8\u5316\uff0c\u7b49\u5f85\u91cd\u65b0\u5b9a\u4f4d' };\n    }\n    function at(x, y) {\n        return (\n            document\n                .elementsFromPoint(x, y)\n                .find((el) => !owned(el) && !['HTML', 'BODY'].includes(el.tagName)) || null\n        );\n    }\n    function rect(el, fullDocument = false) {\n        const r = el.getBoundingClientRect();\n        let left = Math.max(fullDocument ? -scrollX : 0, r.left), top = Math.max(fullDocument ? -scrollY : 0, r.top),\n            right = Math.min(fullDocument ? document.documentElement.scrollWidth - scrollX : innerWidth, r.right),\n            bottom = Math.min(fullDocument ? document.documentElement.scrollHeight - scrollY : innerHeight, r.bottom);\n        for (let n = el.parentElement; n; n = n.parentElement) {\n            if (fullDocument && n === document.scrollingElement) continue;\n            const s = getComputedStyle(n), p = n.getBoundingClientRect();\n            if (/(auto|scroll|hidden|clip)/.test(s.overflowX)) {\n                left = Math.max(left, p.left + n.clientLeft);\n                right = Math.min(right, p.left + n.clientLeft + n.clientWidth);\n            }\n            if (/(auto|scroll|hidden|clip)/.test(s.overflowY)) {\n                top = Math.max(top, p.top + n.clientTop);\n                bottom = Math.min(bottom, p.top + n.clientTop + n.clientHeight);\n            }\n        }\n        return { x: left, y: top, width: Math.max(0, right - left), height: Math.max(0, bottom - top), visible: right > left && bottom > top };\n    }\n    function placement(el, x, y) {\n        if (!el) return { kind: 'document', x: x + scrollX, y: y + scrollY };\n        const r = el.getBoundingClientRect();\n        return { kind: 'element', x: x - r.left + el.scrollLeft, y: y - r.top + el.scrollTop };\n    }\n    function point(note, fullDocument = false) {\n        const p = note.placement;\n        if (p?.kind === 'document') {\n            const x = p.x - scrollX, y = p.y - scrollY;\n            if (p.x > document.documentElement.scrollWidth || p.y > document.documentElement.scrollHeight)\n                return { reason: '\u9875\u9762\u5c3a\u5bf8\u5df2\u53d8\u5316\uff0c\u8bf7\u91cd\u65b0\u5b9a\u4f4d', point: null, rect: null };\n            const visible = fullDocument || (x >= 0 && y >= 0 && x < innerWidth && y < innerHeight);\n            return { point: { x, y, visible }, rect: { x, y, width: 0, height: 0, visible } };\n        }\n        const found = resolve(note.anchor);\n        if (!found.element) return { reason: found.reason, point: null, rect: null };\n        const element = found.element, r = element.getBoundingClientRect(), clip = rect(element, fullDocument);\n        if (!p) return { element, rect: clip, point: { x: clip.x, y: clip.y, visible: clip.visible }, legacy: true };\n        if (p.x > Math.max(r.width, element.scrollWidth) || p.y > Math.max(r.height, element.scrollHeight))\n            return { element, reason: '\u843d\u70b9\u8d85\u51fa\u76ee\u6807\u8303\u56f4\uff0c\u8bf7\u91cd\u65b0\u5b9a\u4f4d', rect: clip, point: null };\n        const x = r.left + p.x - element.scrollLeft, y = r.top + p.y - element.scrollTop;\n        const visible = clip.visible && x >= clip.x && x <= clip.x + clip.width && y >= clip.y && y <= clip.y + clip.height;\n        return { element, rect: clip, point: { x, y, visible } };\n    }\n    function inBox(box) {\n        const nodes = [\n            ...document.querySelectorAll(\n                'button,input,img,a,p,h1,h2,h3,h4,li,label,select,textarea,[data-proto-id]',\n            ),\n        ].filter((el) => {\n            if (!visible(el)) return false;\n            const r = el.getBoundingClientRect();\n            return (\n                r.width &&\n                r.height &&\n                r.left < box.right &&\n                r.right > box.left &&\n                r.top < box.bottom &&\n                r.bottom > box.top &&\n                [[.5,.5],[.1,.1],[.9,.1],[.1,.9],[.9,.9]].some(([u,v]) => {\n                    const hit = at(r.left + r.width * u, r.top + r.height * v);\n                    return hit === el || (hit && el.contains(hit));\n                })\n            );\n        });\n        return nodes.filter((el) => !nodes.some((other) => other !== el && other.contains(el))).slice(0, 100);\n    }\n    function currentIds() {\n        return {\n            pageId: document.documentElement.dataset.protoPage || 'main',\n            stateId: document.documentElement.dataset.protoState || 'default',\n        };\n    }\n    async function enterState(stateId) {\n        if (typeof window.PrototypeBridge?.enter === 'function') await window.PrototypeBridge.enter(stateId);\n        return currentIds();\n    }\n    globalThis.ProtoAnchors = {\n        owned,\n        text,\n        visible,\n        selector,\n        serialize,\n        resolve,\n        rect,\n        placement,\n        point,\n        at,\n        inBox,\n        currentIds,\n        enterState,\n    };\n})();\n", order: "/* \u5c55\u793a\u7f16\u53f7\u6295\u5f71\uff1a\u4e0d\u6539\u5143\u6570\u636e number\uff0c\u6240\u6709\u5b9a\u4f4d\u4e0e\u7f16\u8f91\u59cb\u7ec8\u4f7f\u7528\u7a33\u5b9a id\u3002 */\n(() => {\n    'use strict';\n    const stable = (a, b) => String(a.id).localeCompare(String(b.id), 'en');\n    function logicalPoint(found, win) {\n        if (!found?.point) return null;\n        const { element, legacy } = found;\n        const point = legacy && element ? element.getBoundingClientRect() : found.point;\n        let x = point.x + win.scrollX, y = point.y + win.scrollY;\n        for (let node = legacy ? element?.parentElement : element; node && node !== win.document.scrollingElement; node = node.parentElement) {\n            x += node.scrollLeft || 0;\n            y += node.scrollTop || 0;\n        }\n        return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;\n    }\n    function arrange(records) {\n        const resolved = records.filter(r => r.point).sort((a, b) => a.point.y - b.point.y || a.point.x - b.point.x || stable(a.note, b.note));\n        const result = [];\n        for (let i = 0; i < resolved.length;) {\n            const top = resolved[i].point.y, row = [];\n            while (i < resolved.length && resolved[i].point.y - top <= 12) row.push(resolved[i++]);\n            row.sort((a, b) => a.point.x - b.point.x || a.point.y - b.point.y || stable(a.note, b.note));\n            result.push(...row);\n        }\n        result.push(...records.filter(r => !r.point).sort((a, b) => stable(a.note, b.note)));\n        return result.map((r, i) => ({ ...r.note, displayNumber: i + 1 }));\n    }\n    function project(notes, win, pendingPoint = null) {\n        const records = notes.map(note => {\n            let point = null;\n            try { point = logicalPoint(win.ProtoAnchors.point(note), win); } catch (_) { /* \u672a\u5c31\u7eea\u6216\u5931\u6548\u951a\u70b9 */ }\n            return { note, point };\n        });\n        if (pendingPoint) records.push({ note: {id: '~pending'}, point: pendingPoint });\n        return arrange(records);\n    }\n    function previewNumber(notes, win, x, y) {\n        const element = win.ProtoAnchors.at(x, y);\n        const point = logicalPoint({element, point: {x, y}}, win);\n        return project(notes, win, point).find(n => n.id === '~pending')?.displayNumber || notes.length + 1;\n    }\n    globalThis.ProtoOrder = { arrange, project, previewNumber, logicalPoint };\n})();\n", pins: "/* \u8bc4\u5ba1\u58f3\u53ea\u8bfb\u6c14\u6ce1\u5c42\uff1a\u7531 review_shell.html \u6ce8\u5165\u88ab\u8bc4\u5ba1\u539f\u578b\u9875\u9762\u3002\n   \u4f9d\u8d56\u540c\u9875\u5148\u6ce8\u5165\u7684 proto-anchors.js / proto-order.js\uff1b\u901a\u8fc7 window.__REVIEW__ \u4e0e\u58f3\u7236\u9875\u901a\u4fe1\u3002\n   \u53ea\u8bfb\uff1a\u65e0\u7f16\u8f91\u3001\u65e0\u62d6\u52a8\u3001\u65e0\u5220\u9664\u3002 */\n(() => {\n    'use strict';\n    if (window.__reviewPinsBoot) return;\n    window.__reviewPinsBoot = true;\n    const R = window.__REVIEW__;\n    if (!R || !window.ProtoAnchors || !window.ProtoOrder) return;\n\n    const style = document.createElement('style');\n    style.textContent = `\n.__review_pin{position:absolute;transform:translate(-50%,-50%);min-width:22px;height:22px;padding:0 5px;border:2px solid #fff;border-radius:999px;background:#1d4ed8;color:#fff;font:600 12px/18px system-ui,sans-serif;text-align:center;box-shadow:0 1px 6px rgba(16,24,40,.35);cursor:pointer;pointer-events:auto;}\n.__review_pin:hover{background:#1e40af;}\n.__review_pin.__stale{background:#9aa3af;cursor:default;}\n@media(prefers-color-scheme:dark){.__review_pin{border-color:#121519;}}\n`;\n    (document.head || document.documentElement).appendChild(style);\n\n    const layer = document.createElement('div');\n    layer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147482000;';\n    document.documentElement.appendChild(layer);\n\n    const stateOf = () => document.documentElement.dataset.protoState || 'default';\n    let lastState = '', lastX = -1, lastY = -1, lastW = 0, lastH = 0, lastHtml = '';\n    let lastOrder = '', lastStale = '';\n\n    function layout() {\n        const state = stateOf();\n        const notes = (R.notes || []).filter(n => n.stateId === state);\n        const arranged = window.ProtoOrder.project(notes, window);\n        const stale = [];\n        layer.replaceChildren();\n        for (const n of arranged) {\n            let found = null;\n            try { found = window.ProtoAnchors.point(n); } catch (_) { /* \u951a\u5b9a\u5f02\u5e38\u6309\u5931\u6548\u5904\u7406 */ }\n            if (!found?.point) { stale.push(n.id); continue; }\n            const pin = document.createElement('button');\n            pin.type = 'button';\n            pin.className = '__review_pin';\n            pin.textContent = n.displayNumber;\n            pin.setAttribute('aria-label', `\u6807\u6ce8 ${n.displayNumber}`);\n            pin.style.left = found.point.x + 'px';\n            pin.style.top = found.point.y + 'px';\n            pin.onclick = e => { e.preventDefault(); e.stopPropagation(); R.onFocus?.(n.id); };\n            layer.appendChild(pin);\n        }\n        const orderKey = JSON.stringify(arranged.map(n => [n.id, n.displayNumber]));\n        const staleKey = JSON.stringify(stale);\n        if (orderKey !== lastOrder || staleKey !== lastStale || state !== lastState) {\n            lastOrder = orderKey; lastStale = staleKey; lastState = state;\n            R.onSync?.(Object.fromEntries(arranged.map(n => [n.id, n.displayNumber])), state, stale);\n        }\n    }\n\n    setInterval(() => {\n        const html = document.documentElement.outerHTML.length;\n        if (stateOf() !== lastState || scrollX !== lastX || scrollY !== lastY ||\n            innerWidth !== lastW || innerHeight !== lastH || html !== lastHtml) {\n            lastX = scrollX; lastY = scrollY; lastW = innerWidth; lastH = innerHeight; lastHtml = html;\n            layout();\n        }\n    }, 350);\n\n    layout();\n})();\n" };
+            /* 壳与原型 iframe 走 postMessage（气泡三脚本已由导出流程内嵌进每个原型页）：
+               不跨文档读写 iframe，所以 ZIP 解压后 file:// 双击打开（每个文件独立源）与 GitHub Pages 同样可用。 */
 
             // ---------- 零依赖精简 Markdown 渲染器（先转义再变换，禁原始 HTML） ----------
             function esc(s) {
                 return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
             }
             function inline(s) {
+                const literals = [];
+                const hold = html => { literals.push(html); return '\u0000' + (literals.length - 1) + '\u0000'; };
                 return esc(s)
-                    .replace(/`([^`]+)`/g, '<code>$1</code>')
+                    .replace(/`([^`]+)`/g, (m, code) => hold(`<code>${code}</code>`))
+                    .replace(/!\[([^\]]*)\]\((prd-assets\/[a-f0-9]{64}\.(?:png|jpg|gif|webp))(?:\s+&quot;([^\n]*?)&quot;)?\)/g, (m, alt, path, title = '') => {
+                        const size = /(?:^|\s)proto-width=(\d{1,4})$/.exec(title);
+                        const width = size && +size[1] >= 48 && +size[1] <= 4096 ? ` width="${+size[1]}"` : '';
+                        if (width) title = title.slice(0, size.index).trim();
+                        return hold(`<img src="${esc(new URL('proto/' + path, location.href).href)}" alt="${alt}"${width}${title ? ` title="${title}"` : ''} loading="lazy">`);
+                    })
+                    // 文字颜色：与工作台 safeHTML 同口径，只放行 <span style="color:…"> 这一种内联 HTML（色值限十六进制 / 颜色名）
+                    .replace(/&lt;span style=&quot;color:(#[0-9a-fA-F]{3,8}|[a-zA-Z]+)&quot;&gt;/g, (m, c) => `<span style="color:${c.toLowerCase()}">`)
+                    .replace(/&lt;\/span&gt;/g, '</span>')
                     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
                     .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
                     .replace(/~~([^~]+)~~/g, '<del>$1</del>')
                     .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, t, u) =>
-                        /^(https?:|mailto:|#)/.test(u) ? `<a href="${u}" target="_blank" rel="noopener">${t}</a>` : t);
+                        /^(https?:|mailto:|#)/.test(u) ? `<a href="${u}" target="_blank" rel="noopener">${t}</a>` : t)
+                    .replace(/\u0000(\d+)\u0000/g, (m, index) => literals[+index]);
             }
             function md(src) {
                 const lines = String(src || '').replace(/\r\n?/g, '\n').split('\n');
@@ -258,8 +297,9 @@
             const frame = $('frame');
             let current = { page: null, stateId: null };
             let orders = {};            // stateId -> { map: noteId -> displayNumber, stale: Set }
-            let pendingState = null;    // 跨页切换时，等 iframe 加载完成后再进入的状态
+            let pendingState = null;    // 跨页切换时，等原型页报 ready 后再进入的状态
             let loadedFile = null;
+            let frameReady = false;     // 当前 iframe 页已握手（收到 ready 且已下发 init）
 
             const safePath = (path) => {
                 const parts = String(path || '').replace(/\\/g, '/').split('/');
@@ -267,13 +307,23 @@
                 return parts.map(encodeURIComponent).join('/');
             };
 
-            function inject(win, src) {
-                const doc = win.document;
-                const s = doc.createElement('script');
-                s.textContent = src;
-                (doc.head || doc.documentElement).appendChild(s);
-                s.remove();
+            /* file:// 下 iframe 源为 opaque（'null'），targetOrigin 只能用 '*'；接收侧以 e.source === frame.contentWindow 校验。 */
+            function post(msg) {
+                try { frame.contentWindow?.postMessage(Object.assign({ __review: 1 }, msg), '*'); } catch (_) { /* iframe 未就绪 */ }
             }
+
+            const canvas = document.querySelector('.canvas');
+            let hotspotPointer = null;
+            canvas.addEventListener('pointerdown', e => { hotspotPointer = { x: e.clientX, y: e.clientY, moved: false }; }, true);
+            canvas.addEventListener('pointermove', e => {
+                if (hotspotPointer && Math.hypot(e.clientX - hotspotPointer.x, e.clientY - hotspotPointer.y) > 8) hotspotPointer.moved = true;
+            }, true);
+            canvas.addEventListener('pointercancel', () => { hotspotPointer = null; }, true);
+            canvas.addEventListener('click', e => {
+                const drag = hotspotPointer?.moved; hotspotPointer = null;
+                if (drag || !frameReady || e.defaultPrevented || e.button !== 0 || e.detail === 0 || e.target.closest('button,a,input,textarea,select,[contenteditable],[data-prototype-owned]') || String(getSelection()).trim()) return;
+                post({ type: 'showHotspots' });
+            });
 
             // ---------- 左栏页面树 ----------
             function buildTree() {
@@ -305,12 +355,12 @@
                 if (!samePage) orders = {};
                 syncChrome();
                 renderAside();
-                const win = frame.contentWindow;
-                if (samePage && win?.ProtoAnchors) {
-                    try { win.ProtoAnchors.enterState(stateId)?.catch?.(() => {}); } catch (_) { /* 原型未就绪 */ }
+                if (samePage && frameReady) {
+                    post({ type: 'enterState', stateId });
                 } else {
                     pendingState = stateId;
                     loadedFile = page.file;
+                    frameReady = false;
                     frame.hidden = false;
                     $('empty').hidden = true;
                     frame.src = 'proto/' + safePath(page.file);
@@ -326,40 +376,40 @@
                 history.replaceState(null, '', '#' + new URLSearchParams({ p: page.id, s: stateId }).toString());
             }
 
-            // ---------- iframe 加载：注入锚点层，跟随真实页面 / 状态 ----------
-            frame.addEventListener('load', () => {
+            // ---------- 原型页握手：页内 bridge 报 ready 后下发标注，跟随真实页面 / 状态 ----------
+            const pageNotes = () => data.annotations
+                .filter((n) => n.pageId === current.page.id)
+                .map((n) => Object.assign({}, n, { bodyHtml: md((n.body || '').trim() ? n.body : '*（空标注）*') }));
+            function onFrameReady(ids) {
                 if (!current.page || !loadedFile) return;
-                const win = frame.contentWindow;
-                if (!win) return;
-                try {
-                    inject(win, SRC.anchors);
-                    inject(win, SRC.order);
-                    const ids = win.ProtoAnchors?.currentIds?.() || {};
-                    const actual = data.pages.find((p) => p.id === ids.pageId);
-                    if (actual && actual.id !== current.page.id) {
-                        /* 原型内部导航到了另一个已登记页面：跟随。 */
-                        current = { page: actual, stateId: actual.states.some((s) => s.id === ids.stateId) ? ids.stateId : actual.states[0].id };
-                        orders = {};
-                        pendingState = null;
-                        syncChrome();
-                    } else if (ids.stateId && ids.stateId !== current.stateId && current.page.states?.some((s) => s.id === ids.stateId)) {
-                        current.stateId = ids.stateId;
-                        syncChrome();
-                    }
-                    win.__REVIEW__ = {
-                        notes: data.annotations.filter((n) => n.pageId === current.page.id),
-                        onSync: onPinSync,
-                        onFocus: onPinFocus,
-                    };
-                    inject(win, SRC.pins);
-                    if (pendingState) {
-                        const target = pendingState;
-                        pendingState = null;
-                        if (target !== (ids.stateId || 'default'))
-                            win.ProtoAnchors?.enterState?.(target)?.catch?.(() => {});
-                    }
-                } catch (_) { /* 非可标注原型：仅展示，无气泡。 */ }
+                const actual = data.pages.find((p) => p.id === ids.pageId);
+                if (actual && actual.id !== current.page.id) {
+                    /* 原型内部导航到了另一个已登记页面：跟随。 */
+                    current = { page: actual, stateId: actual.states.some((s) => s.id === ids.stateId) ? ids.stateId : actual.states[0].id };
+                    orders = {};
+                    pendingState = null;
+                    syncChrome();
+                } else if (ids.stateId && ids.stateId !== current.stateId && current.page.states?.some((s) => s.id === ids.stateId)) {
+                    current.stateId = ids.stateId;
+                    syncChrome();
+                }
+                let enterState = null;
+                if (pendingState) {
+                    if (pendingState !== (ids.stateId || 'default')) enterState = pendingState;
+                    pendingState = null;
+                }
+                frameReady = true;
+                // 先按当前页/状态判定 PRD 是否为空，再把真实侧栏开合态下发给 iframe；避免切页瞬间沿用上一页状态。
                 renderAside();
+                post({ type: 'init', notes: pageNotes(), asideOpen: prdAsideOpen(), enterState });
+            }
+            window.addEventListener('message', (e) => {
+                if (e.source !== frame.contentWindow || !e.data || e.data.__review !== 1) return;
+                const m = e.data;
+                if (m.type === 'ready') { onFrameReady(m.ids || {}); return; }
+                if (!frameReady) return;   // 握手前的空 sync 丢掉，免右栏闪一下“–”
+                if (m.type === 'sync') onPinSync(m.map || {}, m.state || 'default', m.stale || []);
+                else if (m.type === 'focus') onPinFocus(m.noteId);
             });
 
             // ---------- 气泡层回调 ----------
@@ -375,28 +425,39 @@
             function onPinFocus(noteId) {
                 const row = $('notes').querySelector(`[data-note-id="${CSS.escape(noteId)}"]`);
                 if (!row) return;
-                row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                // 与 viewer extScrollNoteIntoView 同语义（单套同源）：定位行首（序号）进视口，行首已可见则不滚。
+                // scrollIntoView({block:'nearest'}) 对「比滚动容器高且正覆盖视口」的长标注是规范 no-op，长文标注停在视口中部时点序号不滚动（2026-09-30 用户报障）。
+                const sc = row.closest('aside');
+                const top = row.getBoundingClientRect().top - sc.getBoundingClientRect().top;
+                if (top < 0 || top >= sc.clientHeight) sc.scrollTo({ top: sc.scrollTop + top - 12, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
                 row.classList.remove('flash');
                 void row.offsetWidth;
                 row.classList.add('flash');
             }
             function reveal(note) {
-                const win = frame.contentWindow;
-                try {
-                    const found = win?.ProtoAnchors?.point(note);
-                    if (found?.element) found.element.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                    else if (found?.point) win.scrollTo({ top: Math.max(0, found.point.y + win.scrollY - win.innerHeight / 2), behavior: 'smooth' });
-                } catch (_) { /* 原型未就绪 */ }
+                // 定位在原型页内完成（review-bridge.js：目标被折叠隐藏时先联动展开再滚到位）
+                post({ type: 'reveal', note });
             }
 
             // ---------- 右栏 PRD ----------
+            const prdAsideOpen = () => !$('layout').classList.contains('right-closed') && !$('layout').classList.contains('prd-empty');
             function renderAside() {
                 const { page, stateId } = current;
                 if (!page) return;
                 const doc = data.documents.find((d) => d.pageId === page.id && d.stateId === stateId);
-                $('document').innerHTML = md(doc?.markdown?.trim() ? doc.markdown : '*暂无页面需求*');
+                const docHasContent = !!doc?.markdown?.trim();
+                $('document-section').hidden = !docHasContent;
+                $('document').innerHTML = docHasContent ? md(doc.markdown) : '';
                 const notes = data.annotations.filter((n) => n.pageId === page.id && n.stateId === stateId);
-                $('notes-count').textContent = notes.length ? `（${notes.length}）` : '';
+                const notesHasContent = notes.length > 0;
+                $('notes-section').hidden = !notesHasContent;
+                $('notes-count').textContent = notesHasContent ? `（${notes.length}）` : '';
+                const prdEmpty = !docHasContent && !notesHasContent;
+                $('layout').classList.toggle('prd-empty', prdEmpty);
+                $('toggle-prd').hidden = prdEmpty;
+                // 切换页面时 renderAside 可能先于新 iframe 加载；只向当前已握手文件同步，避免把新页状态误发给旧 iframe。
+                if (frameReady && current.page?.file === loadedFile)
+                    post({ type: 'aside', open: !prdEmpty && !$('layout').classList.contains('right-closed') });
                 const cache = orders[stateId];
                 let rows;
                 if (cache) {
@@ -411,12 +472,6 @@
                 }
                 const host = $('notes');
                 host.replaceChildren();
-                if (!rows.length) {
-                    const p = document.createElement('p');
-                    p.className = 'muted';
-                    p.textContent = '本状态暂无标注。';
-                    host.append(p);
-                }
                 for (const [note, num, stale] of rows) {
                     const row = document.createElement('section');
                     row.className = 'note' + (stale ? ' stale' : '');
@@ -427,11 +482,16 @@
                     no.className = 'note-no';
                     no.textContent = num;
                     no.setAttribute('aria-hidden', 'true');
+                    const customColor = /^#[0-9a-f]{6}$/i.test(note.color || '') ? note.color : null;
+                    if (customColor && !stale) { no.style.setProperty('--pin-fill', customColor); no.style.setProperty('--pin-ink', 'var(--pin-custom-ink)'); }
                     if (stale) row.title = '标注已失锚：原型中找不到对应元素';
                     const body = document.createElement('div');
                     body.className = 'markdown';
                     body.innerHTML = md(note.body || '');
-                    row.append(no, body);
+                    const head = document.createElement('div');
+                    head.className = 'note-head';
+                    head.append(no);
+                    row.append(head, body);
                     if (!stale) {
                         row.onclick = () => reveal(note);
                         row.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); reveal(note); } };
@@ -454,10 +514,44 @@
                 selectPage(page, stateId);
             }
             $('toggle-pages').onclick = () => $('layout').classList.toggle('left-closed');
+            /* PRD 宽度：拖拽调节 + localStorage 记忆；收起时清除内联宽度让 --right 归 0。 */
+            const PRD_KEY = 'proto-review-prd-width';
+            const applyPrdWidth = () => {
+                const w = parseInt(localStorage.getItem(PRD_KEY) || '0', 10);
+                if (w >= 280) $('layout').style.setProperty('--right', Math.min(w, 720) + 'px');
+            };
+            applyPrdWidth();
             $('toggle-prd').onclick = () => {
                 const closed = $('layout').classList.toggle('right-closed');
                 $('toggle-prd').textContent = closed ? '显示 PRD' : '收起 PRD';
+                if (closed) $('layout').style.removeProperty('--right');
+                else applyPrdWidth();
+                post({ type: 'aside', open: !closed });
+                // 与 viewer 同源（约定 11/12）：收起态开的序号 popover，展开右栏时迁移为右栏定位——关 popover + 行首定位 + 高亮。
+                if (!closed) {
+                    let openPopId = null;
+                    try { openPopId = frame.contentWindow?.__reviewPopNoteId?.(); } catch (_) { /* 未握手 */ }
+                    if (openPopId) { try { frame.contentWindow?.__reviewHidePop?.(); } catch (_) { /* 未握手 */ } onPinFocus(openPopId); }
+                }
             };
+            const prdResizer = $('prd-resizer');
+            prdResizer.addEventListener('pointerdown', (e) => {
+                if ($('layout').classList.contains('right-closed')) return;
+                e.preventDefault();
+                prdResizer.setPointerCapture(e.pointerId);
+                prdResizer.classList.add('resizing');
+                const startX = e.clientX, startWidth = document.querySelector('aside').offsetWidth;
+                const move = (ev) => $('layout').style.setProperty('--right', Math.max(280, Math.min(startWidth + (startX - ev.clientX), 720)) + 'px');
+                const up = () => {
+                    prdResizer.removeEventListener('pointermove', move);
+                    prdResizer.removeEventListener('pointerup', up);
+                    prdResizer.classList.remove('resizing');
+                    const w = parseInt($('layout').style.getPropertyValue('--right'), 10);
+                    if (w >= 280) { try { localStorage.setItem(PRD_KEY, String(w)); } catch (_) { /* 存储异常忽略 */ } }
+                };
+                prdResizer.addEventListener('pointermove', move);
+                prdResizer.addEventListener('pointerup', up);
+            });
         </script>
     </body>
 </html>
