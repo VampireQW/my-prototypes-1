@@ -493,7 +493,7 @@ function toggleNeed(id) {
   const t = document.getElementById('swt-' + id);
   t.textContent = NEED[id] ? '需要讲解' : '不需讲解';
   t.classList.toggle('on', NEED[id]);
-  toast(NEED[id] ? '已标记为需要讲解' : '已取消讲解标记');
+  toast(NEED[id] ? '已标记为需要讲解，老师将重点讲解本题' : '已取消讲解标记');
 }
 
 let toastTimer = null;
