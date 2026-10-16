@@ -463,7 +463,7 @@ function toggleNeed(id) {
   document.getElementById('swt-' + id).textContent = on ? '需要讲解' : '不需讲解';
   document.getElementById('swt-' + id).classList.toggle('on', on);
   document.getElementById('swg-' + id).classList.toggle('on', on);
-  toast(on ? '已标记，老师将在讲评中看到' : '已取消需讲解标记');
+  toast(on ? '已标记为需要讲解，老师将重点讲解本题' : '已取消讲解标记');
 }
 
 // ---------- 题卡渲染 ----------
