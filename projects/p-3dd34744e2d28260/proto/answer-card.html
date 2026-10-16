@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-proto-page="answer-card" data-proto-state="default" data-proto-preview="web">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>答题卡模板制作（老题卡）</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1b2a3d; --navy-deep:#16222f;
+  --blue:#1890ff; --blue-deep:#0e7fe8; --blue-pale:#e6f4ff;
+  --red:#ff4d4f; --green:#52c41a;
+  --ink:#262626; --ink2:#595959; --muted:#8c8c8c; --faint:#bfbfbf;
+  --line:#e8e8e8; --line2:#f0f0f0;
+  --bg:#f0f2f5; --paper-bg:#e9ebee;
+  --topnav-h:54px; --iconbar-w:56px; --panel-w:362px;
+}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei','Helvetica Neue',sans-serif;font-size:13px;color:var(--ink);display:flex;flex-direction:column;overflow:hidden;-webkit-font-smoothing:antialiased;background:var(--bg)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:#d4d7dc;border-radius:6px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ═══════ 顶部导航 ═══════ */
+.topnav{height:var(--topnav-h);background:var(--navy);display:flex;align-items:center;padding:0 16px 0 14px;flex-shrink:0;position:relative;z-index:20}
+.tn-logo{width:30px;height:30px;display:flex;align-items:center;justify-content:center;margin-right:14px;cursor:pointer}
+.tn-menu{display:flex;align-items:center;height:100%;gap:2px;overflow:hidden}
+.tn-item{display:flex;align-items:center;gap:5px;height:32px;padding:0 11px;border-radius:4px;color:#cfd8e3;font-size:13px;cursor:pointer;white-space:nowrap;user-select:none}
+.tn-item:hover{color:#fff}
+.tn-item .mi{font-size:12px;opacity:.85;line-height:1}
+.tn-item.active{background:var(--blue);color:#fff}
+.tn-item.active .mi{opacity:1}
+.tn-more{color:#cfd8e3;font-size:16px;letter-spacing:2px;padding:0 8px;cursor:pointer;user-select:none}
+.tn-user{margin-left:auto;display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;cursor:pointer;flex-shrink:0}
+.tn-avatar{width:28px;height:28px;border-radius:50%;background:#4a6a8a;display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(255,255,255,.55)}
+
+/* ═══════ 中部 ═══════ */
+.middle{display:flex;flex:1;overflow:hidden}
+
+/* 左侧图标栏 */
+.iconbar{width:var(--iconbar-w);background:var(--navy);display:flex;flex-direction:column;align-items:center;padding-top:10px;gap:26px;flex-shrink:0;position:relative}
+.ic{width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#8fa3ba;font-size:15px;cursor:pointer;border-radius:6px;user-select:none}
+.ic:hover{color:#fff;background:rgba(255,255,255,.08)}
+.ic-active{margin-top:auto;margin-bottom:18px;width:44px;height:56px;background:var(--blue);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#fff;cursor:pointer;user-select:none}
+.ic-active .ic-i{font-size:15px;line-height:1}
+.ic-active .ic-t{font-size:11px;line-height:1}
+
+/* 内容区 */
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+/* 标签页行 */
+.pagetabs{background:#fff;display:flex;align-items:center;gap:8px;padding:8px 16px;border-bottom:1px solid var(--line);flex-shrink:0}
+.ptab{display:flex;align-items:center;gap:7px;padding:5px 12px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink2);font-size:12.5px;cursor:pointer;user-select:none;white-space:nowrap}
+.ptab .px{color:var(--faint);font-size:12px;line-height:1}
+.ptab:hover .px{color:var(--muted)}
+.ptab.active{color:var(--blue);border-color:#d6e8ff;background:#f7fbff}
+.ptab.active .pdot{width:13px;height:13px;border:2px solid var(--blue);border-radius:50%;display:inline-block}
+.ptab.active .px{color:var(--faint)}
+/* 工具行 */
+.toolbar{background:#fff;display:flex;align-items:center;gap:18px;padding:10px 16px;border-bottom:1px solid var(--line2);flex-shrink:0;flex-wrap:nowrap;overflow:hidden}
+.tb-title{font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap}
+.tb-link{color:var(--blue);cursor:pointer;white-space:nowrap;user-select:none}
+.tb-link:hover{color:var(--blue-deep)}
+.tb-link.cur{font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.tb-label{color:var(--ink2);white-space:nowrap}
+.tb-input{width:52px;height:26px;border:1px solid #d9d9d9;border-radius:4px;padding:0 8px;font-size:12.5px;color:var(--ink);outline:none;text-align:left}
+.tb-input:focus{border-color:var(--blue)}
+.tb-select{height:26px;border:1px solid #d9d9d9;border-radius:4px;padding:0 8px;font-size:12.5px;color:var(--ink2);background:#fff;display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;user-select:none}
+.tb-select:hover{border-color:var(--blue)}
+.tb-select .car{font-size:10px;color:var(--faint)}
+.toolbar2{background:#fff;display:flex;align-items:center;gap:14px;padding:0 16px 12px;border-bottom:1px solid var(--line);flex-shrink:0}
+.btn-blue{height:30px;padding:0 16px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer;white-space:nowrap}
+.btn-blue:hover{background:var(--blue-deep)}
+.tpl-bar{height:30px;padding:0 14px;background:var(--blue);color:#fff;border-radius:4px;font-size:13px;display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;user-select:none}
+.tpl-bar:hover{background:var(--blue-deep)}
+.tpl-bar .car{font-size:10px;opacity:.85}
+
+/* 试卷预览区 */
+.preview{flex:1;overflow:auto;background:var(--paper-bg);padding:14px 18px 30px;position:relative}
+.pg-arrow{position:fixed;width:0;height:0;border-style:solid;cursor:pointer;opacity:.7;z-index:5}
+.pg-arrow:hover{opacity:1}
+.pg-left{border-width:6px 8px 6px 0;border-color:transparent #9aa3ad transparent transparent}
+.pg-right{border-width:6px 0 6px 8px;border-color:transparent transparent transparent #9aa3ad}
+
+/* 试卷 */
+.paper{position:relative;background:#fff;width:100%;max-width:1120px;margin:0 auto;padding:20px 26px 30px;box-shadow:0 1px 4px rgba(0,0,0,.12);font-family:'SimSun','Songti SC',serif;color:#111;flex-shrink:0}
+.paper.drawing{cursor:crosshair}
+.loc-block{position:absolute;width:56px;height:14px;background:#4a4a4a}
+.loc-l{top:26px;left:0}
+.loc-r{top:26px;right:0}
+.p-body{display:flex;gap:22px;margin-top:6px}
+.p-left{width:196px;flex-shrink:0;padding-top:2px}
+.mark-red{color:var(--red);font-size:13px;font-family:'SimSun',serif;letter-spacing:1px}
+.box-xh{border:1px dashed var(--red);height:46px;margin:4px 0 8px}
+.p-field{font-size:14px;margin-bottom:10px;display:flex;align-items:flex-end;gap:2px}
+.p-field .bl{flex:1;border-bottom:1px solid #333;height:16px}
+.box-info{border:1px solid var(--red);height:118px;padding:12px 12px;display:flex;flex-direction:column;justify-content:space-around;margin-top:4px}
+.p-right{flex:1;min-width:0}
+.p-subject{display:flex;justify-content:flex-end;align-items:baseline;gap:14px;margin-bottom:8px}
+.p-subject .sj{font-size:25px;font-weight:700;font-family:'SimHei','SimSun',serif;letter-spacing:4px}
+.p-subject .vol{font-size:15px;color:#555;letter-spacing:2px}
+.p-chapbar{background:#eceff1;padding:7px 16px;font-size:16px;font-weight:700;font-family:'SimHei','SimSun',serif;letter-spacing:3px;margin-bottom:8px}
+.p-title-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.p-sec-tt{font-size:21px;font-weight:700;font-family:'SimHei','SimSun',serif;letter-spacing:2px}
+.p-qr{width:96px;height:96px;flex-shrink:0;margin-right:6px}
+.p-h{font-size:15px;font-weight:700;font-family:'SimHei','SimSun',serif;margin:10px 0 6px;letter-spacing:1px}
+.p-text{font-size:13.5px;line-height:2;text-align:justify}
+.p-cols{display:flex;gap:0;margin-top:2px}
+.p-col-main{flex:1.35;min-width:0;padding-right:18px}
+.p-col-side{flex:1;min-width:0;border-left:1px dashed #999;padding-left:18px}
+.p-formula{font-size:14.5px;line-height:2.1}
+
+/* 切割层 */
+.cut-layer{position:absolute;inset:0;pointer-events:none;z-index:6}
+.cut-box{position:absolute;border:1px dashed var(--red)}
+.cut-box.draft{background:rgba(255,77,79,.05)}
+.cut-box .cut-tag{position:absolute;top:-9px;left:-1px;background:var(--red);color:#fff;font-size:10px;line-height:1;padding:2px 6px;border-radius:2px;white-space:nowrap;font-family:-apple-system,'PingFang SC',sans-serif}
+.draw-hint{position:absolute;left:0;right:0;top:-30px;display:none;justify-content:center;pointer-events:none;z-index:7}
+.draw-hint span{background:var(--red);color:#fff;font-size:11.5px;padding:3px 12px;border-radius:3px;font-family:-apple-system,'PingFang SC',sans-serif}
+.paper.drawing .draw-hint{display:flex}
+
+/* ═══════ 右侧工具箱 ═══════ */
+.toolbox{width:var(--panel-w);background:#fff;border-left:1px solid var(--line);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.tb-head{display:flex;align-items:center;padding:13px 16px 11px;flex-shrink:0}
+.tb-head-tt{font-size:15px;font-weight:600;color:var(--ink)}
+.tb-head-acts{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:12px}
+.tha{color:var(--blue);cursor:pointer;user-select:none}
+.tha:hover{color:var(--blue-deep)}
+.tha.gray{color:var(--muted);cursor:default}
+/* 面板标签 */
+.tb-tabs{display:flex;align-items:stretch;gap:20px;padding:0 16px;border-bottom:1px solid var(--line2);flex-shrink:0}
+.tb-tab{font-size:13px;color:var(--ink2);padding:10px 0 9px;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;user-select:none}
+.tb-tab:hover{color:var(--blue)}
+.tb-tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:500}
+.tb-body{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.pane{display:none;flex-direction:column;flex:1;overflow:hidden}
+.pane.active{display:flex}
+/* 控制行 */
+.ctrl{display:flex;align-items:center;gap:13px;padding:13px 16px 11px;flex-shrink:0;user-select:none}
+.ctrl-item{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink);white-space:nowrap}
+.ctrl-item.blue{color:var(--blue)}
+.tgl{position:relative;width:34px;height:19px;background:#bfbfbf;border-radius:10px;cursor:pointer;transition:background .2s;flex-shrink:0}
+.tgl.on{background:var(--blue)}
+.tgl::after{content:'';position:absolute;width:15px;height:15px;border-radius:50%;background:#fff;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.tgl.on::after{left:17px}
+.ctrl-clear{color:var(--blue);cursor:pointer;font-size:13px;white-space:nowrap}
+.ctrl-clear:hover{color:var(--blue-deep)}
+/* 表格 */
+.tbox{flex:1;display:flex;flex-direction:column;position:relative;overflow:hidden;border-top:1px solid var(--line2)}
+.tt-head{display:flex;padding:9px 16px 8px;font-size:12.5px;color:var(--muted);border-bottom:1px solid var(--line2);flex-shrink:0}
+.tt-body{flex:1;overflow-y:auto;padding:0 16px 6px;max-height:396px}
+.tt-body::-webkit-scrollbar{width:7px}
+.tt-body::-webkit-scrollbar-thumb{background:#c9cdd3;border-radius:7px}
+.tr{display:flex;align-items:center;height:37px;border-bottom:1px solid #f5f5f5;font-size:13px}
+.col-no{flex:1.15;color:var(--ink)}
+.col-prog{flex:.95;color:var(--red)}
+.col-prog.done{color:var(--green)}
+.col-ops{flex:1.15;display:flex;gap:9px}
+.op-draw{color:var(--blue);cursor:pointer}
+.op-draw:hover{color:var(--blue-deep)}
+.op-clear{color:var(--muted);cursor:pointer}
+.op-clear:hover{color:var(--ink2)}
+.op-clear.dis{color:#d9d9d9;cursor:default;pointer-events:none}
+.tt-arrow{position:absolute;right:9px;width:0;height:0;border-style:solid;cursor:pointer;opacity:.75;z-index:3}
+.tt-arrow:hover{opacity:1}
+.tt-up{top:5px;border-width:0 5px 6px 5px;border-color:transparent transparent #a6adb5 transparent}
+.tt-down{bottom:5px;border-width:6px 5px 0 5px;border-color:#a6adb5 transparent transparent transparent}
+/* 分组设置视图 */
+.ctrl-group-lb{cursor:pointer}
+.gview{display:none;flex:1;flex-direction:column;overflow:hidden}
+.pane.grouping .tbox{display:none}
+.pane.grouping .gview{display:flex}
+.gv-bar{display:flex;justify-content:space-between;padding:12px 16px 8px;flex-shrink:0}
+.gv-btn{padding:4px 15px;border:1px solid #d9d9d9;border-radius:4px;background:#fff;font-size:13px;color:#595959;cursor:pointer}
+.gv-btn:hover{border-color:var(--blue);color:var(--blue)}
+.gv-total{display:flex;align-items:center;gap:6px;padding:4px 16px 12px;font-size:13px;color:var(--ink);flex-shrink:0;flex-wrap:wrap}
+.gv-input{height:26px;border:1px solid #d9d9d9;border-radius:4px;padding:0 6px;font-size:13px;outline:none;text-align:center;color:var(--ink)}
+.gv-input:focus{border-color:var(--blue)}
+.gv-n{width:40px}
+.gv-tip{margin-left:auto;color:var(--red);font-size:12px;white-space:nowrap}
+.gv-list{flex:1;overflow-y:auto;padding:2px 16px 16px;display:flex;flex-direction:column;gap:15px}
+.gv-line{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--ink)}
+.gv-cnt{width:96px}
+.gv-nos{font-size:13px;color:var(--ink2);margin-top:6px;line-height:1.8;word-break:break-all}
+.tr-group{height:30px;color:var(--muted);font-size:12px;background:#fafafa}
+/* 简单表格（选择/非选择） */
+.simple-tb{flex:1;overflow-y:auto;padding:6px 16px 16px}
+.simple-tb .tr .col-no{flex:.8}
+.simple-tb .tr .col-mid{flex:1.4;color:var(--ink2)}
+.simple-tb .tr .col-right{flex:1;color:var(--muted)}
+.simple-head{display:flex;padding:11px 16px 8px;font-size:12.5px;color:var(--muted);border-bottom:1px solid var(--line2);flex-shrink:0}
+.simple-head .col-no{flex:.8}
+.simple-head .col-mid{flex:1.4}
+.simple-head .col-right{flex:1}
+.empty-note{padding:26px 16px;color:var(--faint);font-size:12.5px;text-align:center}
+
+.toast{position:fixed;right:24px;bottom:24px;background:rgba(0,0,0,.78);color:#fff;font-size:12.5px;padding:8px 16px;border-radius:6px;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;z-index:99}
+.toast.show{opacity:1;transform:translateY(0)}
+</style>
+<script data-prototype-owned data-proto-hotspot-bootstrap data-proto-review="hotspots">
+/* 点击空白时短暂提示本次需求范围内的真实交互；未声明范围时不扫描整页。 */
+(() => {
+    'use strict';
+    if (window.ProtoHotspots) return;
+    const DURATION = 2000, MAX_HINTS = 80;
+    const COLORS = { fill: '#ff9f29' };
+    const EVENTS = new Set(['click', 'pointerdown', 'pointerup', 'mousedown', 'mouseup', 'touchend']);
+    const EDITABLE = 'input,textarea,select,[contenteditable]:not([contenteditable="false"])';
+    const BLOCKED = '[hidden],[inert],[aria-hidden="true"],[aria-disabled="true"],[data-proto-hotspot="false"]';
+    const owned = el => !!el?.closest?.('[data-prototype-owned],.__review_pin,.__review_pop,.__review_guide');
+    let options = {}, layer, style, observer, timer = 0, frame = 0, started = 0, down = null;
+    const boxes = new Map();
+
+    // 先于业务脚本载入：只记录实际绑定，不运行任何按钮来试探功能。
+    const listeners = new WeakMap();
+    const nativeAdd = EventTarget.prototype.addEventListener, nativeRemove = EventTarget.prototype.removeEventListener;
+    const captureOf = config => typeof config === 'boolean' ? config : !!config?.capture;
+    EventTarget.prototype.addEventListener = function (type, listener, config) {
+        if (!EVENTS.has(type) || !listener || typeof listener !== 'function' && typeof listener.handleEvent !== 'function')
+            return nativeAdd.call(this, type, listener, config);
+        let entries = listeners.get(this);
+        if (!entries) { entries = new Set(); listeners.set(this, entries); }
+        const capture = captureOf(config);
+        const existing = [...entries].find(entry => entry.type === type && entry.listener === listener && entry.capture === capture && !entry.signal?.aborted);
+        if (existing) return nativeAdd.call(this, type, existing.wrapper, config);
+        const entry = { type, listener, capture, once: !!config?.once, signal: config?.signal };
+        entry.wrapper = function (event) {
+            if (entry.once) { entries.delete(entry); schedule(); }
+            return typeof listener === 'function' ? listener.call(this, event) : listener.handleEvent.call(listener, event);
+        };
+        const result = nativeAdd.call(this, type, entry.wrapper, config);
+        if (!entry.signal?.aborted) {
+            entries.add(entry);
+            if (entry.signal) nativeAdd.call(entry.signal, 'abort', () => { entries.delete(entry); schedule(); }, { once: true });
+            schedule();
+        }
+        return result;
+    };
+    EventTarget.prototype.removeEventListener = function (type, listener, config) {
+        const entries = listeners.get(this), capture = captureOf(config);
+        const entry = entries && [...entries].find(item => item.type === type && item.listener === listener && item.capture === capture);
+        if (!entry) return nativeRemove.call(this, type, listener, config);
+        const result = nativeRemove.call(this, type, entry.wrapper, config);
+        entries.delete(entry); schedule(); return result;
+    };
+
+    function binding(el) {
+        if ([...EVENTS].some(type => typeof el['on' + type] === 'function')) return true;
+        const reactRoot = Object.keys(el).some(key => key.startsWith('__reactContainer$'));
+        if (!reactRoot && [...(listeners.get(el) || [])].some(entry => !entry.signal?.aborted)) return true;
+        // React 的点击监听由根节点代理，真实业务回调在元素 props 上。
+        const props = Object.keys(el).find(key => key.startsWith('__reactProps$'));
+        return !!props && Object.entries(el[props] || {}).some(([key, value]) =>
+            /^on(Click|PointerDown|PointerUp|MouseDown|MouseUp|TouchEnd)(Capture)?$/.test(key) && typeof value === 'function');
+    }
+    function navigation(el) {
+        if (!el.matches('a[href],area[href]')) return false;
+        const href = el.getAttribute('href').trim();
+        if (!href || href === '#' || /^javascript:/i.test(href)) return false;
+        if (href.startsWith('#')) {
+            let id; try { id = decodeURIComponent(href.slice(1)); } catch (_) { return false; }
+            return !!document.getElementById(id) || !!document.getElementsByName(id).length;
+        }
+        return true;
+    }
+    function nativeAction(el) {
+        if (el.matches('select,input[type="checkbox"],input[type="radio"],input[type="file"],input[type="color"],input[type="range"]')) return true;
+        if (el.tagName === 'SUMMARY') return el.parentElement?.tagName === 'DETAILS' && el.parentElement.querySelector('summary') === el;
+        if (el.matches('button,input') && el.form) return el.type === 'submit' || el.type === 'reset';
+        return false;
+    }
+
+    function enabled() {
+        try { return typeof options.isEnabled === 'function' ? !!options.isEnabled() : options.enabled !== false; }
+        catch (_) { return false; }
+    }
+    function action(el) {
+        if (!(el instanceof Element) || el === document.body || el === document.documentElement || owned(el) || el.closest(BLOCKED) || el.matches(':disabled')) return false;
+        return el.dataset.protoHotspot === 'true' || binding(el) || navigation(el) || nativeAction(el);
+    }
+    function currentScope() {
+        try { return typeof options.scope === 'function' ? options.scope() : options.scope; }
+        catch (_) { return null; }
+    }
+    function inScope(el, scope = currentScope()) {
+        if (scope?.mode === 'all') return true;
+        if (scope?.mode !== 'targets' || !Array.isArray(scope.protoIds)) return false;
+        // 范围只授权该控件自身；容器标注不授权内部的历史交互。
+        return scope.protoIds.includes(el.getAttribute('data-proto-id'));
+    }
+    function hitAction(target) {
+        for (let el = target instanceof Element ? target : target?.parentElement; el && el !== document.documentElement; el = el.parentElement)
+            if (action(el) && rectFor(el)) return true;
+        return false;
+    }
+    function rectFor(el) {
+        if (!el?.isConnected || owned(el) || el.closest(BLOCKED) || el.matches(':disabled')) return null;
+        const original = el.getBoundingClientRect();
+        let left = Math.max(0, original.left), top = Math.max(0, original.top);
+        let right = Math.min(innerWidth, original.right), bottom = Math.min(innerHeight, original.bottom);
+        for (let node = el; node && node !== document.documentElement; node = node.parentElement) {
+            const css = getComputedStyle(node);
+            if (css.display === 'none' || css.visibility === 'hidden' || Number(css.opacity) === 0) return null;
+            if (node === el) continue;
+            const clip = node.getBoundingClientRect();
+            if (/hidden|clip|auto|scroll/.test(css.overflowX)) { left = Math.max(left, clip.left); right = Math.min(right, clip.right); }
+            if (/hidden|clip|auto|scroll/.test(css.overflowY)) { top = Math.max(top, clip.top); bottom = Math.min(bottom, clip.bottom); }
+        }
+        if (right - left < 4 || bottom - top < 4) return null;
+        if ((right - left) * (bottom - top) > innerWidth * innerHeight * .65) return null;
+        const points = [[.5, .5], [.2, .2], [.8, .8]];
+        if (!points.some(([x, y]) => {
+            const hit = document.elementFromPoint(left + (right - left) * x, top + (bottom - top) * y);
+            return hit === el || !!hit && el.contains(hit);
+        })) return null;
+        return { left, top, right, bottom };
+    }
+    function position(box, rect) {
+        box.style.left = Math.max(0, rect.left - 3) + 'px';
+        box.style.top = Math.max(0, rect.top - 3) + 'px';
+        box.style.width = Math.min(innerWidth, rect.right + 3) - Math.max(0, rect.left - 3) + 'px';
+        box.style.height = Math.min(innerHeight, rect.bottom + 3) - Math.max(0, rect.top - 3) + 'px';
+    }
+    function hide() {
+        clearTimeout(timer); timer = 0;
+        cancelAnimationFrame(frame); frame = 0;
+        boxes.clear(); layer?.replaceChildren();
+    }
+    function refresh() {
+        frame = 0;
+        if (!enabled()) { hide(); return; }
+        const scope = currentScope();
+        for (const [el, box] of boxes) {
+            const rect = inScope(el, scope) && action(el) ? rectFor(el) : null;
+            if (!rect) { box.remove(); boxes.delete(el); }
+            else position(box, rect);
+        }
+    }
+    function schedule() {
+        if (boxes.size && !frame) frame = requestAnimationFrame(refresh);
+    }
+    function show() {
+        if (!layer || !enabled()) { hide(); return 0; }
+        const scope = currentScope();
+        if (scope?.mode !== 'all' && (scope?.mode !== 'targets' || !scope.protoIds?.length)) { hide(); return 0; }
+        if (boxes.size && performance.now() - started < DURATION) { refresh(); return boxes.size; }
+        hide();
+        const candidates = [];
+        for (const el of document.querySelectorAll('body *')) {
+            if (/^(SCRIPT|STYLE|LINK|META|OPTION|OPTGROUP|PATH|SVG)$/.test(el.tagName)) continue;
+            const bounds = el.getBoundingClientRect();
+            if (!bounds.width || !bounds.height || bounds.bottom <= 0 || bounds.top >= innerHeight || bounds.right <= 0 || bounds.left >= innerWidth) continue;
+            if (inScope(el, scope) && action(el)) { const rect = rectFor(el); if (rect) candidates.push({ el, rect }); }
+            if (candidates.length >= MAX_HINTS * 2) break;
+        }
+        const leaves = candidates.filter(candidate => !candidates.some(other => other.el !== candidate.el && candidate.el.contains(other.el))).slice(0, MAX_HINTS);
+        for (const { el, rect } of leaves) {
+            const box = document.createElement('div');
+            box.className = 'ph-box'; box.setAttribute('data-prototype-owned', '');
+            box.dataset.hotspotFor = el.getAttribute('data-proto-id') || el.id || el.tagName.toLowerCase();
+            position(box, rect); layer.appendChild(box); boxes.set(el, box);
+        }
+        if (boxes.size) { started = performance.now(); timer = setTimeout(hide, DURATION); }
+        return boxes.size;
+    }
+    function pointerDown(event) { down = { x: event.clientX, y: event.clientY, moved: false }; }
+    function pointerMove(event) {
+        if (down && Math.hypot(event.clientX - down.x, event.clientY - down.y) > 8) down.moved = true;
+    }
+    function click(event) {
+        const drag = down?.moved; down = null;
+        const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+        if (!enabled() || owned(target) || hitAction(target)) { hide(); return; }
+        if (event.defaultPrevented || event.button !== 0 || event.detail === 0 || drag || target?.closest(EDITABLE) || String(getSelection()).trim()) return;
+        show();
+    }
+    function mutations(records) {
+        if (!boxes.size) return;
+        for (const record of records) {
+            if (owned(record.target)) continue;
+            if (record.type === 'attributes' && /data-proto-(page|state)/.test(record.attributeName)) { hide(); return; }
+            if (record.type === 'childList' && [...record.addedNodes, ...record.removedNodes].every(node => node instanceof Element && owned(node))) continue;
+            schedule(); break;
+        }
+    }
+    function init(config = {}) {
+        options = config;
+        if (layer) { hide(); return window.ProtoHotspots; }
+        style = document.createElement('style'); style.setAttribute('data-prototype-owned', '');
+        style.textContent = `
+.ph-layer{--ph-fill:${COLORS.fill};--ph-opacity-low:.18;--ph-opacity-high:.42;--ph-opacity-still:.3;position:fixed;inset:0;z-index:2147481000;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;pointer-events:none!important;overflow:hidden;}
+.ph-layer .ph-box{position:absolute;box-sizing:border-box;margin:0;padding:0;border:0!important;outline:0!important;border-radius:6px;background:var(--ph-fill);box-shadow:none!important;pointer-events:none!important;opacity:var(--ph-opacity-still);animation:ph-discover ${DURATION}ms cubic-bezier(.4,0,.2,1) 1 forwards;}
+@keyframes ph-discover{0%{opacity:var(--ph-opacity-low)}20%{opacity:var(--ph-opacity-high)}45%{opacity:var(--ph-opacity-low)}70%{opacity:var(--ph-opacity-high)}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.ph-layer .ph-box{animation:none;opacity:var(--ph-opacity-still)}}
+`;
+        layer = document.createElement('div'); layer.className = 'ph-layer';
+        layer.setAttribute('data-prototype-owned', ''); layer.setAttribute('aria-hidden', 'true');
+        (document.head || document.documentElement).appendChild(style); document.documentElement.appendChild(layer);
+        document.addEventListener('pointerdown', pointerDown, true);
+        document.addEventListener('pointermove', pointerMove, true);
+        document.addEventListener('pointercancel', hide, true);
+        document.addEventListener('click', click);
+        document.addEventListener('scroll', schedule, true);
+        window.addEventListener('resize', schedule);
+        window.addEventListener('pagehide', hide);
+        observer = new MutationObserver(mutations);
+        observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['style', 'class', 'hidden', 'inert', 'disabled', 'aria-hidden', 'aria-disabled', 'role', 'onclick', 'href', 'data-proto-hotspot', 'data-proto-state', 'data-proto-page'] });
+        return window.ProtoHotspots;
+    }
+    function destroy() {
+        hide(); observer?.disconnect(); observer = null;
+        document.removeEventListener('pointerdown', pointerDown, true);
+        document.removeEventListener('pointermove', pointerMove, true);
+        document.removeEventListener('pointercancel', hide, true);
+        document.removeEventListener('click', click);
+        document.removeEventListener('scroll', schedule, true);
+        window.removeEventListener('resize', schedule); window.removeEventListener('pagehide', hide);
+        layer?.remove(); style?.remove(); layer = null; style = null; down = null;
+    }
+    window.ProtoHotspots = { init, show, hide, destroy };
+})();
+
+</script>
+</head>
+<body>
+
+<!-- ═══════ 顶部导航 ═══════ -->
+<nav class="topnav" data-proto-id="topnav">
+  <div class="tn-logo">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 5l7 7-7 7M13 5l7 7-7 7" stroke="#1890ff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <div class="tn-menu">
+    <div class="tn-item"><span class="mi">⚙</span>基础</div>
+    <div class="tn-item"><span class="mi">♟</span>用户</div>
+    <div class="tn-item"><span class="mi">⌂</span>教务</div>
+    <div class="tn-item active"><span class="mi">▣</span>题目</div>
+    <div class="tn-item"><span class="mi">▤</span>题库</div>
+    <div class="tn-item"><span class="mi">▥</span>试卷库</div>
+    <div class="tn-item"><span class="mi">▶</span>微课</div>
+    <div class="tn-item"><span class="mi">▦</span>资源</div>
+    <div class="tn-item"><span class="mi">✎</span>批阅</div>
+    <div class="tn-item"><span class="mi">◫</span>统计</div>
+    <div class="tn-item"><span class="mi">▢</span>错题本</div>
+    <div class="tn-item"><span class="mi">▣</span>校本课程</div>
+    <div class="tn-item"><span class="mi">◈</span>数字教研</div>
+    <div class="tn-item"><span class="mi">▩</span>铺码管理</div>
+    <div class="tn-item"><span class="mi">✎</span>编书系统</div>
+    <div class="tn-more">···</div>
+  </div>
+  <div class="tn-user">
+    <div class="tn-avatar">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="5" r="2.6" fill="#fff"/><path d="M2.4 13c.6-2.8 2.7-4.2 5.1-4.2s4.5 1.4 5.1 4.2" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>
+    </div>
+    齐开环
+  </div>
+</nav>
+
+<div class="middle">
+
+  <!-- ═══════ 左侧图标栏 ═══════ -->
+  <aside class="iconbar">
+    <div class="ic">▦</div>
+    <div class="ic">▤</div>
+    <div class="ic">▥</div>
+    <div class="ic">⬒</div>
+    <div class="ic">◫</div>
+    <div class="ic">▢</div>
+    <div class="ic">◈</div>
+    <div class="ic">♙</div>
+    <div class="ic-active">
+      <span class="ic-i">▣</span>
+      <span class="ic-t">题</span>
+    </div>
+  </aside>
+
+  <!-- ═══════ 内容区 ═══════ -->
+  <main class="content">
+    <!-- 标签页行 -->
+    <div class="pagetabs">
+      <div class="ptab">属性集管理<span class="px">×</span></div>
+      <div class="ptab">题型总表<span class="px">×</span></div>
+      <div class="ptab">校本作业管理<span class="px">×</span></div>
+      <div class="ptab active"><span class="pdot"></span>答题卡模板制作（老题卡）<span class="px">×</span></div>
+    </div>
+
+    <!-- 工具行 -->
+    <div class="toolbar" data-proto-id="toolbar-image">
+      <span class="tb-title">答题卡图像</span>
+      <span class="tb-link cur">第1页</span>
+      <span class="tb-link">第2页</span>
+      <span class="tb-link">第3页</span>
+      <span class="tb-link">第4页</span>
+      <span class="tb-link">重新上传</span>
+      <span class="tb-link">自定义坐标</span>
+      <span class="tb-label">选项大小(px)：</span>
+      <input class="tb-input" value="54">
+      <input class="tb-input" value="28">
+      <span class="tb-label">题卡类型：</span>
+      <div class="tb-select">题卡合一(分栏)<span class="car">▾</span></div>
+      <div class="tb-select">手写选项<span class="car">▾</span></div>
+    </div>
+    <div class="toolbar2">
+      <button class="btn-blue" onclick="toast('开始自动制作模板')">自动制作模板</button>
+      <div class="tpl-bar" onclick="toast('切换模板类型')">模板类型：手写学号(A4 两页 学案 客观题手写)<span class="car">▾</span></div>
+    </div>
+
+    <!-- 试卷预览 -->
+    <div class="preview" id="preview" data-proto-id="paper-preview">
+      <div class="pg-arrow pg-left" id="pgL"></div>
+      <div class="pg-arrow pg-right" id="pgR"></div>
+
+      <div class="paper" id="paper">
+        <div class="draw-hint"><span>请在试卷上拖拽绘制切割区</span></div>
+        <div class="loc-block loc-l"></div>
+        <div class="loc-block loc-r"></div>
+
+        <div class="p-body">
+          <!-- 左栏：学号区 / 信息区 -->
+          <div class="p-left">
+            <div class="mark-red">学号区</div>
+            <div class="box-xh" id="staticBoxXh"></div>
+            <div class="p-field">学号<span class="bl"></span></div>
+            <div class="mark-red" style="margin-top:6px">信息区</div>
+            <div class="box-info" id="staticBoxInfo">
+              <div class="p-field" style="margin-bottom:0">班级<span class="bl"></span></div>
+              <div class="p-field" style="margin-bottom:0">姓名<span class="bl"></span></div>
+            </div>
+          </div>
+
+          <!-- 右栏 -->
+          <div class="p-right">
+            <div class="p-subject">
+              <span class="sj">数学</span>
+              <span class="vol">必修第一册</span>
+            </div>
+            <div class="p-chapbar">第一章　学案 15</div>
+            <div class="p-title-row">
+              <div class="p-sec-tt">4.2　一元二次不等式及其解法</div>
+              <svg class="p-qr" viewBox="0 0 25 25" shape-rendering="crispEdges">
+                <rect width="25" height="25" fill="#fff"/>
+                <g fill="#111">
+                  <rect x="1" y="1" width="7" height="7"/><rect x="2" y="2" width="5" height="5" fill="#fff"/><rect x="3" y="3" width="3" height="3"/>
+                  <rect x="17" y="1" width="7" height="7"/><rect x="18" y="2" width="5" height="5" fill="#fff"/><rect x="19" y="3" width="3" height="3"/>
+                  <rect x="1" y="17" width="7" height="7"/><rect x="2" y="18" width="5" height="5" fill="#fff"/><rect x="3" y="19" width="3" height="3"/>
+                  <rect x="10" y="2" width="2" height="1"/><rect x="13" y="1" width="1" height="2"/><rect x="10" y="5" width="1" height="2"/><rect x="12" y="4" width="2" height="1"/><rect x="14" y="6" width="1" height="1"/>
+                  <rect x="2" y="10" width="2" height="1"/><rect x="5" y="11" width="1" height="2"/><rect x="8" y="10" width="1" height="1"/><rect x="10" y="9" width="2" height="2"/><rect x="13" y="10" width="1" height="1"/><rect x="15" y="11" width="2" height="1"/><rect x="18" y="10" width="1" height="2"/><rect x="21" y="10" width="2" height="1"/>
+                  <rect x="1" y="14" width="1" height="2"/><rect x="3" y="13" width="2" height="1"/><rect x="7" y="14" width="1" height="1"/><rect x="10" y="13" width="1" height="2"/><rect x="12" y="14" width="2" height="1"/><rect x="16" y="13" width="1" height="1"/><rect x="19" y="14" width="2" height="1"/><rect x="22" y="13" width="1" height="2"/>
+                  <rect x="10" y="17" width="2" height="1"/><rect x="13" y="16" width="1" height="2"/><rect x="15" y="18" width="2" height="2"/><rect x="18" y="17" width="1" height="1"/><rect x="20" y="16" width="2" height="1"/><rect x="23" y="17" width="1" height="2"/>
+                  <rect x="10" y="21" width="1" height="2"/><rect x="12" y="20" width="2" height="1"/><rect x="17" y="21" width="1" height="1"/><rect x="19" y="20" width="2" height="2"/><rect x="22" y="21" width="2" height="1"/><rect x="14" y="22" width="1" height="1"/>
+                </g>
+              </svg>
+            </div>
+
+            <div class="p-h">学习目标</div>
+            <div class="p-text">1. 经历从实际情境中抽象出一元二次不等式的过程，了解一元二次不等式的现实意义. 2. 借助一元二次函数的图象，了解一元二次不等式与相应函数、方程的联系. 3. 掌握解一元二次不等式的方法.</div>
+
+            <div class="p-h">一、一元二次不等式的概念</div>
+            <div class="p-cols">
+              <div class="p-col-main">
+                <div class="p-text" style="margin-bottom:4px"><b>问题 1</b>　给出下面四个不等式：</div>
+                <div class="p-formula">
+                  ①x<sup>2</sup>−x−6＞0；②x<sup>2</sup>−x−6≤0；<br>
+                  ③x<sup>2</sup>−4x+4≥0；④2x<sup>2</sup>+x+5＜0.
+                </div>
+                <div class="p-text" style="margin-top:6px">以上四个不等式中，每个不等式含有几个未知数？未知数的最高次数是多少？</div>
+              </div>
+              <div class="p-col-side">
+                <div class="p-text"><b>反思感悟</b>　理解一元二次不等式的定义应注意两点</div>
+                <div class="p-text" style="margin-top:4px">(1) 一元，即只含一个未知数，其他元素均为常数（或参数）.</div>
+                <div class="p-text">(2) 二次，即未知数的最高次数必须为 2，且二次项系数不为 0.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cut-layer" id="cutLayer"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ═══════ 右侧工具箱 ═══════ -->
+  <aside class="toolbox">
+    <div class="tb-head" data-proto-id="tb-head">
+      <span class="tb-head-tt">工具箱</span>
+      <div class="tb-head-acts">
+        <span class="tha" onclick="resetAll()">全部重置</span>
+        <span class="tha" onclick="toast('已回退上一步操作')">回退</span>
+        <span class="tha" onclick="toast('检测完成：未发现异常')">检测</span>
+        <span class="tha gray">保存</span>
+      </div>
+    </div>
+    <div class="tb-tabs">
+      <div class="tb-tab" data-tab="choice" onclick="switchTab('choice')" data-proto-id="tab-choice">选择题</div>
+      <div class="tb-tab" data-tab="blank" onclick="switchTab('blank')" data-proto-id="tab-blank">非选择题</div>
+      <div class="tb-tab" data-tab="answer" onclick="switchTab('answer')" data-proto-id="tab-answer">答题区切割</div>
+      <div class="tb-tab active" data-tab="explain" onclick="switchTab('explain')" data-proto-id="tab-explain">讲解区切割</div>
+    </div>
+
+    <div class="tb-body">
+
+      <!-- 选择题 -->
+      <div class="pane" id="pane-choice" data-proto-reveal-by='[data-proto-id="tab-choice"]' data-proto-reveal-label="切换到选择题">
+        <div class="simple-head"><span class="col-no">题号</span><span class="col-mid">答案</span><span class="col-right">分值</span></div>
+        <div class="simple-tb">
+          <div class="tr"><span class="col-no">1</span><span class="col-mid">B</span><span class="col-right">3 分</span></div>
+          <div class="tr"><span class="col-no">2</span><span class="col-mid">B</span><span class="col-right">3 分</span></div>
+        </div>
+      </div>
+
+      <!-- 非选择题 -->
+      <div class="pane" id="pane-blank" data-proto-reveal-by='[data-proto-id="tab-blank"]' data-proto-reveal-label="切换到非选择题">
+        <div class="simple-head"><span class="col-no">题号</span><span class="col-mid">满分</span><span class="col-right">答案</span></div>
+        <div class="simple-tb">
+          <div class="tr"><span class="col-no">例 1</span><span class="col-mid">10 分</span><span class="col-right">已录入</span></div>
+          <div class="tr"><span class="col-no">例 2</span><span class="col-mid">12 分</span><span class="col-right">已录入</span></div>
+          <div class="tr"><span class="col-no">例 3</span><span class="col-mid">12 分</span><span class="col-right">已录入</span></div>
+          <div class="tr"><span class="col-no">延伸探究 1</span><span class="col-mid">10 分</span><span class="col-right">待录入</span></div>
+          <div class="tr"><span class="col-no">延伸探究 2</span><span class="col-mid">10 分</span><span class="col-right">待录入</span></div>
+          <div class="tr"><span class="col-no">延伸探究 3</span><span class="col-mid">10 分</span><span class="col-right">待录入</span></div>
+        </div>
+      </div>
+
+      <!-- 答题区切割 -->
+      <div class="pane" id="pane-answer" data-proto-reveal-by='[data-proto-id="tab-answer"]' data-proto-reveal-label="切换到答题区切割">
+        <div class="ctrl" data-proto-id="ctrl-answer">
+          <div class="ctrl-item blue" data-proto-id="ctrl-group-answer"><span class="ctrl-group-lb" data-proto-id="open-group-answer" onclick="openGroupView('answer')">设置分组</span> <span class="tgl on" onclick="onGroupToggle(this,'answer')"></span></div>
+          <div class="ctrl-item" data-proto-id="ctrl-row-answer">整行绘制 <span class="tgl tg-row" onclick="this.classList.toggle('on')"></span></div>
+          <div class="ctrl-item" data-proto-id="ctrl-continuous-answer">连续绘制</div>
+          <span class="ctrl-clear" onclick="clearAll('answer')" data-proto-id="ctrl-clear-answer">清空</span>
+        </div>
+        <div class="tbox" data-proto-id="table-answer">
+          <div class="tt-head"><span class="col-no">区域</span><span class="col-prog">进度</span><span class="col-ops">操作</span></div>
+          <div class="tt-body" id="tbody-answer"></div>
+          <div class="tt-arrow tt-up" onclick="scrollTb('answer',-1)"></div>
+          <div class="tt-arrow tt-down" onclick="scrollTb('answer',1)"></div>
+        </div>
+        <div class="gview" data-proto-id="gview-answer" data-proto-branch="true" data-proto-reveal-by='[data-proto-id="open-group-answer"]' data-proto-reveal-label="打开设置分组">
+          <div class="gv-bar" data-proto-id="group-footer-answer">
+            <button class="gv-btn" onclick="closeGroupView('answer', false)">返 回</button>
+            <button class="gv-btn" onclick="closeGroupView('answer', true)">确 定</button>
+          </div>
+          <div class="gv-total">
+            <span>总题数：<b id="gvTotal-answer">2</b>，共</span>
+            <input class="gv-input gv-n" id="gvN-answer" value="2" oninput="onGroupNInput('answer', this.value)">
+            <span>组</span>
+            <span class="gv-tip">*按录入题目顺序进行分组</span>
+          </div>
+          <div class="gv-list" id="gvList-answer"></div>
+        </div>
+      </div>
+
+      <!-- 讲解区切割 -->
+      <div class="pane active" id="pane-explain" data-proto-reveal-by='[data-proto-id="tab-explain"]' data-proto-reveal-label="切换到讲解区切割">
+        <div class="ctrl" data-proto-id="ctrl-explain">
+          <div class="ctrl-item blue" data-proto-id="ctrl-group-explain"><span class="ctrl-group-lb" data-proto-id="open-group-explain" onclick="openGroupView('explain')">设置分组</span> <span class="tgl on" onclick="onGroupToggle(this,'explain')"></span></div>
+          <div class="ctrl-item" data-proto-id="ctrl-row-explain">整行绘制 <span class="tgl tg-row" onclick="this.classList.toggle('on')"></span></div>
+          <div class="ctrl-item" data-proto-id="ctrl-continuous-explain">连续绘制</div>
+          <span class="ctrl-clear" onclick="clearAll('explain')" data-proto-id="ctrl-clear-explain">清空</span>
+        </div>
+        <div class="tbox" data-proto-id="table-explain">
+          <div class="tt-head"><span class="col-no">题号</span><span class="col-prog">进度</span><span class="col-ops">操作</span></div>
+          <div class="tt-body" id="tbody-explain"></div>
+          <div class="tt-arrow tt-up" onclick="scrollTb('explain',-1)"></div>
+          <div class="tt-arrow tt-down" onclick="scrollTb('explain',1)"></div>
+        </div>
+        <div class="gview" data-proto-id="gview-explain" data-proto-branch="true" data-proto-reveal-by='[data-proto-id="open-group-explain"]' data-proto-reveal-label="打开设置分组">
+          <div class="gv-bar" data-proto-id="group-footer-explain">
+            <button class="gv-btn" onclick="closeGroupView('explain', false)">返 回</button>
+            <button class="gv-btn" onclick="closeGroupView('explain', true)">确 定</button>
+          </div>
+          <div class="gv-total">
+            <span>总题数：<b id="gvTotal-explain">14</b>，共</span>
+            <input class="gv-input gv-n" id="gvN-explain" value="3" oninput="onGroupNInput('explain', this.value)">
+            <span>组</span>
+            <span class="gv-tip">*按录入题目顺序进行分组</span>
+          </div>
+          <div class="gv-list" id="gvList-explain"></div>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+/* ═══════ 数据 ═══════ */
+const EXPLAIN_ITEMS = ['1','2','3','4','1','2','3','1','2','3','4','1','2','3']
+  .map((n, i) => ({ id: 'e' + i, name: n }));
+const ANSWER_ITEMS = [
+  { id: 'xh', name: '学号区', static: 'staticBoxXh' },
+  { id: 'xx', name: '信息区', static: 'staticBoxInfo' }
+];
+const drawn = { explain: {}, answer: {} };   // id -> {x,y,w,h}
+let currentTab = 'explain';
+let drawing = null;                          // {tab,id,phase,sx,sy}
+
+const paper = document.getElementById('paper');
+const layer = document.getElementById('cutLayer');
+
+/* ═══════ 标签切换 ═══════ */
+function switchTab(tab) {
+  if (drawing) cancelDraw();
+  currentTab = tab;
+  document.querySelectorAll('.tb-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.pane').forEach(p => { p.classList.toggle('active', p.id === 'pane-' + tab); p.classList.remove('grouping'); });
+  renderLayer();
+}
+window.addEventListener('keydown', e => { if (e.key === 'Escape' && drawing) cancelDraw(); });
+
+/* ═══════ 表格渲染 ═══════ */
+function rowHtml(tab, it) {
+  const done = !!drawn[tab][it.id];
+  const isDrawing = drawing && drawing.tab === tab && drawing.id === it.id;
+  const prog = done ? '<span class="col-prog done">1/1</span>' : '<span class="col-prog">0/1</span>';
+  let ops;
+  if (isDrawing) ops = '<span class="op-draw" onclick="cancelDraw()">取消绘制</span>';
+  else if (done) ops = '<span class="op-draw" onclick="startDraw(\'' + tab + '\',\'' + it.id + '\')">重新绘制</span><span class="op-clear" onclick="clearBox(\'' + tab + '\',\'' + it.id + '\')">清除</span>';
+  else ops = '<span class="op-draw" onclick="startDraw(\'' + tab + '\',\'' + it.id + '\')">绘制</span><span class="op-clear dis">清除</span>';
+  return '<div class="tr"><span class="col-no">' + it.name + '</span>' + prog + '<span class="col-ops">' + ops + '</span></div>';
+}
+function rowsWithGroups(tab, items) {
+  const cfg = groupCfg[tab];
+  if (!cfg) return items.map(it => rowHtml(tab, it)).join('');
+  let html = '', idx = 0;
+  cfg.counts.forEach((c, g) => {
+    html += '<div class="tr tr-group"><span class="col-no">第 ' + (g + 1) + ' 组</span></div>';
+    for (let k = 0; k < c && idx < items.length; k++, idx++) html += rowHtml(tab, items[idx]);
+  });
+  return html;
+}
+function renderTables() {
+  document.getElementById('tbody-explain').innerHTML = rowsWithGroups('explain', EXPLAIN_ITEMS);
+  document.getElementById('tbody-answer').innerHTML = rowsWithGroups('answer', ANSWER_ITEMS);
+}
+function scrollTb(tab, dir) {
+  const el = document.getElementById('tbody-' + tab);
+  el.scrollBy({ top: dir * 148, behavior: 'smooth' });
+}
+
+/* ═══════ 设置分组 ═══════ */
+const groupCfg = { explain: null, answer: null };   // { n, counts:[…] }
+const groupDraft = { explain: null, answer: null };
+function tabItems(tab) { return tab === 'explain' ? EXPLAIN_ITEMS : ANSWER_ITEMS; }
+function splitEven(total, n) {
+  const base = Math.floor(total / n), rem = total % n;
+  return Array.from({ length: n }, (_, i) => base + (i < rem ? 1 : 0));
+}
+function onGroupToggle(el, tab) {
+  el.classList.toggle('on');
+  if (el.classList.contains('on')) openGroupView(tab);
+  else {
+    groupCfg[tab] = null;
+    document.getElementById('pane-' + tab).classList.remove('grouping');
+    renderTables();
+  }
+}
+function openGroupView(tab) {
+  const items = tabItems(tab);
+  const prev = groupCfg[tab];
+  const n = prev ? prev.n : Math.min(3, items.length);
+  const counts = prev ? prev.counts.slice() : splitEven(items.length, n);
+  groupDraft[tab] = { n, counts };
+  const pane = document.getElementById('pane-' + tab);
+  pane.querySelector('.ctrl-item.blue .tgl').classList.add('on');
+  document.getElementById('gvTotal-' + tab).textContent = items.length;
+  document.getElementById('gvN-' + tab).value = n;
+  buildGroupList(tab);
+  pane.classList.add('grouping');
+}
+function buildGroupList(tab) {
+  const d = groupDraft[tab];
+  const list = document.getElementById('gvList-' + tab);
+  let html = '';
+  for (let g = 0; g < d.n; g++) {
+    html += '<div class="gv-group"><div class="gv-line">第 ' + (g + 1) + ' 组 共 <input class="gv-input gv-cnt" data-tab="' + tab + '" data-g="' + g + '" value="' + (d.counts[g] ?? '') + '"> 题</div>'
+          + '<div class="gv-nos" id="gvNos-' + tab + '-' + g + '"><span class="lb">题号：</span></div></div>';
+  }
+  list.innerHTML = html;
+  list.querySelectorAll('.gv-cnt').forEach(inp => inp.addEventListener('input', onGroupCountInput));
+  refreshGroupNos(tab);
+}
+function onGroupCountInput(e) {
+  const tab = e.target.dataset.tab, g = +e.target.dataset.g;
+  const v = parseInt(e.target.value, 10);
+  groupDraft[tab].counts[g] = isNaN(v) ? 0 : Math.max(0, v);
+  refreshGroupNos(tab);
+}
+function refreshGroupNos(tab) {
+  const d = groupDraft[tab];
+  const items = tabItems(tab);
+  let start = 0;
+  for (let g = 0; g < d.n; g++) {
+    const cnt = d.counts[g] || 0;
+    const nos = items.slice(start, start + cnt).map(i => i.name).join('、');
+    const el = document.getElementById('gvNos-' + tab + '-' + g);
+    if (el) el.innerHTML = '<span class="lb">题号：</span>' + nos;
+    start += cnt;
+  }
+}
+function onGroupNInput(tab, v) {
+  let n = parseInt(v, 10);
+  if (isNaN(n)) return;
+  n = Math.min(8, Math.max(1, n));
+  const d = groupDraft[tab];
+  const old = d.counts.slice();
+  d.n = n;
+  d.counts = Array.from({ length: n }, (_, i) => old[i] !== undefined ? old[i] : 0);
+  buildGroupList(tab);
+}
+function closeGroupView(tab, save) {
+  const pane = document.getElementById('pane-' + tab);
+  if (save) {
+    const d = groupDraft[tab];
+    const total = tabItems(tab).length;
+    const sum = d.counts.reduce((a, b) => a + (b || 0), 0);
+    if (sum !== total) { toast('各组题数之和（' + sum + '）须等于总题数 ' + total); return; }
+    groupCfg[tab] = { n: d.n, counts: d.counts.slice() };
+    toast('分组已保存');
+  }
+  pane.classList.remove('grouping');
+  renderTables();
+}
+
+/* ═══════ 画布渲染 ═══════ */
+function renderLayer() {
+  layer.innerHTML = '';
+  if (currentTab !== 'explain' && currentTab !== 'answer') return;
+  const items = currentTab === 'explain' ? EXPLAIN_ITEMS : ANSWER_ITEMS;
+  items.forEach(it => {
+    const b = drawn[currentTab][it.id];
+    if (!b) return;
+    if (it.static && b.staticVisible !== false) return;   // 静态框仍在试卷上
+    const d = document.createElement('div');
+    d.className = 'cut-box';
+    d.style.cssText = 'left:' + b.x + 'px;top:' + b.y + 'px;width:' + b.w + 'px;height:' + b.h + 'px';
+    d.innerHTML = '<span class="cut-tag">' + it.name + '</span>';
+    layer.appendChild(d);
+  });
+}
+
+/* ═══════ 静态框（学号区/信息区）显隐同步 ═══════ */
+function syncStaticBoxes() {
+  ANSWER_ITEMS.forEach(it => {
+    const el = document.getElementById(it.static);
+    const b = drawn.answer[it.id];
+    el.style.visibility = b ? 'visible' : 'hidden';
+  });
+}
+
+/* ═══════ 绘制交互 ═══════ */
+function rowLineOn() {
+  const pane = document.getElementById('pane-' + currentTab);
+  const tg = pane.querySelector('.tg-row');
+  return tg && tg.classList.contains('on');
+}
+function startDraw(tab, id) {
+  if (drawing) cancelDraw();
+  if (currentTab !== tab) switchTab(tab);
+  drawing = { tab, id, phase: 'pending', sx: 0, sy: 0 };
+  paper.classList.add('drawing');
+  renderTables();
+}
+function cancelDraw() {
+  drawing = null;
+  paper.classList.remove('drawing');
+  const draft = layer.querySelector('.draft');
+  if (draft) draft.remove();
+  renderTables();
+}
+function paperXY(e) {
+  const r = paper.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+paper.addEventListener('mousedown', e => {
+  if (!drawing || drawing.phase !== 'pending') return;
+  e.preventDefault();
+  const p = paperXY(e);
+  drawing.phase = 'active';
+  drawing.sx = p.x; drawing.sy = p.y;
+  const d = document.createElement('div');
+  d.className = 'cut-box draft';
+  d.style.display = 'none';
+  layer.appendChild(d);
+});
+window.addEventListener('mousemove', e => {
+  if (!drawing || drawing.phase !== 'active') return;
+  const p = paperXY(e);
+  const draft = layer.querySelector('.draft');
+  if (!draft) return;
+  let x = Math.min(drawing.sx, p.x), y = Math.min(drawing.sy, p.y);
+  let w = Math.abs(p.x - drawing.sx), h = Math.abs(p.y - drawing.sy);
+  if (rowLineOn()) { x = 26; w = paper.clientWidth - 52; }
+  w = Math.min(w, paper.clientWidth - x);
+  h = Math.min(h, paper.clientHeight - y);
+  if (w > 4 && h > 4) draft.style.display = 'block';
+  draft.style.cssText = 'display:block;left:' + x + 'px;top:' + y + 'px;width:' + w + 'px;height:' + h + 'px';
+});
+window.addEventListener('mouseup', e => {
+  if (!drawing || drawing.phase !== 'active') return;
+  const p = paperXY(e);
+  const draft = layer.querySelector('.draft');
+  let x = Math.min(drawing.sx, p.x), y = Math.min(drawing.sy, p.y);
+  let w = Math.abs(p.x - drawing.sx), h = Math.abs(p.y - drawing.sy);
+  if (rowLineOn()) { x = 26; w = paper.clientWidth - 52; }
+  if (draft) draft.remove();
+  const tab = drawing.tab, id = drawing.id;
+  drawing = null;
+  paper.classList.remove('drawing');
+  if (w >= 30 && h >= 16) {
+    drawn[tab][id] = { x, y, w, h, staticVisible: false };
+    const st = (tab === 'answer') ? ANSWER_ITEMS.find(i => i.id === id) : null;
+    if (st) document.getElementById(st.static).style.visibility = 'hidden';
+    toast('已绘制切割区');
+  }
+  renderTables();
+  renderLayer();
+});
+
+/* ═══════ 清除 / 清空 / 重置 ═══════ */
+function clearBox(tab, id) {
+  if (!drawn[tab][id]) return;
+  delete drawn[tab][id];
+  renderTables();
+  renderLayer();
+  syncStaticBoxes();
+  toast('已清除');
+}
+function clearAll(tab) {
+  const items = tab === 'explain' ? EXPLAIN_ITEMS : ANSWER_ITEMS;
+  const has = items.some(it => drawn[tab][it.id]);
+  if (!has) { toast('当前没有可清除的切割区'); return; }
+  if (drawing && drawing.tab === tab) cancelDraw();
+  items.forEach(it => delete drawn[tab][it.id]);
+  renderTables();
+  renderLayer();
+  syncStaticBoxes();
+  toast('已清空');
+}
+function resetAll() {
+  if (drawing) cancelDraw();
+  drawn.explain = {};
+  drawn.answer = {};
+  ANSWER_ITEMS.forEach(it => { drawn.answer[it.id] = { staticVisible: true }; });
+  renderTables();
+  renderLayer();
+  syncStaticBoxes();
+  toast('已全部重置');
+}
+
+/* ═══════ Toast ═══════ */
+let toastTimer = null;
+function toast(msg) {
+  const el = document.getElementById('toastEl');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+/* ═══════ 翻页箭头定位 ═══════ */
+function placeArrows() {
+  const pv = document.getElementById('preview');
+  const l = document.getElementById('pgL'), r = document.getElementById('pgR');
+  const rect = pv.getBoundingClientRect();
+  l.style.left = (rect.left + 22) + 'px';
+  l.style.top = (rect.top + 108) + 'px';
+  r.style.left = (rect.right - 30) + 'px';
+  r.style.top = (rect.top + 108) + 'px';
+}
+window.addEventListener('resize', placeArrows);
+
+/* ═══════ 启动 ═══════ */
+ANSWER_ITEMS.forEach(it => { drawn.answer[it.id] = { staticVisible: true }; });
+renderTables();
+renderLayer();
+placeArrows();
+</script>
+
+<script data-proto-page-helper data-prototype-owned src="assets/prototype-navigation/project-page.js"></script>
+<!-- proto-review-bundle -->
+<script data-proto-review="appearance">
+/* PRD 内容色板与序号外观；编辑、导出和发布共用。 */
+(() => {
+    'use strict';
+    const TEXT_COLORS = [
+        ['#191919', '黑色'], ['#1684fc', '蓝色'], ['#8a38f5', '紫色'], ['#666666', '灰色'],
+        ['#fbfbfb', '白色'], ['#ec4954', '红色'], ['#ff9f29', '橙色']
+    ];
+    const DEFAULT_PIN = '#2563eb', INK = '#191919', STROKE = '#4e5560', ON_BLUE = '#ffffff';
+    const PIN_COLORS = [
+        [DEFAULT_PIN, '默认蓝色'],
+        ['#acbcd1', '灰蓝'], ['#ff9e93', '珊瑚'], ['#ff9e47', '橙色'], ['#fdd143', '黄色'], ['#9dc4ff', '浅蓝'],
+        ['#38cde7', '青色'], ['#54d691', '绿色'], ['#daa3ff', '紫色'], ['#ff94e4', '粉色']
+    ];
+    const LEGACY_PIN_COLORS = ['#e6e6e6'];
+    function pinColor(note) {
+        const color = String(note?.color || '').toLowerCase();
+        return PIN_COLORS.some(([hex]) => hex === color) || LEGACY_PIN_COLORS.includes(color) ? color : DEFAULT_PIN;
+    }
+    function applyPin(element, note) {
+        const color = pinColor(note), custom = color !== DEFAULT_PIN;
+        element.style.setProperty('--pin-fill', color);
+        element.style.setProperty('--pin-ink', custom ? INK : ON_BLUE);
+        element.style.setProperty('--pin-stroke', custom ? STROKE : ON_BLUE);
+    }
+    window.ProtoAppearance = { TEXT_COLORS, PIN_COLORS, DEFAULT_PIN, pinColor, applyPin };
+})();
+
+</script>
+<script data-proto-review="anchors">
+/* 稳定锚点与可见元素选择；不向业务 DOM 注入高亮 class。
+   基线复用自「原型生成全流程」extension/content/anchors.js；标注工作台增补折叠引导、条件显现路径与响应式落点。
+   全流程已于 2026-09-26 归档至 独立项目\_归档\原型生成全流程\。 */
+(() => {
+    'use strict';
+    if (globalThis.ProtoAnchors) return;
+    const owned = (el) => !!el?.closest?.('[data-prototype-owned]');
+    const text = (el) => (el?.innerText || el?.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 400);
+    const loose = (s) => (s || '').replace(/\s+/g, '');
+    const grams = (s) => { const set = new Set(); for (let i = 0; i + 1 < s.length; i++) set.add(s.slice(i, i + 2)); return set; };
+    /* 文本身份校验：短文本（按钮、标签、单元格）必须逐字相同；长文本（面板、表格、整个筛选区）只要求字符二元组包含率 ≥ .75。
+       容器的 innerText 会随条件行显隐、计数、日期等动态内容变化，逐字比对会把整块面板判成「目标变化」，序号全部消失。
+       隐藏子树的 innerText 退化为 textContent 丢掉 span 间空格，故两侧先去掉全部空白再比。 */
+    function sameText(el, expected) {
+        if (!expected) return true;
+        const a = loose(text(el)), b = loose(expected);
+        if (a === b) return true;
+        if (Math.min(a.length, b.length) < 24) return false;
+        const ga = grams(a), gb = grams(b);
+        let hit = 0;
+        for (const g of ga) if (gb.has(g)) hit++;
+        return hit / Math.min(ga.size, gb.size) >= 0.75;
+    }
+    // 选择器就是页面唯一 id：id 本身即身份，文本变化（占位符→已选值、计数刷新）不视为目标变化。
+    const idBound = (anchor) => /^#[^\s>+~]+$/.test(anchor?.selector || '');
+    const visible = (el) =>
+        !!el &&
+        !owned(el) &&
+        el.getClientRects().length > 0 &&
+        getComputedStyle(el).display !== 'none' &&
+        getComputedStyle(el).visibility !== 'hidden';
+    function selector(el) {
+        if (el.id && document.querySelectorAll('#' + CSS.escape(el.id)).length === 1)
+            return '#' + CSS.escape(el.id);
+        const path = [];
+        for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
+            let part = n.tagName.toLowerCase();
+            if (n.id && document.querySelectorAll('#' + CSS.escape(n.id)).length === 1) {
+                path.unshift('#' + CSS.escape(n.id));
+                break;
+            }
+            const same = n.parentElement
+                ? [...n.parentElement.children].filter((x) => x.tagName === n.tagName)
+                : [];
+            if (same.length > 1) part += `:nth-of-type(${same.indexOf(n) + 1})`;
+            path.unshift(part);
+        }
+        return path.join(' > ');
+    }
+    function controlLabel(el) {
+        const byFor = el.id ? document.querySelector(`label[for="${CSS.escape(el.id)}"]`) : null;
+        const label = el.labels?.[0] || byFor || el.closest('label') || el.closest('.f-item,.form-item,.form-group,.field')?.querySelector('label');
+        return text(label).replace(/[：:]$/, '').slice(0, 80);
+    }
+    function conditionRow(el, kind, value, option, targetRect, explicit = false, label = '') {
+        if (!el || owned(el) || !visible(el) || el.disabled || el.getAttribute?.('aria-disabled') === 'true') return null;
+        const r = el.getBoundingClientRect();
+        const dx = r.left + r.width / 2 - (targetRect.left + targetRect.width / 2);
+        const dy = r.top + r.height / 2 - (targetRect.top + targetRect.height / 2);
+        return { selector: selector(el), kind, value, option: String(option || '').slice(0, 80),
+            label: String(label || controlLabel(el)).slice(0, 80), explicit, distance: explicit ? -1 : Math.hypot(dx, dy) };
+    }
+    function captureConditions(target, targetRect) {
+        /* 通用“显现路径”：记录创建标注时使目标可见的状态控件，目标日后 display:none 或被动态移出 DOM，
+           仍能把引导挂回条件控件并恢复当时状态。自动覆盖 native select/checkbox/radio 与常见 ARIA 控件；
+           任意自定义 JS 控件用祖先 data-proto-reveal-by/value/label 显式声明，避免靠文案猜业务动作。 */
+        const rows = [], seen = new Set();
+        const add = row => {
+            if (!row) return;
+            const key = `${row.selector}\n${row.kind}\n${row.value}`;
+            if (!seen.has(key)) { seen.add(key); rows.push(row); }
+        };
+        for (let n = target; n && n !== document.documentElement; n = n.parentElement) {
+            const by = n.getAttribute?.('data-proto-reveal-by');
+            if (!by) continue;
+            let control = null;
+            try { control = document.querySelector(by); } catch (_) { /* 声明选择器失效 */ }
+            if (!control) continue;
+            const raw = n.getAttribute('data-proto-reveal-value') ?? '';
+            const kind = control.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control.type) ? control.type : 'click';
+            const value = kind === 'select' ? raw : kind === 'click' ? raw || 'true' : raw === 'true';
+            add(conditionRow(control, kind, value, raw || text(control), targetRect, true, n.getAttribute('data-proto-reveal-label') || ''));
+        }
+        for (const el of document.querySelectorAll('select,input[type="checkbox"],input[type="radio"]')) {
+            if (!visible(el)) continue;
+            let kind, value, initial, option = '';
+            if (el.tagName === 'SELECT') {
+                kind = 'select'; value = el.value;
+                const def = [...el.options].find(o => o.defaultSelected) || el.options[0];
+                initial = def?.value ?? '';
+                option = el.selectedOptions?.[0]?.textContent?.trim() || value;
+                if (value === initial) continue;
+            } else {
+                kind = el.type; value = !!el.checked; initial = !!el.defaultChecked;
+                if (value === initial || (kind === 'radio' && !value)) continue;
+                // checkbox 同时记录「由默认勾选切为未勾选」；radio 只记录当前选中的新项，避免同组旧项制造反向条件。
+                option = el.value || controlLabel(el);
+            }
+            add(conditionRow(el, kind, value, option, targetRect));
+        }
+        const aria = '[role="tab"][aria-selected="true"],[aria-pressed="true"],[aria-expanded="true"][aria-controls],[role="radio"][aria-checked="true"],[role="checkbox"][aria-checked="true"]';
+        for (const el of document.querySelectorAll(aria)) {
+            const kind = el.matches('[role="tab"]') ? 'aria-selected' : el.hasAttribute('aria-pressed') ? 'aria-pressed' :
+                el.hasAttribute('aria-expanded') ? 'aria-expanded' : 'aria-checked';
+            add(conditionRow(el, kind, 'true', text(el) || controlLabel(el), targetRect));
+        }
+        return rows.sort((a, b) => a.distance - b.distance).slice(0, 12).map(({ distance, ...row }) => row);
+    }
+    function serialize(el) {
+        const r = el.getBoundingClientRect();
+        const clean = el.cloneNode(true);
+        clean.querySelectorAll('[data-prototype-owned],script').forEach((n) => n.remove());
+        const conditions = captureConditions(el, r);
+        const anchor = {
+            protoId: el.getAttribute('data-proto-id') || '',
+            selector: selector(el),
+            tag: el.tagName.toLowerCase(),
+            text: text(el),
+            parentText: text(el.parentElement),
+            htmlSnippet: clean.outerHTML.slice(0, 1800),
+            rect: {
+                x: Math.round(r.x + scrollX),
+                y: Math.round(r.y + scrollY),
+                width: Math.round(r.width),
+                height: Math.round(r.height),
+            },
+        };
+        if (conditions.length) anchor.conditions = conditions;
+        return anchor;
+    }
+    function resolve(anchor) {
+        if (!anchor) return { element: null, reason: '尚未绑定元素' };
+        if (anchor.protoId) {
+            const list = [
+                ...document.querySelectorAll(`[data-proto-id="${CSS.escape(anchor.protoId)}"]`),
+            ].filter(visible);
+            if (list.length === 1 && (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag))
+                return { element: list[0] };
+            return {
+                element: null,
+                reason: list.length > 1 ? '稳定 ID 重复，请重新绑定' : '目标已移除或当前状态不可见',
+            };
+        }
+        try {
+            const list = [...document.querySelectorAll(anchor.selector || ':not(*)')].filter(visible);
+            if (
+                list.length === 1 &&
+                (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag) &&
+                (idBound(anchor) || sameText(list[0], anchor.text))
+            )
+                return { element: list[0] };
+        } catch (_) {
+            /* 旧选择器可能失效，继续尝试唯一文本。 */
+        }
+        if (anchor.text && /^[a-z][a-z0-9-]*$/i.test(anchor.tag || '')) {
+            const candidates = [...document.querySelectorAll(anchor.tag)].filter(
+                (el) =>
+                    visible(el) &&
+                    sameText(el, anchor.text) &&
+                    sameText(el.parentElement, anchor.parentText),
+            );
+            if (candidates.length === 1) return { element: candidates[0] };
+            if (candidates.length > 1) return { element: null, reason: '存在多个同名目标，请重新绑定' };
+        }
+        return { element: null, reason: '目标变化，等待重新定位' };
+    }
+    function at(x, y) {
+        return (
+            document
+                .elementsFromPoint(x, y)
+                .find((el) => !owned(el) && !['HTML', 'BODY'].includes(el.tagName)) || null
+        );
+    }
+    /* 元素的可见矩形：被视口与各级 overflow 祖先裁剪后的区域。
+       reach 记录被裁掉的每一侧「用户滚动能否把它露出来」：裁剪者是滚动容器 / 视口且尚未滚到尽头 → 能；
+       overflow:hidden|clip、滚到尽头、或视口比元素窄导致的负向溢出（flex 居中的手机壳左缘在 x<0）→ 不能。 */
+    function rect(el, fullDocument = false) {
+        const r = el.getBoundingClientRect(), doc = document.documentElement;
+        const vp = fullDocument
+            ? { left: -scrollX, top: -scrollY, right: doc.scrollWidth - scrollX, bottom: doc.scrollHeight - scrollY }
+            : { left: 0, top: 0, right: innerWidth, bottom: innerHeight };
+        const clip = { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+        const by = {};   // 每侧由谁裁掉（裁到同一坐标的全部记下）：null = 视口 / 文档边界，否则为滚动容器节点；未被裁为 undefined
+        const cut = (k, v, node, tighter) => {
+            if (tighter(v, clip[k])) { clip[k] = v; by[k] = [node]; }
+            else if (by[k] && Math.abs(v - clip[k]) < 0.5) by[k].push(node);   // 视口与滚动容器边缘重合：任一能滚即算滚得出来
+        };
+        const gt = (a, b) => a > b, lt = (a, b) => a < b;
+        cut('left', vp.left, null, gt); cut('top', vp.top, null, gt);
+        cut('right', vp.right, null, lt); cut('bottom', vp.bottom, null, lt);
+        for (let n = el.parentElement; n; n = n.parentElement) {
+            if (fullDocument && n === document.scrollingElement) continue;
+            const s = getComputedStyle(n), p = n.getBoundingClientRect();
+            if (/(auto|scroll|hidden|clip)/.test(s.overflowX)) {
+                cut('left', p.left + n.clientLeft, n, gt);
+                cut('right', p.left + n.clientLeft + n.clientWidth, n, lt);
+            }
+            if (/(auto|scroll|hidden|clip)/.test(s.overflowY)) {
+                cut('top', p.top + n.clientTop, n, gt);
+                cut('bottom', p.top + n.clientTop + n.clientHeight, n, lt);
+            }
+        }
+        const scrollable = (n, axis) => n === null ? !fullDocument : /(auto|scroll)/.test(getComputedStyle(n)['overflow' + axis]);
+        const canScroll = (n, axis, before) => {
+            if (!scrollable(n, axis)) return false;
+            const pos = n ? (axis === 'X' ? n.scrollLeft : n.scrollTop) : (axis === 'X' ? scrollX : scrollY);
+            if (before) return pos > 0.5;
+            const size = n ? (axis === 'X' ? n.clientWidth : n.clientHeight) : (axis === 'X' ? innerWidth : innerHeight);
+            const total = n ? (axis === 'X' ? n.scrollWidth : n.scrollHeight) : (axis === 'X' ? doc.scrollWidth : doc.scrollHeight);
+            return pos + size < total - 0.5;
+        };
+        const reachable = (k, axis, before) => !by[k] || by[k].some((n) => canScroll(n, axis, before));
+        const reach = { left: reachable('left', 'X', true), right: reachable('right', 'X', false),
+            top: reachable('top', 'Y', true), bottom: reachable('bottom', 'Y', false) };
+        return { x: clip.left, y: clip.top, width: Math.max(0, clip.right - clip.left), height: Math.max(0, clip.bottom - clip.top),
+            visible: clip.right > clip.left && clip.bottom > clip.top, reach };
+    }
+    function placement(el, x, y) {
+        if (!el) return { kind: 'document', x: x + scrollX, y: y + scrollY };
+        const r = el.getBoundingClientRect(), px = x - r.left + el.scrollLeft, py = y - r.top + el.scrollTop;
+        // 同存绝对偏移与比例：绝对值保持旧行为，rx/ry 让响应式控件变窄/变高后仍能落在同一相对位置。
+        return { kind: 'element', x: px, y: py,
+            rx: r.width > 0 ? Math.max(0, Math.min(1, px / r.width)) : 0,
+            ry: r.height > 0 ? Math.max(0, Math.min(1, py / r.height)) : 0 };
+    }
+    function point(note, fullDocument = false) {
+        const p = note.placement;
+        if (p?.kind === 'document') {
+            const x = p.x - scrollX, y = p.y - scrollY;
+            if (p.x > document.documentElement.scrollWidth || p.y > document.documentElement.scrollHeight)
+                return { reason: '页面尺寸已变化，请重新定位', point: null, rect: null };
+            const visible = fullDocument || (x >= 0 && y >= 0 && x < innerWidth && y < innerHeight);
+            return { point: { x, y, visible }, rect: { x, y, width: 0, height: 0, visible } };
+        }
+        const found = resolve(note.anchor);
+        if (!found.element) return { reason: found.reason, point: null, rect: null };
+        const element = found.element, r = element.getBoundingClientRect(), clip = rect(element, fullDocument);
+        if (!p) return { element, rect: clip, point: { x: clip.x, y: clip.y, visible: clip.visible }, legacy: true };
+        const ew = Math.max(r.width, element.scrollWidth), eh = Math.max(r.height, element.scrollHeight);
+        let px = p.x, py = p.y;
+        if (Number.isFinite(p.rx) && Number.isFinite(p.ry)) {
+            px = p.rx * ew; py = p.ry * eh;
+        } else {
+            // 旧锚点无 rx/ry：仅当当前响应式尺寸缩小导致绝对偏移越界、且偏移在创建时 rect 内时，按原尺寸比例回退。
+            const base = note.anchor?.rect;
+            if (px > ew && base?.width > 0 && px <= base.width) px = px / base.width * ew;
+            if (py > eh && base?.height > 0 && py <= base.height) py = py / base.height * eh;
+        }
+        if (px > ew || py > eh)
+            return { element, reason: '落点超出目标范围，请重新定位', rect: clip, point: null };
+        let x = r.left + px - element.scrollLeft, y = r.top + py - element.scrollTop;
+        // 元素本身可见、落点却落在被裁掉的那一侧，且那一侧再怎么滚也露不出来（视口比元素窄、overflow:hidden、已滚到尽头）：
+        // 把落点夹回可见区边缘，否则整宽元素左缘的序号在窄视口里永远不出现。还能滚出来的照旧隐藏，等用户滚过来。
+        if (clip.visible && clip.reach) {
+            const right = clip.x + clip.width, bottom = clip.y + clip.height;
+            if (x < clip.x && !clip.reach.left) x = clip.x;
+            if (x > right && !clip.reach.right) x = right;
+            if (y < clip.y && !clip.reach.top) y = clip.y;
+            if (y > bottom && !clip.reach.bottom) y = bottom;
+        }
+        const visible = clip.visible && x >= clip.x && x <= clip.x + clip.width && y >= clip.y && y <= clip.y + clip.height;
+        return { element, rect: clip, point: { x, y, visible } };
+    }
+    function inBox(box) {
+        const nodes = [
+            ...document.querySelectorAll(
+                'button,input,img,a,p,h1,h2,h3,h4,li,label,select,textarea,[data-proto-id]',
+            ),
+        ].filter((el) => {
+            if (!visible(el)) return false;
+            const r = el.getBoundingClientRect();
+            return (
+                r.width &&
+                r.height &&
+                r.left < box.right &&
+                r.right > box.left &&
+                r.top < box.bottom &&
+                r.bottom > box.top &&
+                [[.5,.5],[.1,.1],[.9,.1],[.1,.9],[.9,.9]].some(([u,v]) => {
+                    const hit = at(r.left + r.width * u, r.top + r.height * v);
+                    return hit === el || (hit && el.contains(hit));
+                })
+            );
+        });
+        return nodes.filter((el) => !nodes.some((other) => other !== el && other.contains(el))).slice(0, 100);
+    }
+    function currentIds() {
+        return {
+            pageId: document.documentElement.dataset.protoPage || 'main',
+            stateId: document.documentElement.dataset.protoState || 'default',
+        };
+    }
+    async function enterState(stateId) {
+        if (typeof window.PrototypeBridge?.enter === 'function') await window.PrototypeBridge.enter(stateId);
+        return currentIds();
+    }
+    // ---------- 折叠区展开 / 引导（标注工作台“点序号联动展开”与“点击引导”复用；全流程已归档，此为标注侧增补） ----------
+    function hidden(el) {
+        if (!el) return true;
+        const cs = getComputedStyle(el);
+        return cs.display === 'none' || cs.visibility === 'hidden' || el.getClientRects().length === 0;
+    }
+    function resolveHidden(anchor) {
+        // 与 resolve 同规则但不过滤可见性：定位被折叠/隐藏的目标元素
+        if (!anchor) return null;
+        const all = (sel) => { try { return [...document.querySelectorAll(sel)].filter((el) => !owned(el)); } catch (_) { return []; } };
+        if (anchor.protoId) {
+            const list = all(`[data-proto-id="${CSS.escape(anchor.protoId)}"]`);
+            return list.length === 1 && (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag) ? list[0] : null;
+        }
+        const list = all(anchor.selector || ':not(*)');
+        if (list.length === 1 && (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag) && (idBound(anchor) || sameText(list[0], anchor.text))) return list[0];
+        if (anchor.text && /^[a-z][a-z0-9-]*$/i.test(anchor.tag || '')) {
+            const c = all(anchor.tag).filter((el) => sameText(el, anchor.text) && sameText(el.parentElement, anchor.parentText));
+            if (c.length === 1) return c[0];
+        }
+        return null;
+    }
+    function conditionValue(el, condition) {
+        if (condition.kind === 'select') return el.value;
+        if (condition.kind === 'checkbox' || condition.kind === 'radio') return !!el.checked;
+        if (condition.kind.startsWith('aria-')) return el.getAttribute(condition.kind);
+        return null;
+    }
+    function conditionGuideLabel(condition) {
+        const value = condition.option || condition.value || condition.label || '条件';
+        if (condition.kind === 'select') return `选择 ${value}`;
+        if (condition.kind === 'aria-selected') return `切换到 ${value}`;
+        if (condition.kind === 'aria-expanded') return `展开 ${condition.label || value}`;
+        return `开启 ${condition.label || value}`;
+    }
+    function conditionTrigger(anchor) {
+        const rows = Array.isArray(anchor?.conditions) ? anchor.conditions : [];
+        let fallback = null;
+        for (const condition of rows) {
+            let el = null;
+            try { el = document.querySelector(condition.selector || ':not(*)'); } catch (_) { /* 旧条件选择器失效 */ }
+            if (!el || owned(el) || !visible(el)) continue;
+            const hit = { element: el, condition, label: conditionGuideLabel(condition) };
+            if (conditionValue(el, condition) !== condition.value) return hit;
+            // 条件已满足却仍不可见：原生 change 与显式声明允许重放同值事件兜底（satisfied 标记，排在折叠触发器之后）；
+            // ARIA 同值点击可能反向关闭，不作为 fallback。
+            if (!fallback && (condition.explicit || ['select', 'checkbox', 'radio'].includes(condition.kind))) fallback = { ...hit, satisfied: true };
+        }
+        return fallback;
+    }
+    function applyCondition(hit) {
+        if (!hit?.element) return false;
+        const { element, condition } = hit;
+        if (condition.kind === 'select') element.value = condition.value;
+        else if (condition.kind === 'checkbox' || condition.kind === 'radio') element.checked = !!condition.value;
+        else { element.click(); return true; }
+        element.dispatchEvent(new Event('input', { bubbles: true }));
+        element.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+    }
+    const failedRevealTriggers = new WeakMap();
+    const DISCLOSURE_WORDS = /(?:展开|更多|显示|查看|收起|高级|筛选|折叠|expand|more|show|toggle)/i;
+    function revealFailed(el, trigger) {
+        return !!el && !!trigger && !!failedRevealTriggers.get(el)?.has(trigger);
+    }
+    function markRevealFailed(el, trigger) {
+        if (!el || !trigger) return;
+        let failed = failedRevealTriggers.get(el);
+        if (!failed) failedRevealTriggers.set(el, (failed = new WeakSet()));
+        failed.add(trigger);
+    }
+    function neighboringBranch(hiddenNode, trigger) {
+        const parent = hiddenNode?.parentElement;
+        if (!parent || !trigger) return false;
+        let branch = trigger;
+        while (branch && branch.parentElement !== parent) branch = branch.parentElement;
+        return !!branch && (branch === hiddenNode.previousElementSibling || branch === hiddenNode.nextElementSibling);
+    }
+    function weakRevealCandidate(target, hiddenNode, trigger) {
+        if (!trigger || owned(trigger) || hiddenNode.contains(trigger) || !visible(trigger) || revealFailed(target, trigger)) return false;
+        // 旧锚点没有 aria-controls 时，只接受隐藏分支相邻区域中的明确展开语义；不能把同容器内任意“导出/新建”按钮猜成触发器。
+        if (!neighboringBranch(hiddenNode, trigger)) return false;
+        if (trigger.tagName === 'SUMMARY' || trigger.getAttribute?.('aria-expanded') === 'false') return true;
+        const role = trigger.getAttribute?.('role');
+        if (trigger.tagName !== 'BUTTON' && role !== 'button') return false;
+        const label = `${text(trigger)} ${trigger.getAttribute?.('aria-label') || ''} ${trigger.getAttribute?.('title') || ''}`;
+        return DISCLOSURE_WORDS.test(label);
+    }
+    function revealTrigger(el, strongOnly = false) {
+        // 找到能让 el 显现的折叠触发器：原生 details / aria-controls 是强关联；相邻且有展开语义的按钮仅作旧锚点退路
+        for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+            if (n.tagName === 'DETAILS' && !n.open && !revealFailed(el, n)) return n;
+            if (n.id) {
+                const ctrls = [...document.querySelectorAll('[aria-controls]')].filter((c) =>
+                    !owned(c) && !revealFailed(el, c) && (c.getAttribute('aria-controls') || '').split(/\s+/).includes(n.id));
+                const hit = ctrls.find((c) => c.getAttribute('aria-expanded') === 'false') || ctrls.find((c) => visible(c));
+                if (hit && visible(hit)) return hit;
+            }
+        }
+        if (strongOnly) return null;
+        for (let n = el; n && n !== document.body; n = n.parentElement) {
+            if (!hidden(n)) continue;
+            const scope = n.parentElement || document;
+            const cand = [...scope.querySelectorAll('[aria-expanded="false"], summary, button, [role="button"]')]
+                .find((t) => weakRevealCandidate(el, n, t));
+            if (cand) return cand;
+        }
+        return null;
+    }
+    function declaredCondition(el) {
+        // 从外向内找当前可用的入口；导入标注没有 conditions 时也读取页面上的显现声明。
+        const chain = [];
+        for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) chain.unshift(n);
+        for (const node of chain) {
+            const by = node.getAttribute?.('data-proto-reveal-by');
+            if (!by || !hidden(node)) continue;
+            let controls = [];
+            try { controls = [...document.querySelectorAll(by)]; } catch (_) { continue; }
+            if (controls.length !== 1) continue;
+            const control = controls[0];
+            if (owned(control) || !visible(control) || control.disabled || control.getAttribute('aria-disabled') === 'true' || revealFailed(el, control)) continue;
+            const raw = node.getAttribute('data-proto-reveal-value') ?? 'true';
+            const kind = control.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control.type) ? control.type : 'click';
+            const condition = { selector: by, kind, value: kind === 'select' ? raw : kind === 'click' ? raw : raw === 'true', explicit: true,
+                label: node.getAttribute('data-proto-reveal-label') || controlLabel(control), option: raw };
+            return { element: control, condition, label: node.getAttribute('data-proto-reveal-label') || conditionGuideLabel(condition) };
+        }
+        return null;
+    }
+    function revealHint(anchor, el = resolveHidden(anchor)) {
+        if (el && !hidden(el)) return null; // 目标已显现；若落点异常应走失锚/响应式回退，不能继续显示条件引导
+        const declared = el ? declaredCondition(el) : null;
+        if (declared) return { trigger: declared.element, target: anchor || el, label: declared.label, kind: 'condition' };
+        // 优先语义明确的 details / aria-controls；其次用创建标注时记录的、当前值确实不同的状态条件；
+        // 再用邻近按钮弱推断；条件值已满足却仍隐藏的同值重放排最后（否则弹层折叠时会误显「选择 智能体」）。
+        const direct = el ? revealTrigger(el, true) : null;
+        if (direct) return { trigger: direct, target: el, label: '展开', kind: 'disclosure' };
+        const condition = conditionTrigger(anchor);
+        const conditionHint = condition ? { trigger: condition.element, target: anchor, label: condition.label, kind: 'condition' } : null;
+        if (conditionHint && !condition.satisfied) return conditionHint;
+        const fallback = el ? revealTrigger(el) : null;
+        if (fallback) return { trigger: fallback, target: el, label: '展开', kind: 'disclosure' };
+        return conditionHint;
+    }
+    function reveal(target, attempted = new Set(), notify = true) {
+        const anchor = target && target.nodeType === 1 ? null : target;
+        let el = target && target.nodeType === 1 ? target : resolveHidden(target);
+        // 条件控件先恢复到创建标注时的值；change/click 处理器可同步显现，也可由 MutationObserver 在异步渲染后接力。
+        const condition = (el ? declaredCondition(el) : null) || (anchor ? conditionTrigger(anchor) : null);
+        if (condition && !condition.satisfied && !attempted.has(condition.element)) {
+            attempted.add(condition.element);
+            if (applyCondition(condition)) el = resolveHidden(anchor) || el;
+        }
+        // 同一触发器只点一次：Vue/React 类原型点击后 DOM 在 nextTick 才更新，同步判定仍为隐藏，
+        // 循环里重复点同一个按钮会把刚展开的区域再折回去（偶数次 = 没展开）。多层折叠靠后续重排接力。
+        const clicked = attempted;
+        let lastAttempt = null;
+        for (let g = 0; el && g < 10 && hidden(el); g++) {
+            const declared = declaredCondition(el);
+            const trig = declared?.element || revealTrigger(el);
+            if (!trig || clicked.has(trig)) break;
+            clicked.add(trig);
+            lastAttempt = { element: el, trigger: trig };
+            if (declared) applyCondition(declared);
+            else if (trig.tagName === 'DETAILS') trig.open = true; else trig.click();
+            if (anchor) el = resolveHidden(anchor) || el;
+        }
+        // 折叠触发器都试过仍不可见：最后才重放已满足的同值条件（select 的 change 处理器可能负责重建区域）。
+        if ((!el || hidden(el)) && condition?.satisfied && !attempted.has(condition.element)) {
+            attempted.add(condition.element);
+            if (applyCondition(condition)) el = resolveHidden(anchor) || el;
+        }
+        if ((!el || hidden(el)) && lastAttempt && notify) {
+            // 给 Vue/React 等异步渲染留出时间；仍未显现就记住这组无效关联，并通知两种标注层移除假引导。
+            setTimeout(() => {
+                const current = anchor ? resolveHidden(anchor) : lastAttempt.element;
+                if (current && hidden(current)) {
+                    markRevealFailed(current, lastAttempt.trigger);
+                    document.dispatchEvent(new CustomEvent('proto-anchors:reveal-failed', { detail: { target: current, trigger: lastAttempt.trigger } }));
+                }
+            }, 450);
+        }
+        return !el || hidden(el) ? null : el;
+    }
+    const pendingReveals = new Map();
+    function revealAndWait(target) {
+        const key = target?.nodeType === 1 ? target : `${target?.protoId || ''}\n${target?.selector || ''}`;
+        if (pendingReveals.has(key)) return pendingReveals.get(key);
+        const operation = (async () => {
+            const attempted = new Set(), deadline = Date.now() + 1800;
+            do {
+                const el = reveal(target, attempted, false);
+                if (el) return el;
+                if (!attempted.size) return null;
+                await new Promise(resolve => setTimeout(resolve, 32));
+            } while (Date.now() < deadline);
+            const current = target?.nodeType === 1 ? target : resolveHidden(target);
+            if (current && !hidden(current)) return current;
+            if (current) for (const trigger of attempted) markRevealFailed(current, trigger);
+            document.dispatchEvent(new CustomEvent('proto-anchors:reveal-failed', { detail: { target: current } }));
+            return null;
+        })();
+        pendingReveals.set(key, operation);
+        operation.finally(() => { if (pendingReveals.get(key) === operation) pendingReveals.delete(key); }).catch(() => {});
+        return operation;
+    }
+    globalThis.ProtoAnchors = {
+        owned,
+        text,
+        visible,
+        hidden,
+        selector,
+        serialize,
+        resolve,
+        resolveHidden,
+        revealTrigger,
+        revealHint,
+        reveal,
+        revealAndWait,
+        rect,
+        placement,
+        point,
+        at,
+        inBox,
+        currentIds,
+        enterState,
+    };
+})();
+
+</script>
+<script data-proto-review="order">
+/* 展示编号投影：不改元数据 number，所有定位与编辑始终使用稳定 id。
+   排序键是页面逻辑坐标（视口坐标加回各级滚动偏移），从上到下、从左到右。
+   目标当前不可见、但能在主页面流里靠「展开 / 选中 / 点击」显现的标注（折叠区、条件行、页签），
+   用它的显现触发器位置代位参与主序，编号在展开前后保持一致，而不是被甩到末尾；
+   落在弹窗 / 抽屉 / 提示等分支容器里的目标整体排在主页序号之后再自然排序；彻底失锚的排最后。 */
+(() => {
+    'use strict';
+    const stable = (a, b) => String(a.id).localeCompare(String(b.id), 'en');
+    function logicalPoint(found, win) {
+        if (!found?.point) return null;
+        const { element, legacy } = found;
+        const point = legacy && element ? element.getBoundingClientRect() : found.point;
+        let x = point.x + win.scrollX, y = point.y + win.scrollY;
+        for (let node = legacy ? element?.parentElement : element; node && node !== win.document.scrollingElement; node = node.parentElement) {
+            x += node.scrollLeft || 0;
+            y += node.scrollTop || 0;
+        }
+        return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;
+    }
+    /* 分支容器判定：目标所在的祖先链里有对话框 / 抽屉 / 提示 / 下拉等「离开主页面流」的容器。
+       语义属性（<dialog>、role、aria-modal、popover）直接判定；类名只作弱线索，且要求容器本身是 fixed / absolute 定位，
+       否则页面主流里的 notification-list、message-item 之类命名会被误判。
+       原型可用 data-proto-branch="true|false" 在任意祖先上显式声明，覆盖自动推断。 */
+    const BRANCH_ROLE = /^(dialog|alertdialog|tooltip|menu)$/;
+    const BRANCH_CLASS = /(^|[^a-z])(modal|dialog|drawer|popover|popup|toast|tooltip|dropdown|sheet|snackbar|notification|message)(?![a-z])/i;
+    function inBranch(el, win) {
+        const doc = win.document;
+        for (let n = el; n && n !== doc.body && n !== doc.documentElement; n = n.parentElement) {
+            if (n.hasAttribute('data-proto-branch')) return n.getAttribute('data-proto-branch') !== 'false';
+            if (n.tagName === 'DIALOG' || n.hasAttribute('popover') || n.getAttribute('aria-modal') === 'true' || BRANCH_ROLE.test(n.getAttribute('role') || '')) return true;
+            if (BRANCH_CLASS.test(n.getAttribute('class') || '') && /^(fixed|absolute)$/.test(win.getComputedStyle(n).position)) return true;
+        }
+        return false;
+    }
+    /* 目标不可见时的代位坐标：优先目标自身仍有的几何（visibility:hidden 一类），否则取显现触发器的下缘——
+       紧跟触发器所在行之后，在其下方显现的内容也就落在正确的行序里。无触发器（真失锚）返回 null。 */
+    function proxyPoint(note, el, win) {
+        const PA = win.ProtoAnchors;
+        if (el && !PA.hidden?.(el)) return null;                         // 元素可见却定不到落点：落点失效，按失锚置底
+        if (el && el.getClientRects().length) return logicalPoint({ element: el, point: el.getBoundingClientRect(), legacy: true }, win);
+        let hint = null;
+        try {
+            hint = PA.revealHint?.(note.anchor, el) ||
+                (el && PA.revealTrigger?.(el) ? { trigger: PA.revealTrigger(el) } : null);
+        } catch (_) { /* 条件选择器失效等同无触发器 */ }
+        const trigger = hint?.trigger;
+        if (!trigger || !trigger.getClientRects?.().length) return null;
+        const p = logicalPoint({ element: trigger, point: {}, legacy: true }, win);
+        return p && { x: p.x, y: p.y + trigger.getBoundingClientRect().height };
+    }
+    function rows(list) {
+        const sorted = list.slice().sort((a, b) => a.point.y - b.point.y || a.point.x - b.point.x || stable(a.note, b.note));
+        const result = [];
+        for (let i = 0; i < sorted.length;) {
+            const top = sorted[i].point.y, row = [];
+            while (i < sorted.length && sorted[i].point.y - top <= 12) row.push(sorted[i++]);
+            row.sort((a, b) => a.point.x - b.point.x || a.point.y - b.point.y || stable(a.note, b.note));
+            result.push(...row);
+        }
+        return result;
+    }
+    /* records: { note, point, group }。group 0 = 主页面流，1 = 分支容器；同组内按行序，组间主页面流在前；无 point 的失锚置底。 */
+    function arrange(records) {
+        const placed = records.filter(r => r.point);
+        const result = [
+            ...rows(placed.filter(r => !r.group)),
+            ...rows(placed.filter(r => r.group)),
+            ...records.filter(r => !r.point).sort((a, b) => stable(a.note, b.note)),
+        ];
+        return result.map((r, i) => ({ ...r.note, displayNumber: i + 1 }));
+    }
+    function classify(note, win) {
+        const PA = win.ProtoAnchors;
+        let found = null;
+        try { found = PA.point(note); } catch (_) { /* 未就绪或失效锚点 */ }
+        let point = logicalPoint(found, win), el = found?.element || null;
+        if (!el && note.anchor) { try { el = PA.resolveHidden?.(note.anchor) || null; } catch (_) { /* 旧选择器失效 */ } }
+        if (!point && note.anchor) { try { point = proxyPoint(note, el, win); } catch (_) { /* 代位失败按失锚处理 */ } }
+        const group = el && inBranch(el, win) ? 1 : 0;
+        return { note, point, group };
+    }
+    function project(notes, win, pending = null) {
+        const records = notes.map(note => classify(note, win));
+        if (pending?.point) records.push({ note: { id: '~pending' }, point: pending.point, group: pending.group || 0 });
+        return arrange(records);
+    }
+    function previewNumber(notes, win, x, y) {
+        const element = win.ProtoAnchors.at(x, y);
+        const point = logicalPoint({ element, point: { x, y } }, win);
+        const group = element && inBranch(element, win) ? 1 : 0;
+        return project(notes, win, { point, group }).find(n => n.id === '~pending')?.displayNumber || notes.length + 1;
+    }
+    globalThis.ProtoOrder = { arrange, project, previewNumber, logicalPoint, inBranch };
+})();
+
+</script>
+<script data-proto-review="bridge">
+/* 评审壳 ↔ 原型页桥：随导出内嵌进每个原型 HTML，跑在 iframe 内。
+   壳与原型改用 postMessage 通信，不再由壳跨文档注入脚本——ZIP 解压后 file:// 直接打开时
+   每个 file 都是独立源，壳拿不到 iframe 的 document，旧注入方式静默失效（无序号、无引导、右栏乱序）。
+   加载顺序：proto-hotspots.js（先于业务脚本）→ proto-appearance.js → proto-anchors.js → proto-order.js → 本文件 → review-pins.js。
+   独立打开原型（不在壳内）时本文件不做任何事。 */
+(() => {
+    'use strict';
+    if (window.__reviewBridgeBoot) return;
+    window.__reviewBridgeBoot = true;
+    if (window.parent === window || !window.ProtoAnchors) return;
+
+    const post = (msg) => { try { window.parent.postMessage(Object.assign({ __review: 1 }, msg), '*'); } catch (_) { /* 壳未就绪 */ } };
+    const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    let asideOpen = true;
+    let hintScopes = [];
+
+    // review-pins.js 启动时读取的宿主对象：标注在 init 消息到达后填充，正文 HTML 由壳预渲染（气泡层无 Markdown 渲染器）。
+    window.__REVIEW__ = {
+        notes: [],
+        asideOpen: () => asideOpen,
+        onSync: (map, state, stale) => post({ type: 'sync', map, state, stale }),
+        onFocus: (noteId) => post({ type: 'focus', noteId }),
+        renderBody: (note) => note.bodyHtml || '<p>' + esc(note.body || '') + '</p>',
+    };
+    window.ProtoHotspots?.init({ scope: () => {
+        const state = window.ProtoAnchors.currentIds?.().stateId || 'default';
+        return hintScopes.find(item => item.id === state)?.interactionHints;
+    } });
+
+    // 气泡层在本文件之后加载；init 早到时等它就位再重排（最多等 5s）。
+    function relayout(tries) {
+        if (window.__reviewRelayout) { window.__reviewRelayout(); return; }
+        if ((tries || 0) < 50) setTimeout(() => relayout((tries || 0) + 1), 100);
+    }
+
+    async function reveal(note) {
+        const A = window.ProtoAnchors;
+        let found = null;
+        try { found = A.point(note); } catch (_) { /* 锚定异常 */ }
+        if (!found?.element && !found?.point) {
+            // 目标被折叠/隐藏：先联动展开对应折叠区，再重新定位与重排气泡
+            try { await (A.revealAndWait?.(note.anchor) ?? A.reveal?.(note.anchor)); } catch (_) { /* ignore */ }
+            try { window.__reviewRelayout?.(); } catch (_) { /* ignore */ }
+            try { found = A.point(note); } catch (_) { /* ignore */ }
+        }
+        if (found?.element) found.element.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        else if (found?.point) window.scrollTo({ top: Math.max(0, found.point.y + window.scrollY - window.innerHeight / 2), behavior: 'smooth' });
+    }
+
+    window.addEventListener('message', (e) => {
+        if (e.source !== window.parent || !e.data || e.data.__review !== 1) return;
+        const m = e.data;
+        switch (m.type) {
+            case 'init':
+                hintScopes = Array.isArray(m.hintScopes) ? m.hintScopes : [];
+                window.ProtoHotspots?.hide();
+                document.documentElement.dataset.protoHost = 'review';
+                window.__REVIEW__.notes = Array.isArray(m.notes) ? m.notes : [];
+                asideOpen = m.asideOpen !== false;
+                if (m.enterState) { try { window.ProtoAnchors.enterState?.(m.enterState)?.catch?.(() => {}); } catch (_) { /* ignore */ } }
+                relayout();
+                break;
+            case 'aside':
+                asideOpen = !!m.open;
+                try { window.__reviewHidePop?.(); } catch (_) { /* ignore */ }
+                break;
+            case 'enterState':
+                try { window.ProtoAnchors.enterState?.(m.stateId)?.catch?.(() => {}); } catch (_) { /* ignore */ }
+                break;
+            case 'reveal':
+                if (m.note) reveal(m.note);
+                break;
+            case 'hidePop':
+                try { window.__reviewHidePop?.(); } catch (_) { /* ignore */ }
+                break;
+            case 'showHotspots':
+                window.ProtoHotspots?.show();
+                break;
+            default:
+                break;
+        }
+    });
+
+    let ids = {};
+    try { ids = window.ProtoAnchors.currentIds?.() || {}; } catch (_) { /* ignore */ }
+    post({ type: 'ready', ids });
+})();
+
+</script>
+<script data-proto-review="pins">
+/* 评审壳只读气泡层：随导出内嵌进每个原型 HTML（review_export.inject_bundle），跑在被评审原型页面内。
+   依赖同页先加载的 proto-anchors.js / proto-order.js / review-bridge.js；通过 window.__REVIEW__（由 bridge 建立，内部走 postMessage）与壳父页通信。
+   只读：无编辑、无拖动、无删除。 */
+(() => {
+    'use strict';
+    if (window.__reviewPinsBoot) return;
+    window.__reviewPinsBoot = true;
+    const R = window.__REVIEW__;
+    if (!R || !window.ProtoAnchors || !window.ProtoOrder) return;
+
+    const style = document.createElement('style');
+    style.textContent = `
+.__review_pin{position:absolute;display:grid;place-items:center;min-width:36px;height:36px;padding:0 8px;border:3px solid #fff;border-radius:50% 50% 50% 2px;background:#2563eb;color:#fff;font:600 13px/1 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;box-shadow:0 8px 24px rgba(16,24,40,.24);transform:translateY(-100%);cursor:pointer;pointer-events:auto;}
+.__review_pin:hover{background:#1d4ed8;}
+.__review_pin:not(.__stale){background:var(--pin-fill);color:var(--pin-ink);border-color:var(--pin-stroke);}
+.__review_pin:not(.__stale):hover{background:var(--pin-fill);filter:brightness(.96);}
+.__review_pin.__stale{background:#626b78;cursor:default;}
+@media(prefers-color-scheme:dark){.__review_pin{border-color:#121519;}}
+.__review_pop{position:fixed;z-index:2147482001;width:min(360px,calc(100vw - 16px));max-width:calc(100vw - 16px);overflow:visible;border:1px solid #d8dee3;border-radius:10px;background:#fff;color:#1a1d23;font:14px/1.7 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;letter-spacing:.02em;box-shadow:0 8px 24px rgba(16,24,40,.24);display:none;}
+.__review_pop_body{max-height:calc(100vh - 16px);overflow:auto;overscroll-behavior:contain;padding:12px 14px;border-radius:inherit;}
+.__review_pop_resize{position:absolute;top:0;bottom:0;width:12px;cursor:ew-resize;touch-action:none;z-index:3;background:transparent;}
+/* 热区以浮窗真实边框为中心，不画独立蓝细条；视觉仍是浮窗自身边缘，命中区向内外各扩 6px。 */
+.__review_pop_resize_w{left:0;transform:translateX(-50%);}.__review_pop_resize_e{right:0;transform:translateX(50%);}
+.__review_pop.pop-resizing{user-select:none;}
+.__review_pop.pop-resizing,.__review_pop.pop-resizing *{cursor:ew-resize!important;}
+@media(prefers-color-scheme:dark){.__review_pop{background:#121519;color:#f2f4f7;border-color:#363c44;}}
+.__review_pop_body>:first-child{margin-top:0;}.__review_pop_body>:last-child{margin-bottom:0;}
+.__review_pop p{margin:0 0 10px;overflow-wrap:anywhere;}
+.__review_pop img{display:block;max-width:100%;height:auto;margin:8px 0;border-radius:6px;}
+.__review_pop h1{font-size:18px;}.__review_pop h2{font-size:16px;}.__review_pop h3,.__review_pop h4{font-size:14px;}
+.__review_pop ul,.__review_pop ol{padding-left:20px;margin:6px 0 10px;}.__review_pop li.task{list-style:none;margin-left:-18px;}
+.__review_pop code{font-family:ui-monospace,Consolas,monospace;font-size:13px;background:rgba(127,127,127,.16);padding:1px 5px;border-radius:4px;}
+.__review_pop pre{background:rgba(127,127,127,.14);padding:10px;border-radius:6px;white-space:pre-wrap;overflow-wrap:anywhere;}.__review_pop pre code{background:none;padding:0;}
+.__review_pop table{border-collapse:collapse;width:100%;}.__review_pop th,.__review_pop td{border:1px solid #d8dee3;padding:6px;text-align:left;}
+@media(prefers-color-scheme:dark){.__review_pop th,.__review_pop td{border-color:#363c44;}}
+.__review_pop blockquote{border-left:3px solid #d8dee3;margin:8px 0;padding:2px 12px;color:#4e5560;}.__review_pop a{color:#2563eb;}.__review_pop hr{border:0;border-top:1px solid #d8dee3;}
+/* 点击引导：与操作界面 .pa-guide 同式——亮黄色系，与蓝色水滴序号在 色相 / 形状 / 动效 三方面区分。
+   框 = 透明可点区：虚线、静态不呼吸；悬停转实线 + 加深底色 + 外环。标签 = 与框左上角拼成一体的选区式标签，只有标签呼吸。
+   偏离 DESIGN_MASTER --accent-amber #b45309（实看发褐）：框线 #d97706（白底 3.19:1），标签 #fbbf24 配深棕字 #5c3300（6.52:1）。
+   固定浅色、不随 prefers-color-scheme 切换：引导叠在原型页面上，颜色跟随页面而非系统。 */
+.__review_guide{--g-line:#d97706;--g-fill:#fbbf24;--g-ink:#5c3300;position:absolute;box-sizing:border-box;margin:0;padding:0;border:2px dashed var(--g-line);border-radius:0 8px 8px 8px;background:rgba(251,191,36,.10);cursor:pointer;pointer-events:auto;transition:background-color 150ms ease-out,box-shadow 150ms ease-out;}
+.__review_guide:hover{border-style:solid;background:rgba(251,191,36,.30);box-shadow:0 0 0 3px rgba(251,191,36,.38);}
+.__review_guide:active{background:rgba(251,191,36,.45);}
+.__review_guide:focus-visible{outline:2px solid var(--g-line);outline-offset:2px;}
+.__review_guide_tag{position:absolute;box-sizing:border-box;left:-2px;top:-2px;transform:translateY(-100%);display:inline-flex;align-items:center;gap:3px;height:18px;padding:0 7px 0 5px;border:1px solid var(--g-line);border-radius:6px 6px 6px 0;background:var(--g-fill);color:var(--g-ink);font:600 11px/1 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;white-space:nowrap;pointer-events:none;animation:__rvGuideTag 1.8s ease-in-out infinite;animation-delay:var(--g-delay,0s);}
+.__review_guide_tag svg{width:10px;height:10px;animation:__rvGuideBob 1.8s ease-in-out infinite;animation-delay:var(--g-delay,0s);}
+.__review_guide:hover .__review_guide_tag{animation:none;box-shadow:0 0 0 3px rgba(251,191,36,.38);}
+.__review_guide.__review_guide_below{border-radius:8px 8px 8px 0;}
+.__review_guide.__review_guide_below .__review_guide_tag{top:auto;bottom:-2px;transform:translateY(100%);border-radius:0 6px 6px 6px;}
+.__review_guide.__review_guide_end{border-radius:8px 0 8px 8px;}
+.__review_guide.__review_guide_end .__review_guide_tag{left:auto;right:-2px;border-radius:6px 6px 0 6px;}
+.__review_guide.__review_guide_below.__review_guide_end{border-radius:8px 8px 0 8px;}
+.__review_guide.__review_guide_below.__review_guide_end .__review_guide_tag{border-radius:6px 0 6px 6px;}
+@keyframes __rvGuideTag{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0),0 1px 2px rgba(92,51,0,.18);}50%{box-shadow:0 0 0 4px rgba(251,191,36,.42),0 1px 2px rgba(92,51,0,.18);}}
+@keyframes __rvGuideBob{0%,100%{transform:translateY(-1px);}50%{transform:translateY(1px);}}
+@media(prefers-reduced-motion:reduce){.__review_guide_tag,.__review_guide_tag svg{animation:none;}}
+`;
+    (document.head || document.documentElement).appendChild(style);
+
+    const layer = document.createElement('div');
+    layer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147482000;';
+    document.documentElement.appendChild(layer);
+    // 引导框独立图层：序号层每次重排 replaceChildren 整体重建，引导框要按触发器复用（保住悬停态、呼吸相位与点击）
+    const glayer = document.createElement('div');
+    glayer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147481999;';
+    glayer.setAttribute('data-prototype-owned', '');   // 引导框是 <button>，标记自有以免 revealTrigger 兜底搜索把它当成原型触发器
+    document.documentElement.appendChild(glayer);
+
+    // 收起态气泡：PRD 侧栏收起时，点序号在序号旁展示正文；正文独立滚动，左右边缘可拖宽。
+    let pop = null, popBody = null, popResizing = null, popNoteId = null;
+    function setPinExpanded(noteId, expanded) {
+        if (!noteId) return;
+        layer.querySelector(`.__review_pin[data-note-id="${CSS.escape(noteId)}"]`)?.setAttribute('aria-expanded', String(expanded));
+    }
+    function hidePop() {
+        if (pop) pop.style.display = 'none';
+        setPinExpanded(popNoteId, false);
+        popNoteId = null;
+    }
+    function startPopResize(e, handle, side) {
+        if (!pop || e.button !== 0) return;
+        e.preventDefault(); e.stopPropagation();
+        const rect = pop.getBoundingClientRect(), startX = e.clientX, startW = rect.width, fixedRight = rect.right;
+        popResizing = { handle, side, pointerId: e.pointerId };
+        pop.classList.add('pop-resizing');
+        document.documentElement.style.cursor = 'ew-resize';
+        document.documentElement.style.userSelect = 'none';
+        // 指针按下后由 window 兜住整段拖动；不依赖鼠标始终停留在 12px 边缘热区，也不依赖 pointer capture 是否成功。
+        try { handle.setPointerCapture(e.pointerId); } catch (_) { /* 浏览器不支持时 window 监听仍可工作 */ }
+        const move = ev => {
+            if (!popResizing || ev.pointerId !== e.pointerId) return;
+            ev.preventDefault();
+            const raw = side === 'e' ? startW + (ev.clientX - startX) : startW - (ev.clientX - startX);
+            const minW = Math.min(280, innerWidth - 16), maxW = Math.max(minW, Math.min(720, innerWidth - 16));
+            const edgeMax = side === 'e' ? innerWidth - rect.left - 8 : fixedRight - 8;
+            const width = Math.max(minW, Math.min(Math.round(raw), maxW, edgeMax));
+            pop.style.width = width + 'px';
+            if (side === 'w') pop.style.left = Math.max(8, fixedRight - width) + 'px';
+        };
+        const up = ev => {
+            if (!popResizing || ev.pointerId !== e.pointerId) return;
+            popResizing = null; pop.classList.remove('pop-resizing');
+            document.documentElement.style.cursor = '';
+            document.documentElement.style.userSelect = '';
+            window.removeEventListener('pointermove', move, true); window.removeEventListener('pointerup', up, true); window.removeEventListener('pointercancel', up, true);
+            try { if (handle.hasPointerCapture(e.pointerId)) handle.releasePointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+        };
+        window.addEventListener('pointermove', move, { capture: true, passive: false });
+        window.addEventListener('pointerup', up, true);
+        window.addEventListener('pointercancel', up, true);
+    }
+    function ensurePop() {
+        if (pop) return;
+        pop = document.createElement('div');
+        pop.id = '__review_popover'; pop.className = '__review_pop';
+        pop.setAttribute('role', 'dialog');
+        pop.setAttribute('data-prototype-owned', '');
+        pop.addEventListener('click', e => e.stopPropagation());
+        popBody = document.createElement('div'); popBody.className = '__review_pop_body';
+        pop.appendChild(popBody);
+        for (const side of ['w', 'e']) {
+            const handle = document.createElement('span');
+            handle.className = `__review_pop_resize __review_pop_resize_${side}`;
+            handle.setAttribute('aria-hidden', 'true'); handle.title = '拖动调节宽度';
+            handle.onpointerdown = e => startPopResize(e, handle, side);
+            pop.appendChild(handle);
+        }
+        document.documentElement.appendChild(pop);
+    }
+    function showPop(note, pin) {
+        ensurePop();
+        setPinExpanded(popNoteId, false);
+        popNoteId = note.id;
+        pin.setAttribute('aria-expanded', 'true');
+        popBody.innerHTML = R.renderBody ? R.renderBody(note) : (note.body || '');
+        popBody.scrollTop = 0;
+        pop.style.display = 'block';
+        pop.style.visibility = 'hidden';
+        pop.style.left = '0px'; pop.style.top = '0px';
+        const pw = pop.offsetWidth, ph = pop.offsetHeight;
+        const px = parseFloat(pin.style.left) || 0, py = parseFloat(pin.style.top) || 0;
+        const W = innerWidth, H = innerHeight;
+        let left = px + 16, top = py - ph - 8;
+        if (left + pw > W - 8) left = px - pw - 16;
+        left = Math.max(8, Math.min(left, W - pw - 8));
+        if (top < 8) top = py + 8;
+        top = Math.max(8, Math.min(top, H - ph - 8));
+        pop.style.left = left + 'px'; pop.style.top = top + 'px';
+        pop.style.visibility = 'visible';
+    }
+    function togglePop(note, pin) {
+        if (pop && pop.style.display === 'block' && popNoteId === note.id) { hidePop(); return; }
+        showPop(note, pin);
+    }
+    window.__reviewHidePop = hidePop;
+    window.__reviewPopNoteId = () => (pop && pop.style.display === 'block' ? popNoteId : null);
+    window.__reviewRelayout = () => { try { layout(); } catch (_) { /* ignore */ } };
+    document.addEventListener('click', e => {
+        if (pop && pop.style.display === 'block' && !pop.contains(e.target) && !e.target.closest?.('.__review_pin')) hidePop();
+    }, true);
+    // scroll 监听用了 capture，气泡自身 overflow:auto 的滚动也会冒到 window；旧逻辑因此鼠标一滚正文就关气泡。
+    // 只在气泡外部（原型页面 / 其他滚动容器）发生滚动时关闭；气泡内部滚动保持打开。
+    window.addEventListener('scroll', e => {
+        if (pop && pop.style.display === 'block' && pop.contains(e.target)) return;
+        hidePop();
+        scheduleLayout();
+    }, { passive: true, capture: true });
+    window.addEventListener('resize', () => { hidePop(); scheduleLayout(); }, { passive: true });
+
+    let layoutFrame = 0;
+    function scheduleLayout() {
+        if (layoutFrame) return;
+        layoutFrame = requestAnimationFrame(() => { layoutFrame = 0; layout(); });
+    }
+
+    const stateOf = () => document.documentElement.dataset.protoState || 'default';
+    let lastState = '', lastX = -1, lastY = -1, lastW = 0, lastH = 0, lastHtml = '';
+    let lastOrder = '', lastStale = '';
+
+    function layout() {
+        const state = stateOf();
+        if (state !== lastState) hidePop(); // 只在原型状态切换时关气泡；纯几何重排不关（避免侧栏收起引发的 reflow 误关刚弹出的气泡）
+        const notes = (R.notes || []).filter(n => n.stateId === state);
+        const arranged = window.ProtoOrder.project(notes, window);
+        const stale = [], noPoint = [];
+        layer.replaceChildren();
+        for (const n of arranged) {
+            let found = null;
+            try { found = window.ProtoAnchors.point(n); } catch (_) { /* 锚定异常按失效处理 */ }
+            if (!found?.point) { noPoint.push(n); continue; }
+            if (found.point.visible === false) continue; // 滚出嵌套容器的序号随锚点隐藏，不算失锚。
+            const pin = document.createElement('button');
+            pin.type = 'button';
+            pin.className = '__review_pin';
+            window.ProtoAppearance?.applyPin(pin, n);
+            pin.dataset.noteId = n.id;
+            pin.textContent = n.displayNumber;
+            pin.setAttribute('aria-label', `标注 ${n.displayNumber}`);
+            pin.setAttribute('aria-haspopup', 'dialog');
+            pin.setAttribute('aria-controls', '__review_popover');
+            pin.setAttribute('aria-expanded', String(popNoteId === n.id && pop?.style.display === 'block'));
+            pin.style.left = found.point.x + 'px';
+            pin.style.top = found.point.y + 'px';
+            pin.onclick = e => {
+                e.preventDefault(); e.stopPropagation();
+                // PRD 侧栏展开：定位到右栏对应内容；收起：就地弹气泡展示内容。
+                if (R.asideOpen && R.asideOpen()) { hidePop(); R.onFocus?.(n.id); }
+                else togglePop(n, pin);
+            };
+            layer.appendChild(pin);
+        }
+        // 无落点分流（Feature 1 引导 + 失锚判定）：元素还在且被折叠/隐藏 → 正常颜色，可展开的盖透明脉冲描边框引导；
+        // 元素真找不到、或可见但落点失效（目标变化）才算失锚（右栏灰显、置底、不可点）。
+        const groups = new Map();
+        for (const n of noPoint) {
+            let el = null; try { el = window.ProtoAnchors.resolveHidden(n.anchor); } catch (_) { /* ignore */ }
+            let hint = null;
+            try { hint = window.ProtoAnchors.revealHint?.(n.anchor, el); } catch (_) { /* ignore */ }
+            if (!hint && el && window.ProtoAnchors.hidden(el)) {
+                let trigger = null; try { trigger = window.ProtoAnchors.revealTrigger(el); } catch (_) { /* ignore */ }
+                if (trigger) hint = { trigger, target: el, label: '展开', kind: 'disclosure' };
+            }
+            if (!hint?.trigger) {
+                if (!el || !window.ProtoAnchors.hidden(el)) stale.push(n.id); // 元素仍在但隐藏、只是暂无可操作引导时也不算失锚
+                continue;
+            }
+            let g = groups.get(hint.trigger);
+            const actionKey = `${hint.kind}\n${hint.label}`;
+            if (!g) groups.set(hint.trigger, (g = { target: hint.target, label: hint.label, actionKey, notes: [] }));
+            if (g.actionKey === actionKey) g.notes.push(n);
+        }
+        const GICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+        const existing = [...glayer.querySelectorAll('.__review_guide')];
+        const alive = new Set();
+        let gi = existing.length;   // 新建引导错峰呼吸（与 proto-annotate.js 一致）：负 delay 立处不同相位
+        groups.forEach((g, trig) => {
+            const r = trig.getBoundingClientRect();
+            if (r.width === 0 && r.height === 0) return;
+            // 描边框套在触发器外 4px，小图标至少 22px 保证可点；裁到视口内，完全出视口就不画（与 proto-annotate.js layoutGuides 同算法）
+            const pad = 4, w = Math.max(r.width + pad * 2, 22), h = Math.max(r.height + pad * 2, 22);
+            let left = r.left + r.width / 2 - w / 2, top = r.top + r.height / 2 - h / 2;
+            const right = Math.min(innerWidth - 2, left + w), bottom = Math.min(innerHeight - 2, top + h);
+            left = Math.max(2, left); top = Math.max(2, top);
+            if (right - left < 8 || bottom - top < 8) return;
+            let guide = existing.find(x => x.__rvTrig === trig);
+            if (!guide) {
+                guide = document.createElement('button');
+                guide.type = 'button'; guide.className = '__review_guide';
+                guide.__rvTrig = trig;
+                guide.style.setProperty('--g-delay', (-(gi++ % 4) * 0.45) + 's');
+                guide.onclick = async e => { e.preventDefault(); e.stopPropagation(); try { await window.ProtoAnchors.revealAndWait(guide.__rvTarget); } catch (_) { /* ignore */ } layout(); };
+                glayer.appendChild(guide);
+            }
+            guide.__rvTarget = g.target;
+            const html = '<span class="__review_guide_tag">' + GICON + '<span>' + g.label + ' · ' + g.notes.length + '</span></span>';
+            if (guide.__rvHtml !== html) { guide.innerHTML = html; guide.__rvHtml = html; }
+            guide.title = '点击“' + g.label + '”以显示 ' + g.notes.length + ' 处标注（' + g.notes.map(n => n.displayNumber).join(' ') + '）';
+            guide.setAttribute('aria-label', guide.title);
+            guide.style.left = left + 'px'; guide.style.top = top + 'px';
+            guide.style.width = (right - left) + 'px'; guide.style.height = (bottom - top) + 'px';
+            guide.classList.toggle('__review_guide_below', top < 24);            // 贴顶时标签改挂底边，不被视口切掉
+            guide.classList.toggle('__review_guide_end', left + 84 > innerWidth); // 贴右时标签改挂右角
+            alive.add(guide);
+        });
+        existing.forEach(x => { if (!alive.has(x)) x.remove(); });
+        const orderKey = JSON.stringify(arranged.map(n => [n.id, n.displayNumber]));
+        const staleKey = JSON.stringify(stale);
+        if (orderKey !== lastOrder || staleKey !== lastStale || state !== lastState) {
+            lastOrder = orderKey; lastStale = staleKey; lastState = state;
+            R.onSync?.(Object.fromEntries(arranged.map(n => [n.id, n.displayNumber])), state, stale);
+        }
+    }
+
+    document.addEventListener('proto-anchors:reveal-failed', layout);
+
+    setInterval(() => {
+        const html = document.documentElement.outerHTML.length;
+        if (stateOf() !== lastState || scrollX !== lastX || scrollY !== lastY ||
+            innerWidth !== lastW || innerHeight !== lastH || html !== lastHtml) {
+            lastX = scrollX; lastY = scrollY; lastW = innerWidth; lastH = innerHeight; lastHtml = html;
+            layout();
+        }
+    }, 350);
+
+    layout();
+})();
+
+</script>
+</body>
+</html>
