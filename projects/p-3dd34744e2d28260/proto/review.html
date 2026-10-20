@@ -153,6 +153,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
     const EVENTS = new Set(['click', 'pointerdown', 'pointerup', 'mousedown', 'mouseup', 'touchend']);
     const EDITABLE = 'input,textarea,select,[contenteditable]:not([contenteditable="false"])';
     const BLOCKED = '[hidden],[inert],[aria-hidden="true"],[aria-disabled="true"],[data-proto-hotspot="false"]';
+    const CONTROL_TAGS = new Set(['BUTTON', 'A', 'AREA', 'INPUT', 'SELECT', 'TEXTAREA', 'SUMMARY']);
+    const CONTROL_ROLES = new Set(['button', 'link', 'checkbox', 'radio', 'switch', 'tab', 'menuitem', 'option', 'combobox', 'slider', 'textbox']);
     const owned = el => !!el?.closest?.('[data-prototype-owned],.__review_pin,.__review_pop,.__review_guide');
     let options = {}, layer, style, observer, timer = 0, frame = 0, started = 0, down = null;
     const boxes = new Map();
@@ -224,6 +226,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
         if (!(el instanceof Element) || el === document.body || el === document.documentElement || owned(el) || el.closest(BLOCKED) || el.matches(':disabled')) return false;
         return el.dataset.protoHotspot === 'true' || binding(el) || navigation(el) || nativeAction(el);
     }
+    function controlLike(el) {
+        return CONTROL_TAGS.has(el.tagName) && !(el.tagName === 'INPUT' && el.type === 'hidden')
+            || CONTROL_ROLES.has(el.getAttribute('role')) || el.dataset.protoHotspot === 'true';
+    }
+    function controlIssue(el) {
+        // 事件代理容器不能替代实际操作节点，未授权的子控件也不能让父容器整块高亮。
+        if (!CONTROL_TAGS.has(el.tagName) && [...el.querySelectorAll('*')].some(child =>
+            !owned(child) && (controlLike(child) || action(child)))) return 'container';
+        const rect = el.getBoundingClientRect();
+        // 长而矮的整行按钮可保留；高且大面积的卡片 / 面板需拆到具体控件。
+        if (rect.height > 96 && rect.width * rect.height > Math.min(64000, innerWidth * innerHeight * .12)) return 'oversized';
+        return null;
+    }
     function currentScope() {
         try { return typeof options.scope === 'function' ? options.scope() : options.scope; }
         catch (_) { return null; }
@@ -235,8 +250,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
         return scope.protoIds.includes(el.getAttribute('data-proto-id'));
     }
     function hitAction(target) {
+        if (currentScope()?.manualTargets?.length && scan().some(item => item.source === 'manual' && item.status === 'ready' && item.el.contains(target))) return true;
         for (let el = target instanceof Element ? target : target?.parentElement; el && el !== document.documentElement; el = el.parentElement)
-            if (action(el) && rectFor(el)) return true;
+            if ((controlLike(el) || action(el)) && !controlIssue(el) && rectFor(el)) return true;
         return false;
     }
     function rectFor(el) {
@@ -261,6 +277,80 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
         })) return null;
         return { left, top, right, bottom };
     }
+    function examine(el, manual = false) {
+        if (owned(el) || el.closest('[data-proto-hotspot="false"]')) return { status: 'excluded' };
+        if (el.matches(':disabled') || el.closest('[inert],[aria-disabled="true"]')) return { status: 'disabled' };
+        for (let node = el; node && node !== document.documentElement; node = node.parentElement) {
+            const css = getComputedStyle(node);
+            if (node.matches('[hidden],[aria-hidden="true"]') || css.display === 'none' || css.visibility === 'hidden' || Number(css.opacity) === 0)
+                return { status: 'hidden' };
+        }
+        if (/^(SCRIPT|STYLE|LINK|META|OPTION|OPTGROUP|PATH|SVG)$/.test(el.tagName)) return { status: 'unsupported' };
+        const issue = controlIssue(el);
+        if (issue) return { status: issue };
+        if (!manual && !action(el)) return { status: 'no-action' };
+        const bounds = el.getBoundingClientRect();
+        if (!bounds.width || !bounds.height) return { status: 'hidden' };
+        if (bounds.bottom <= 0 || bounds.top >= innerHeight || bounds.right <= 0 || bounds.left >= innerWidth) return { status: 'offscreen' };
+        const rect = rectFor(el);
+        return rect ? { status: 'ready', rect } : { status: 'occluded' };
+    }
+    function scan(scope = currentScope()) {
+        const elements = [...document.querySelectorAll('body *')], byId = new Map();
+        for (const el of elements) {
+            const id = el.getAttribute('data-proto-id');
+            if (id) { if (!byId.has(id)) byId.set(id, []); byId.get(id).push(el); }
+        }
+        const anchorFor = el => {
+            if (window.ProtoAnchors) {
+                const A = window.ProtoAnchors;
+                return { protoId: el.getAttribute('data-proto-id') || '', selector: A.selector(el), tag: el.tagName.toLowerCase(), text: A.text(el), parentText: A.text(el.parentElement) };
+            }
+            return { protoId: el.getAttribute('data-proto-id') || '', selector: el.id ? '#' + CSS.escape(el.id) : '', tag: el.tagName.toLowerCase() };
+        };
+        const resolve = anchor => {
+            if (anchor?.protoId) { const hits = byId.get(anchor.protoId) || []; return hits.length === 1 ? hits[0] : null; }
+            if (window.ProtoAnchors) return window.ProtoAnchors.resolveHidden(anchor);
+            try { const hits = [...document.querySelectorAll(anchor?.selector || ':not(*)')]; return hits.length === 1 ? hits[0] : null; } catch (_) { return null; }
+        };
+        let entries = [];
+        if (scope?.mode === 'targets' && Array.isArray(scope.protoIds)) {
+            entries = scope.protoIds.map(protoId => {
+                const hits = byId.get(protoId) || [];
+                const base = { protoId, key: 'proto:' + protoId, source: 'declared', anchor: { protoId } };
+                if (hits.length !== 1) return { ...base, status: hits.length ? 'duplicate' : 'missing' };
+                return { ...base, el: hits[0], label: labelFor(hits[0]), anchor: anchorFor(hits[0]), ...examine(hits[0]) };
+            });
+        } else if (scope?.mode === 'all') {
+            entries = elements.filter(el => action(el)).map(el => ({
+                protoId: el.getAttribute('data-proto-id') || el.id || el.tagName.toLowerCase(), source: 'automatic',
+                anchor: anchorFor(el), label: labelFor(el), key: 'all:' + (el.getAttribute('data-proto-id') || el.id || anchorFor(el).selector), el, ...examine(el)
+            }));
+        }
+        for (const target of scope?.manualTargets || []) {
+            const el = resolve(target.anchor);
+            const existing = el && entries.find(item => item.el === el);
+            if (existing) entries = entries.filter(item => item !== existing);
+            entries.push({ ...target, key: 'manual:' + target.id, source: 'manual', protoId: target.anchor.protoId || target.id, el,
+                ...(el ? examine(el, true) : { status: target.anchor.protoId && (byId.get(target.anchor.protoId)?.length || 0) > 1 ? 'duplicate' : 'missing' }) });
+        }
+        const excluded = (scope?.excludedTargets || []).map(target => resolve(target.anchor)).filter(Boolean);
+        for (const item of entries) if (item.el && excluded.includes(item.el)) item.status = 'excluded';
+        const ready = entries.filter(item => item.status === 'ready');
+        let count = 0;
+        for (const item of ready) {
+            if (ready.some(other => other.el !== item.el && item.el.contains(other.el))) item.status = 'contains-target';
+            else if (++count > MAX_HINTS) item.status = 'limit';
+        }
+        return entries;
+    }
+    function labelFor(el) { return (el.getAttribute('aria-label') || el.getAttribute('title') || el.textContent || el.value || el.tagName).replace(/\s+/g, ' ').trim().slice(0, 120); }
+    function candidate(el) { return el instanceof Element ? { ...examine(el, true), label: labelFor(el) } : { status: 'missing' }; }
+    // 只读诊断，不执行点击、不展开页面，也不修改 PRD / 提示配置。
+    function inspect() {
+        const scope = currentScope();
+        return { mode: scope?.mode || 'off', enabled: enabled(), items: scan(scope).map(({ el, ...item }) => item) };
+    }
     function position(box, rect) {
         box.style.left = Math.max(0, rect.left - 3) + 'px';
         box.style.top = Math.max(0, rect.top - 3) + 'px';
@@ -275,9 +365,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
     function refresh() {
         frame = 0;
         if (!enabled()) { hide(); return; }
-        const scope = currentScope();
+        const ready = new Map(scan().filter(item => item.status === 'ready').map(item => [item.el, item.rect]));
         for (const [el, box] of boxes) {
-            const rect = inScope(el, scope) && action(el) ? rectFor(el) : null;
+            const rect = ready.get(el);
             if (!rect) { box.remove(); boxes.delete(el); }
             else position(box, rect);
         }
@@ -288,19 +378,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
     function show() {
         if (!layer || !enabled()) { hide(); return 0; }
         const scope = currentScope();
-        if (scope?.mode !== 'all' && (scope?.mode !== 'targets' || !scope.protoIds?.length)) { hide(); return 0; }
+        if (scope?.mode !== 'all' && (scope?.mode !== 'targets' || !scope.protoIds?.length && !scope.manualTargets?.length)) { hide(); return 0; }
         if (boxes.size && performance.now() - started < DURATION) { refresh(); return boxes.size; }
         hide();
-        const candidates = [];
-        for (const el of document.querySelectorAll('body *')) {
-            if (/^(SCRIPT|STYLE|LINK|META|OPTION|OPTGROUP|PATH|SVG)$/.test(el.tagName)) continue;
-            const bounds = el.getBoundingClientRect();
-            if (!bounds.width || !bounds.height || bounds.bottom <= 0 || bounds.top >= innerHeight || bounds.right <= 0 || bounds.left >= innerWidth) continue;
-            if (inScope(el, scope) && action(el)) { const rect = rectFor(el); if (rect) candidates.push({ el, rect }); }
-            if (candidates.length >= MAX_HINTS * 2) break;
-        }
-        const leaves = candidates.filter(candidate => !candidates.some(other => other.el !== candidate.el && candidate.el.contains(other.el))).slice(0, MAX_HINTS);
-        for (const { el, rect } of leaves) {
+        for (const { el, rect } of scan(scope).filter(item => item.status === 'ready')) {
             const box = document.createElement('div');
             box.className = 'ph-box'; box.setAttribute('data-prototype-owned', '');
             box.dataset.hotspotFor = el.getAttribute('data-proto-id') || el.id || el.tagName.toLowerCase();
@@ -350,7 +431,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
         window.addEventListener('resize', schedule);
         window.addEventListener('pagehide', hide);
         observer = new MutationObserver(mutations);
-        observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['style', 'class', 'hidden', 'inert', 'disabled', 'aria-hidden', 'aria-disabled', 'role', 'onclick', 'href', 'data-proto-hotspot', 'data-proto-state', 'data-proto-page'] });
+        observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['style', 'class', 'hidden', 'inert', 'disabled', 'aria-hidden', 'aria-disabled', 'role', 'onclick', 'href', 'type', 'data-proto-id', 'data-proto-hotspot', 'data-proto-state', 'data-proto-page'] });
         return window.ProtoHotspots;
     }
     function destroy() {
@@ -363,7 +444,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
         window.removeEventListener('resize', schedule); window.removeEventListener('pagehide', hide);
         layer?.remove(); style?.remove(); layer = null; style = null; down = null;
     }
-    window.ProtoHotspots = { init, show, hide, destroy };
+    window.ProtoHotspots = { init, show, hide, destroy, inspect, candidate };
 })();
 
 </script>
@@ -457,7 +538,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
         <button class="btn-blue" onclick="toast('正在导出 Excel')">导出Excel</button>
       </div>
     </div>
-    <table class="rep-tb" id="objTable" data-proto-id="obj-need-table"></table>
+    <table class="rep-tb" id="objTable" data-proto-id="obj-need-table"><thead><tr><th class="rh">客观题题号</th><th onclick="toast('全屏显示该题详情')"><i class="flag"></i>目标一应用体验<br>1(1)</th><th onclick="toast('全屏显示该题详情')"><i class="flag"></i>目标一应用体验<br>1(2)</th><th onclick="toast('全屏显示该题详情')"><i class="flag"></i>目标一应用体验<br>1(3)</th><th onclick="toast('全屏显示该题详情')"><i class="flag"></i>目标一应用体验<br>1(4)</th><th onclick="toast('全屏显示该题详情')"><i class="flag"></i>目标一应用体验<br>1(5)</th><th onclick="toast('全屏显示该题详情')"><i class="flag"></i>目标一应用体验<br>1(6)</th><th onclick="toast('全屏显示该题详情')"><i class="flag"></i>目标二应用体验<br>1(1)</th><th onclick="toast('全屏显示该题详情')"><i class="flag"></i>目标二应用体验<br>1(2)</th><th onclick="toast('全屏显示该题详情')"><i class="flag"></i>目标二应用体验<br>1(3)</th><th onclick="toast('全屏显示该题详情')"><i class="flag"></i>目标二应用体验<br>1(4)</th></tr></thead><tbody><tr><td class="rh">年级正确率</td><td>72.3%</td><td>60%</td><td>92.3%</td><td>100%</td><td>84.6%</td><td>96.9%</td><td>98.4%</td><td>85.9%</td><td>98.4%</td><td>64.1%</td></tr><tr><td class="rh">6正确率</td><td>72.3%</td><td>60%</td><td>92.3%</td><td>100%</td><td>84.6%</td><td>96.9%</td><td>98.4%</td><td>85.9%</td><td>98.4%</td><td>64.1%</td></tr><tr><td class="rh">6需讲解人数</td><td><span class="need-link" data-proto-id="need-link-obj" onclick="openNeedModal(0)">4</span></td><td><span class="need-link" onclick="openNeedModal(1)">8</span></td><td><span class="need-link" onclick="openNeedModal(2)">2</span></td><td><span class="need-zero">-</span></td><td><span class="need-link" onclick="openNeedModal(4)">4</span></td><td><span class="need-link" onclick="openNeedModal(5)">1</span></td><td><span class="need-link" onclick="openNeedModal(6)">3</span></td><td><span class="need-link" onclick="openNeedModal(7)">2</span></td><td><span class="need-zero">-</span></td><td><span class="need-link" onclick="openNeedModal(9)">8</span></td></tr></tbody></table>
     <div class="rep-gap"></div>
     <table class="rep-tb" id="subTable" data-proto-id="sub-need-table"></table>
   </section>
@@ -474,7 +555,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
         <button class="btn-blue" onclick="toast('正在导出 Word')">导出Word</button>
       </div>
     </div>
-    <div id="cardList" data-proto-id="card-list"></div>
+    <div id="cardList" data-proto-id="card-list">
+        <div class="q-card">
+          <div class="q-tagrow">
+            <span class="q-tag" onclick="toast('查看答案和解析')">目标一应用体验1(1)</span>
+            <span class="q-flag"></span>
+          </div>
+          <div class="q-body" onclick="toast('查看答案和解析')" style="cursor:pointer">
+            <div class="q-type">判断正误</div>
+            <div class="q-stem">要洗涤试管壁上附着的硫单质，不能用水洗，可以用酒精洗涤</div>
+            <div class="q-opts"><div class="opt-row"><span>T. 正确</span><span>F. 错误</span></div></div>
+          </div>
+          <div class="q-foot">
+            <span>班级正确率：<span class="fv">72.3%</span></span>
+            <span>年级正确率：<span class="fv">72.3%</span></span>
+            <span class="q-need" data-proto-id="need-link-card" onclick="openNeedModalByCard(0)">需讲解：4人</span>
+            <div class="q-foot-acts">
+              <span class="q-fa" onclick="toast('打开数据分析')">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 11V6.5M6.5 11V2M11 11V8.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                数据分析</span>
+              <span class="q-fa" onclick="toast('全屏显示')">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 4.5v-3h3M8.5 1.5h3v3M11.5 8.5v3h-3M4.5 11.5h-3v-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                全屏显示</span>
+            </div>
+          </div>
+        </div>
+      </div>
   </section>
 
 </main>
@@ -591,23 +697,6 @@ const CARDS = [
   }
 ];
 
-/* ═══════ 客观题表格渲染 ═══════ */
-function renderObjTable() {
-  const head = '<thead><tr><th class="rh">客观题题号</th>'
-    + OBJ_COLS.map((c, i) =>
-        '<th onclick="toast(\'全屏显示该题详情\')"><i class="flag"></i>' + c.big + '<br>' + c.sub + '</th>'
-      ).join('') + '</tr></thead>';
-  const rateRow = '<tr><td class="rh">年级正确率</td>'
-    + OBJ_COLS.map(c => '<td>' + c.rate + '</td>').join('') + '</tr>';
-  const clsRow = '<tr><td class="rh">6正确率</td>'
-    + OBJ_COLS.map(c => '<td>' + c.rate + '</td>').join('') + '</tr>';
-  const needRow = '<tr><td class="rh">6需讲解人数</td>'
-    + OBJ_COLS.map((c, i) => '<td>' + (c.n > 0
-        ? '<span class="need-link" onclick="openNeedModal(' + i + ')">' + c.n + '</span>'
-        : '<span class="need-zero">-</span>') + '</td>').join('') + '</tr>';
-  document.getElementById('objTable').innerHTML = head + '<tbody>' + rateRow + clsRow + needRow + '</tbody>';
-}
-
 /* ═══════ 主观题表格渲染 ═══════ */
 function renderSubTable() {
   const head = '<thead><tr><th class="rh">主观题题号</th>'
@@ -621,7 +710,8 @@ function renderSubTable() {
 
 /* ═══════ 卡片渲染 ═══════ */
 function renderCards() {
-  document.getElementById('cardList').innerHTML = CARDS.map((c, i) => `
+  /* 首张卡为静态锚（需讲解入口带 need-link-card），其余动态追加，弹窗索引 +1 */
+  document.getElementById('cardList').insertAdjacentHTML('beforeend', CARDS.slice(1).map((c, i) => `
     <div class="q-card">
       <div class="q-tagrow">
         <span class="q-tag" onclick="toast('查看答案和解析')">${c.tag}</span>
@@ -635,7 +725,7 @@ function renderCards() {
       <div class="q-foot">
         <span>班级正确率：<span class="fv">${c.rate}</span></span>
         <span>年级正确率：<span class="fv">${c.rate}</span></span>
-        <span class="q-need" onclick="openNeedModalByCard(${i})">需讲解：${c.n}人</span>
+        <span class="q-need" onclick="openNeedModalByCard(${i + 1})">需讲解：${c.n}人</span>
         <div class="q-foot-acts">
           <span class="q-fa" onclick="toast('打开数据分析')">
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 11V6.5M6.5 11V2M11 11V8.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
@@ -645,7 +735,7 @@ function renderCards() {
             全屏显示</span>
         </div>
       </div>
-    </div>`).join('');
+    </div>`).join(''));
 }
 
 /* ═══════ 弹窗 ═══════ */
@@ -704,7 +794,6 @@ function toast(msg) {
 }
 
 /* ═══════ 启动 ═══════ */
-renderObjTable();
 renderSubTable();
 renderCards();
 </script>
@@ -1087,6 +1176,29 @@ renderCards();
         }
         return fallback;
     }
+    function manualCondition(anchor, attempted = new Set()) {
+        const steps = anchor?.revealSteps || [];
+        const controls = steps.map(step => {
+            let matches = [];
+            try { matches = [...document.querySelectorAll(step.protoId ? `[data-proto-id="${CSS.escape(step.protoId)}"]` : step.selector || ':not(*)')]; } catch (_) { /* invalid locator */ }
+            return matches.length === 1 && !owned(matches[0]) && visible(matches[0]) && !matches[0].disabled && matches[0].getAttribute('aria-disabled') !== 'true' ? matches[0] : null;
+        });
+        for (let i = 0; i < steps.length; i++) {
+            const condition = steps[i], element = controls[i];
+            if (!element || attempted.has(element)) continue;
+            if (condition.kind === 'click' && controls.slice(i + 1).some(next => {
+                if (!next) return false;
+                const controlled = (element.getAttribute('aria-controls') || '').split(/\s+/).filter(Boolean);
+                for (let branch = next; branch && branch !== document.body; branch = branch.parentElement) {
+                    if (controlled.includes(branch.id) || branch.getAttribute('data-proto-reveal-by') === condition.selector) return true;
+                }
+                return false;
+            })) continue;
+            if (condition.kind !== 'click' && conditionValue(element, condition) === condition.value) continue;
+            return { element, condition, label: condition.label || conditionGuideLabel(condition) };
+        }
+        return null;
+    }
     function applyCondition(hit) {
         if (!hit?.element) return false;
         const { element, condition } = hit;
@@ -1168,6 +1280,10 @@ renderCards();
     }
     function revealHint(anchor, el = resolveHidden(anchor)) {
         if (el && !hidden(el)) return null; // 目标已显现；若落点异常应走失锚/响应式回退，不能继续显示条件引导
+        if (anchor?.revealSteps?.length) {
+            const manual = manualCondition(anchor);
+            return manual ? { trigger: manual.element, target: anchor, label: manual.label, kind: 'condition' } : null;
+        }
         const declared = el ? declaredCondition(el) : null;
         if (declared) return { trigger: declared.element, target: anchor || el, label: declared.label, kind: 'condition' };
         // 优先语义明确的 details / aria-controls；其次用创建标注时记录的、当前值确实不同的状态条件；
@@ -1184,6 +1300,18 @@ renderCards();
     function reveal(target, attempted = new Set(), notify = true) {
         const anchor = target && target.nodeType === 1 ? null : target;
         let el = target && target.nodeType === 1 ? target : resolveHidden(target);
+        if (anchor?.revealSteps?.length) {
+            if (el && !hidden(el)) return el;
+            for (let i = 0; i < anchor.revealSteps.length; i++) {
+                const hit = manualCondition(anchor, attempted);
+                if (!hit) break;
+                attempted.add(hit.element);
+                applyCondition(hit);
+                el = resolveHidden(anchor);
+                if (el && !hidden(el)) return el;
+            }
+            return null;
+        }
         // 条件控件先恢复到创建标注时的值；change/click 处理器可同步显现，也可由 MutationObserver 在异步渲染后接力。
         const condition = (el ? declaredCondition(el) : null) || (anchor ? conditionTrigger(anchor) : null);
         if (condition && !condition.satisfied && !attempted.has(condition.element)) {
@@ -1709,7 +1837,8 @@ renderCards();
                 glayer.appendChild(guide);
             }
             guide.__rvTarget = g.target;
-            const html = '<span class="__review_guide_tag">' + GICON + '<span>' + g.label + ' · ' + g.notes.length + '</span></span>';
+            const safeLabel = String(g.label).replace(/[&<>"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[char]);
+            const html = '<span class="__review_guide_tag">' + GICON + '<span>' + safeLabel + ' · ' + g.notes.length + '</span></span>';
             if (guide.__rvHtml !== html) { guide.innerHTML = html; guide.__rvHtml = html; }
             guide.title = '点击“' + g.label + '”以显示 ' + g.notes.length + ' 处标注（' + g.notes.map(n => n.displayNumber).join(' ') + '）';
             guide.setAttribute('aria-label', guide.title);
