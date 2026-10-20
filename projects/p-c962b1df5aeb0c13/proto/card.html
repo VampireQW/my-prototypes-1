@@ -458,6 +458,8 @@ table.mini .num { font-variant-numeric: tabular-nums; }
             || CONTROL_ROLES.has(el.getAttribute('role')) || el.dataset.protoHotspot === 'true';
     }
     function controlIssue(el) {
+        // 仅截图专用运行时中用户手动画出的矩形可使用自定尺寸。
+        if (window.ProtoScreenshot && el.parentElement?.id === 'screenshot-regions' && el.classList.contains('screenshot-region')) return null;
         // 事件代理容器不能替代实际操作节点，未授权的子控件也不能让父容器整块高亮。
         if (!CONTROL_TAGS.has(el.tagName) && [...el.querySelectorAll('*')].some(child =>
             !owned(child) && (controlLike(child) || action(child)))) return 'container';
@@ -496,7 +498,7 @@ table.mini .num { font-variant-numeric: tabular-nums; }
             if (/hidden|clip|auto|scroll/.test(css.overflowY)) { top = Math.max(top, clip.top); bottom = Math.min(bottom, clip.bottom); }
         }
         if (right - left < 4 || bottom - top < 4) return null;
-        if ((right - left) * (bottom - top) > innerWidth * innerHeight * .65) return null;
+        if ((right - left) * (bottom - top) > innerWidth * innerHeight * .65 && !(window.ProtoScreenshot && el.parentElement?.id === 'screenshot-regions')) return null;
         const points = [[.5, .5], [.2, .2], [.8, .8]];
         if (!points.some(([x, y]) => {
             const hit = document.elementFromPoint(left + (right - left) * x, top + (bottom - top) * y);
@@ -862,9 +864,11 @@ table.mini .num { font-variant-numeric: tabular-nums; }
       <div class="q-pick" id="qPick"></div>
 
       <div class="m-label">批改范围</div>
-      <div class="grade-scope">
-        <label><input type="radio" name="gradeScope" value="all">全部题目</label>
-        <label><input type="radio" name="gradeScope" value="pending" checked>仅未批和批改错误题目</label>
+      <div class="grade-scope" id="gradeScope">
+        <label><input type="checkbox" value="all">全部</label>
+        <label><input type="checkbox" value="pending">未批题目</label>
+        <label><input type="checkbox" value="wrong">批改错误题目</label>
+        <label><input type="checkbox" value="done">已批题目</label>
       </div>
 
       <div class="m-label">选择班级
@@ -1000,6 +1004,9 @@ function openRegrade(qno) {
   renderClassPick();
   syncQPickAll();
   syncClsAll();
+  /* 批改范围每次打开重置为全不选 */
+  scopeBox.querySelectorAll('input').forEach(b => b.checked = false);
+  scopeAll.indeterminate = false;
   mask.classList.add('open');
   document.getElementById('regradeOk').focus();
 }
@@ -1076,18 +1083,35 @@ function renderClassPick() {
   });
 }
 
+/* 批改范围：全部 ⇄ 三项 全选式联动（默认全不选） */
+const scopeBox = document.getElementById('gradeScope');
+const scopeAll = scopeBox.querySelector('input[value="all"]');
+const scopeItems = [...scopeBox.querySelectorAll('input')].filter(i => i.value !== 'all');
+scopeAll.addEventListener('change', () => {
+  scopeItems.forEach(b => b.checked = scopeAll.checked);
+  scopeAll.indeterminate = false;
+});
+scopeItems.forEach(b => b.addEventListener('change', () => {
+  const n = scopeItems.filter(x => x.checked).length;
+  scopeAll.checked = n === scopeItems.length;
+  scopeAll.indeterminate = n > 0 && n < scopeItems.length;
+}));
+
 /* 确定 / 取消 */
 document.getElementById('regradeOk').addEventListener('click', () => {
   const pickedQ = [...qPick.querySelectorAll('.qp-check:checked')].map(x => Number(x.value));
   if (!pickedQ.length) { toast('请至少选择一道题目'); return; }
+  const scopePicked = [...scopeBox.querySelectorAll('input:checked')].map(x => x.value);
+  if (!scopePicked.length) { toast('请选择批改范围'); return; }
   const pickedC = [...classPick.querySelectorAll('.cls-check:checked')];
   if (!pickedC.length) { toast('请至少选择一个班级'); return; }
-  const scope = document.querySelector('input[name="gradeScope"]:checked').value;
   closeRegrade();
   /* 题目进入智批中状态 */
   pickedQ.forEach(no => grading.add(no));
   renderQList();
-  toast(scope === 'all' ? '已按班级提交智批（全部题目），题目进入智批中' : '已按班级提交智批（仅未批和批改错误），题目进入智批中');
+  const scopeText = scopeAll.checked ? '全部题目'
+    : scopePicked.map(v => ({ pending: '未批题目', wrong: '批改错误题目', done: '已批题目' })[v]).filter(Boolean).join('、');
+  toast(`已按班级提交智批（${scopeText}），题目进入智批中`);
 });
 document.getElementById('regradeCancel').addEventListener('click', closeRegrade);
 document.getElementById('regradeClose').addEventListener('click', closeRegrade);
@@ -1337,6 +1361,12 @@ renderQList();
         return { element: null, reason: '目标变化，等待重新定位' };
     }
     function at(x, y) {
+        // 截图标注始终绑定图片自身；覆盖其上的热区可随时移动、删除。
+        const image = document.querySelector('html[data-proto-screenshot="true"] #screenshot-image');
+        if (image) {
+            const bounds = image.getBoundingClientRect();
+            if (x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom) return image;
+        }
         return (
             document
                 .elementsFromPoint(x, y)
@@ -1878,7 +1908,9 @@ renderQList();
             try { window.__reviewRelayout?.(); } catch (_) { /* ignore */ }
             try { found = A.point(note); } catch (_) { /* ignore */ }
         }
-        if (found?.element) found.element.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        if (found?.element?.id === 'screenshot-image' && found.point && document.documentElement.dataset.protoScreenshot === 'true')
+            window.scrollTo({ top: Math.max(0, found.point.y + window.scrollY - window.innerHeight / 2), behavior: 'smooth' });
+        else if (found?.element) found.element.scrollIntoView({ block: 'center', behavior: 'smooth' });
         else if (found?.point) window.scrollTo({ top: Math.max(0, found.point.y + window.scrollY - window.innerHeight / 2), behavior: 'smooth' });
     }
 
