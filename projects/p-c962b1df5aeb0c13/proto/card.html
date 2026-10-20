@@ -380,6 +380,8 @@ table.mini .num { font-variant-numeric: tabular-nums; }
     const EVENTS = new Set(['click', 'pointerdown', 'pointerup', 'mousedown', 'mouseup', 'touchend']);
     const EDITABLE = 'input,textarea,select,[contenteditable]:not([contenteditable="false"])';
     const BLOCKED = '[hidden],[inert],[aria-hidden="true"],[aria-disabled="true"],[data-proto-hotspot="false"]';
+    const CONTROL_TAGS = new Set(['BUTTON', 'A', 'AREA', 'INPUT', 'SELECT', 'TEXTAREA', 'SUMMARY']);
+    const CONTROL_ROLES = new Set(['button', 'link', 'checkbox', 'radio', 'switch', 'tab', 'menuitem', 'option', 'combobox', 'slider', 'textbox']);
     const owned = el => !!el?.closest?.('[data-prototype-owned],.__review_pin,.__review_pop,.__review_guide');
     let options = {}, layer, style, observer, timer = 0, frame = 0, started = 0, down = null;
     const boxes = new Map();
@@ -451,6 +453,19 @@ table.mini .num { font-variant-numeric: tabular-nums; }
         if (!(el instanceof Element) || el === document.body || el === document.documentElement || owned(el) || el.closest(BLOCKED) || el.matches(':disabled')) return false;
         return el.dataset.protoHotspot === 'true' || binding(el) || navigation(el) || nativeAction(el);
     }
+    function controlLike(el) {
+        return CONTROL_TAGS.has(el.tagName) && !(el.tagName === 'INPUT' && el.type === 'hidden')
+            || CONTROL_ROLES.has(el.getAttribute('role')) || el.dataset.protoHotspot === 'true';
+    }
+    function controlIssue(el) {
+        // 事件代理容器不能替代实际操作节点，未授权的子控件也不能让父容器整块高亮。
+        if (!CONTROL_TAGS.has(el.tagName) && [...el.querySelectorAll('*')].some(child =>
+            !owned(child) && (controlLike(child) || action(child)))) return 'container';
+        const rect = el.getBoundingClientRect();
+        // 长而矮的整行按钮可保留；高且大面积的卡片 / 面板需拆到具体控件。
+        if (rect.height > 96 && rect.width * rect.height > Math.min(64000, innerWidth * innerHeight * .12)) return 'oversized';
+        return null;
+    }
     function currentScope() {
         try { return typeof options.scope === 'function' ? options.scope() : options.scope; }
         catch (_) { return null; }
@@ -458,14 +473,13 @@ table.mini .num { font-variant-numeric: tabular-nums; }
     function inScope(el, scope = currentScope()) {
         if (scope?.mode === 'all') return true;
         if (scope?.mode !== 'targets' || !Array.isArray(scope.protoIds)) return false;
-        // 一个组件被明确列入需求范围时，包含其内部真实可交互的子元素。
-        for (let node = el; node && node !== document.documentElement; node = node.parentElement)
-            if (scope.protoIds.includes(node.getAttribute('data-proto-id'))) return true;
-        return false;
+        // 范围只授权该控件自身；容器标注不授权内部的历史交互。
+        return scope.protoIds.includes(el.getAttribute('data-proto-id'));
     }
     function hitAction(target) {
+        if (currentScope()?.manualTargets?.length && scan().some(item => item.source === 'manual' && item.status === 'ready' && item.el.contains(target))) return true;
         for (let el = target instanceof Element ? target : target?.parentElement; el && el !== document.documentElement; el = el.parentElement)
-            if (action(el) && rectFor(el)) return true;
+            if ((controlLike(el) || action(el)) && !controlIssue(el) && rectFor(el)) return true;
         return false;
     }
     function rectFor(el) {
@@ -490,6 +504,80 @@ table.mini .num { font-variant-numeric: tabular-nums; }
         })) return null;
         return { left, top, right, bottom };
     }
+    function examine(el, manual = false) {
+        if (owned(el) || el.closest('[data-proto-hotspot="false"]')) return { status: 'excluded' };
+        if (el.matches(':disabled') || el.closest('[inert],[aria-disabled="true"]')) return { status: 'disabled' };
+        for (let node = el; node && node !== document.documentElement; node = node.parentElement) {
+            const css = getComputedStyle(node);
+            if (node.matches('[hidden],[aria-hidden="true"]') || css.display === 'none' || css.visibility === 'hidden' || Number(css.opacity) === 0)
+                return { status: 'hidden' };
+        }
+        if (/^(SCRIPT|STYLE|LINK|META|OPTION|OPTGROUP|PATH|SVG)$/.test(el.tagName)) return { status: 'unsupported' };
+        const issue = controlIssue(el);
+        if (issue) return { status: issue };
+        if (!manual && !action(el)) return { status: 'no-action' };
+        const bounds = el.getBoundingClientRect();
+        if (!bounds.width || !bounds.height) return { status: 'hidden' };
+        if (bounds.bottom <= 0 || bounds.top >= innerHeight || bounds.right <= 0 || bounds.left >= innerWidth) return { status: 'offscreen' };
+        const rect = rectFor(el);
+        return rect ? { status: 'ready', rect } : { status: 'occluded' };
+    }
+    function scan(scope = currentScope()) {
+        const elements = [...document.querySelectorAll('body *')], byId = new Map();
+        for (const el of elements) {
+            const id = el.getAttribute('data-proto-id');
+            if (id) { if (!byId.has(id)) byId.set(id, []); byId.get(id).push(el); }
+        }
+        const anchorFor = el => {
+            if (window.ProtoAnchors) {
+                const A = window.ProtoAnchors;
+                return { protoId: el.getAttribute('data-proto-id') || '', selector: A.selector(el), tag: el.tagName.toLowerCase(), text: A.text(el), parentText: A.text(el.parentElement) };
+            }
+            return { protoId: el.getAttribute('data-proto-id') || '', selector: el.id ? '#' + CSS.escape(el.id) : '', tag: el.tagName.toLowerCase() };
+        };
+        const resolve = anchor => {
+            if (anchor?.protoId) { const hits = byId.get(anchor.protoId) || []; return hits.length === 1 ? hits[0] : null; }
+            if (window.ProtoAnchors) return window.ProtoAnchors.resolveHidden(anchor);
+            try { const hits = [...document.querySelectorAll(anchor?.selector || ':not(*)')]; return hits.length === 1 ? hits[0] : null; } catch (_) { return null; }
+        };
+        let entries = [];
+        if (scope?.mode === 'targets' && Array.isArray(scope.protoIds)) {
+            entries = scope.protoIds.map(protoId => {
+                const hits = byId.get(protoId) || [];
+                const base = { protoId, key: 'proto:' + protoId, source: 'declared', anchor: { protoId } };
+                if (hits.length !== 1) return { ...base, status: hits.length ? 'duplicate' : 'missing' };
+                return { ...base, el: hits[0], label: labelFor(hits[0]), anchor: anchorFor(hits[0]), ...examine(hits[0]) };
+            });
+        } else if (scope?.mode === 'all') {
+            entries = elements.filter(el => action(el)).map(el => ({
+                protoId: el.getAttribute('data-proto-id') || el.id || el.tagName.toLowerCase(), source: 'automatic',
+                anchor: anchorFor(el), label: labelFor(el), key: 'all:' + (el.getAttribute('data-proto-id') || el.id || anchorFor(el).selector), el, ...examine(el)
+            }));
+        }
+        for (const target of scope?.manualTargets || []) {
+            const el = resolve(target.anchor);
+            const existing = el && entries.find(item => item.el === el);
+            if (existing) entries = entries.filter(item => item !== existing);
+            entries.push({ ...target, key: 'manual:' + target.id, source: 'manual', protoId: target.anchor.protoId || target.id, el,
+                ...(el ? examine(el, true) : { status: target.anchor.protoId && (byId.get(target.anchor.protoId)?.length || 0) > 1 ? 'duplicate' : 'missing' }) });
+        }
+        const excluded = (scope?.excludedTargets || []).map(target => resolve(target.anchor)).filter(Boolean);
+        for (const item of entries) if (item.el && excluded.includes(item.el)) item.status = 'excluded';
+        const ready = entries.filter(item => item.status === 'ready');
+        let count = 0;
+        for (const item of ready) {
+            if (ready.some(other => other.el !== item.el && item.el.contains(other.el))) item.status = 'contains-target';
+            else if (++count > MAX_HINTS) item.status = 'limit';
+        }
+        return entries;
+    }
+    function labelFor(el) { return (el.getAttribute('aria-label') || el.getAttribute('title') || el.textContent || el.value || el.tagName).replace(/\s+/g, ' ').trim().slice(0, 120); }
+    function candidate(el) { return el instanceof Element ? { ...examine(el, true), label: labelFor(el) } : { status: 'missing' }; }
+    // 只读诊断，不执行点击、不展开页面，也不修改 PRD / 提示配置。
+    function inspect() {
+        const scope = currentScope();
+        return { mode: scope?.mode || 'off', enabled: enabled(), items: scan(scope).map(({ el, ...item }) => item) };
+    }
     function position(box, rect) {
         box.style.left = Math.max(0, rect.left - 3) + 'px';
         box.style.top = Math.max(0, rect.top - 3) + 'px';
@@ -504,9 +592,9 @@ table.mini .num { font-variant-numeric: tabular-nums; }
     function refresh() {
         frame = 0;
         if (!enabled()) { hide(); return; }
-        const scope = currentScope();
+        const ready = new Map(scan().filter(item => item.status === 'ready').map(item => [item.el, item.rect]));
         for (const [el, box] of boxes) {
-            const rect = inScope(el, scope) && action(el) ? rectFor(el) : null;
+            const rect = ready.get(el);
             if (!rect) { box.remove(); boxes.delete(el); }
             else position(box, rect);
         }
@@ -517,19 +605,10 @@ table.mini .num { font-variant-numeric: tabular-nums; }
     function show() {
         if (!layer || !enabled()) { hide(); return 0; }
         const scope = currentScope();
-        if (scope?.mode !== 'all' && (scope?.mode !== 'targets' || !scope.protoIds?.length)) { hide(); return 0; }
+        if (scope?.mode !== 'all' && (scope?.mode !== 'targets' || !scope.protoIds?.length && !scope.manualTargets?.length)) { hide(); return 0; }
         if (boxes.size && performance.now() - started < DURATION) { refresh(); return boxes.size; }
         hide();
-        const candidates = [];
-        for (const el of document.querySelectorAll('body *')) {
-            if (/^(SCRIPT|STYLE|LINK|META|OPTION|OPTGROUP|PATH|SVG)$/.test(el.tagName)) continue;
-            const bounds = el.getBoundingClientRect();
-            if (!bounds.width || !bounds.height || bounds.bottom <= 0 || bounds.top >= innerHeight || bounds.right <= 0 || bounds.left >= innerWidth) continue;
-            if (inScope(el, scope) && action(el)) { const rect = rectFor(el); if (rect) candidates.push({ el, rect }); }
-            if (candidates.length >= MAX_HINTS * 2) break;
-        }
-        const leaves = candidates.filter(candidate => !candidates.some(other => other.el !== candidate.el && candidate.el.contains(other.el))).slice(0, MAX_HINTS);
-        for (const { el, rect } of leaves) {
+        for (const { el, rect } of scan(scope).filter(item => item.status === 'ready')) {
             const box = document.createElement('div');
             box.className = 'ph-box'; box.setAttribute('data-prototype-owned', '');
             box.dataset.hotspotFor = el.getAttribute('data-proto-id') || el.id || el.tagName.toLowerCase();
@@ -579,7 +658,7 @@ table.mini .num { font-variant-numeric: tabular-nums; }
         window.addEventListener('resize', schedule);
         window.addEventListener('pagehide', hide);
         observer = new MutationObserver(mutations);
-        observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['style', 'class', 'hidden', 'inert', 'disabled', 'aria-hidden', 'aria-disabled', 'role', 'onclick', 'href', 'data-proto-hotspot', 'data-proto-state', 'data-proto-page'] });
+        observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['style', 'class', 'hidden', 'inert', 'disabled', 'aria-hidden', 'aria-disabled', 'role', 'onclick', 'href', 'type', 'data-proto-id', 'data-proto-hotspot', 'data-proto-state', 'data-proto-page'] });
         return window.ProtoHotspots;
     }
     function destroy() {
@@ -592,7 +671,7 @@ table.mini .num { font-variant-numeric: tabular-nums; }
         window.removeEventListener('resize', schedule); window.removeEventListener('pagehide', hide);
         layer?.remove(); style?.remove(); layer = null; style = null; down = null;
     }
-    window.ProtoHotspots = { init, show, hide, destroy };
+    window.ProtoHotspots = { init, show, hide, destroy, inspect, candidate };
 })();
 
 </script>
@@ -1437,6 +1516,29 @@ renderQList();
         }
         return fallback;
     }
+    function manualCondition(anchor, attempted = new Set()) {
+        const steps = anchor?.revealSteps || [];
+        const controls = steps.map(step => {
+            let matches = [];
+            try { matches = [...document.querySelectorAll(step.protoId ? `[data-proto-id="${CSS.escape(step.protoId)}"]` : step.selector || ':not(*)')]; } catch (_) { /* invalid locator */ }
+            return matches.length === 1 && !owned(matches[0]) && visible(matches[0]) && !matches[0].disabled && matches[0].getAttribute('aria-disabled') !== 'true' ? matches[0] : null;
+        });
+        for (let i = 0; i < steps.length; i++) {
+            const condition = steps[i], element = controls[i];
+            if (!element || attempted.has(element)) continue;
+            if (condition.kind === 'click' && controls.slice(i + 1).some(next => {
+                if (!next) return false;
+                const controlled = (element.getAttribute('aria-controls') || '').split(/\s+/).filter(Boolean);
+                for (let branch = next; branch && branch !== document.body; branch = branch.parentElement) {
+                    if (controlled.includes(branch.id) || branch.getAttribute('data-proto-reveal-by') === condition.selector) return true;
+                }
+                return false;
+            })) continue;
+            if (condition.kind !== 'click' && conditionValue(element, condition) === condition.value) continue;
+            return { element, condition, label: condition.label || conditionGuideLabel(condition) };
+        }
+        return null;
+    }
     function applyCondition(hit) {
         if (!hit?.element) return false;
         const { element, condition } = hit;
@@ -1496,8 +1598,34 @@ renderQList();
         }
         return null;
     }
+    function declaredCondition(el) {
+        // 从外向内找当前可用的入口；导入标注没有 conditions 时也读取页面上的显现声明。
+        const chain = [];
+        for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) chain.unshift(n);
+        for (const node of chain) {
+            const by = node.getAttribute?.('data-proto-reveal-by');
+            if (!by || !hidden(node)) continue;
+            let controls = [];
+            try { controls = [...document.querySelectorAll(by)]; } catch (_) { continue; }
+            if (controls.length !== 1) continue;
+            const control = controls[0];
+            if (owned(control) || !visible(control) || control.disabled || control.getAttribute('aria-disabled') === 'true' || revealFailed(el, control)) continue;
+            const raw = node.getAttribute('data-proto-reveal-value') ?? 'true';
+            const kind = control.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control.type) ? control.type : 'click';
+            const condition = { selector: by, kind, value: kind === 'select' ? raw : kind === 'click' ? raw : raw === 'true', explicit: true,
+                label: node.getAttribute('data-proto-reveal-label') || controlLabel(control), option: raw };
+            return { element: control, condition, label: node.getAttribute('data-proto-reveal-label') || conditionGuideLabel(condition) };
+        }
+        return null;
+    }
     function revealHint(anchor, el = resolveHidden(anchor)) {
         if (el && !hidden(el)) return null; // 目标已显现；若落点异常应走失锚/响应式回退，不能继续显示条件引导
+        if (anchor?.revealSteps?.length) {
+            const manual = manualCondition(anchor);
+            return manual ? { trigger: manual.element, target: anchor, label: manual.label, kind: 'condition' } : null;
+        }
+        const declared = el ? declaredCondition(el) : null;
+        if (declared) return { trigger: declared.element, target: anchor || el, label: declared.label, kind: 'condition' };
         // 优先语义明确的 details / aria-controls；其次用创建标注时记录的、当前值确实不同的状态条件；
         // 再用邻近按钮弱推断；条件值已满足却仍隐藏的同值重放排最后（否则弹层折叠时会误显「选择 智能体」）。
         const direct = el ? revealTrigger(el, true) : null;
@@ -1509,26 +1637,47 @@ renderQList();
         if (fallback) return { trigger: fallback, target: el, label: '展开', kind: 'disclosure' };
         return conditionHint;
     }
-    function reveal(target) {
+    function reveal(target, attempted = new Set(), notify = true) {
         const anchor = target && target.nodeType === 1 ? null : target;
         let el = target && target.nodeType === 1 ? target : resolveHidden(target);
+        if (anchor?.revealSteps?.length) {
+            if (el && !hidden(el)) return el;
+            for (let i = 0; i < anchor.revealSteps.length; i++) {
+                const hit = manualCondition(anchor, attempted);
+                if (!hit) break;
+                attempted.add(hit.element);
+                applyCondition(hit);
+                el = resolveHidden(anchor);
+                if (el && !hidden(el)) return el;
+            }
+            return null;
+        }
         // 条件控件先恢复到创建标注时的值；change/click 处理器可同步显现，也可由 MutationObserver 在异步渲染后接力。
-        const condition = anchor ? conditionTrigger(anchor) : null;
-        if (condition && !condition.satisfied && applyCondition(condition)) el = resolveHidden(anchor) || el;
+        const condition = (el ? declaredCondition(el) : null) || (anchor ? conditionTrigger(anchor) : null);
+        if (condition && !condition.satisfied && !attempted.has(condition.element)) {
+            attempted.add(condition.element);
+            if (applyCondition(condition)) el = resolveHidden(anchor) || el;
+        }
         // 同一触发器只点一次：Vue/React 类原型点击后 DOM 在 nextTick 才更新，同步判定仍为隐藏，
         // 循环里重复点同一个按钮会把刚展开的区域再折回去（偶数次 = 没展开）。多层折叠靠后续重排接力。
-        const clicked = new Set();
+        const clicked = attempted;
         let lastAttempt = null;
         for (let g = 0; el && g < 10 && hidden(el); g++) {
-            const trig = revealTrigger(el);
+            const declared = declaredCondition(el);
+            const trig = declared?.element || revealTrigger(el);
             if (!trig || clicked.has(trig)) break;
             clicked.add(trig);
             lastAttempt = { element: el, trigger: trig };
-            if (trig.tagName === 'DETAILS') trig.open = true; else trig.click();
+            if (declared) applyCondition(declared);
+            else if (trig.tagName === 'DETAILS') trig.open = true; else trig.click();
+            if (anchor) el = resolveHidden(anchor) || el;
         }
         // 折叠触发器都试过仍不可见：最后才重放已满足的同值条件（select 的 change 处理器可能负责重建区域）。
-        if ((!el || hidden(el)) && condition?.satisfied && applyCondition(condition)) el = resolveHidden(anchor) || el;
-        if ((!el || hidden(el)) && lastAttempt) {
+        if ((!el || hidden(el)) && condition?.satisfied && !attempted.has(condition.element)) {
+            attempted.add(condition.element);
+            if (applyCondition(condition)) el = resolveHidden(anchor) || el;
+        }
+        if ((!el || hidden(el)) && lastAttempt && notify) {
             // 给 Vue/React 等异步渲染留出时间；仍未显现就记住这组无效关联，并通知两种标注层移除假引导。
             setTimeout(() => {
                 const current = anchor ? resolveHidden(anchor) : lastAttempt.element;
@@ -1539,6 +1688,28 @@ renderQList();
             }, 450);
         }
         return !el || hidden(el) ? null : el;
+    }
+    const pendingReveals = new Map();
+    function revealAndWait(target) {
+        const key = target?.nodeType === 1 ? target : `${target?.protoId || ''}\n${target?.selector || ''}`;
+        if (pendingReveals.has(key)) return pendingReveals.get(key);
+        const operation = (async () => {
+            const attempted = new Set(), deadline = Date.now() + 1800;
+            do {
+                const el = reveal(target, attempted, false);
+                if (el) return el;
+                if (!attempted.size) return null;
+                await new Promise(resolve => setTimeout(resolve, 32));
+            } while (Date.now() < deadline);
+            const current = target?.nodeType === 1 ? target : resolveHidden(target);
+            if (current && !hidden(current)) return current;
+            if (current) for (const trigger of attempted) markRevealFailed(current, trigger);
+            document.dispatchEvent(new CustomEvent('proto-anchors:reveal-failed', { detail: { target: current } }));
+            return null;
+        })();
+        pendingReveals.set(key, operation);
+        operation.finally(() => { if (pendingReveals.get(key) === operation) pendingReveals.delete(key); }).catch(() => {});
+        return operation;
     }
     globalThis.ProtoAnchors = {
         owned,
@@ -1552,6 +1723,7 @@ renderQList();
         revealTrigger,
         revealHint,
         reveal,
+        revealAndWait,
         rect,
         placement,
         point,
@@ -1696,13 +1868,13 @@ renderQList();
         if ((tries || 0) < 50) setTimeout(() => relayout((tries || 0) + 1), 100);
     }
 
-    function reveal(note) {
+    async function reveal(note) {
         const A = window.ProtoAnchors;
         let found = null;
         try { found = A.point(note); } catch (_) { /* 锚定异常 */ }
         if (!found?.element && !found?.point) {
             // 目标被折叠/隐藏：先联动展开对应折叠区，再重新定位与重排气泡
-            try { A.reveal?.(note.anchor); } catch (_) { /* ignore */ }
+            try { await (A.revealAndWait?.(note.anchor) ?? A.reveal?.(note.anchor)); } catch (_) { /* ignore */ }
             try { window.__reviewRelayout?.(); } catch (_) { /* ignore */ }
             try { found = A.point(note); } catch (_) { /* ignore */ }
         }
@@ -1916,8 +2088,15 @@ renderQList();
     window.addEventListener('scroll', e => {
         if (pop && pop.style.display === 'block' && pop.contains(e.target)) return;
         hidePop();
+        scheduleLayout();
     }, { passive: true, capture: true });
-    window.addEventListener('resize', hidePop, { passive: true });
+    window.addEventListener('resize', () => { hidePop(); scheduleLayout(); }, { passive: true });
+
+    let layoutFrame = 0;
+    function scheduleLayout() {
+        if (layoutFrame) return;
+        layoutFrame = requestAnimationFrame(() => { layoutFrame = 0; layout(); });
+    }
 
     const stateOf = () => document.documentElement.dataset.protoState || 'default';
     let lastState = '', lastX = -1, lastY = -1, lastW = 0, lastH = 0, lastHtml = '';
@@ -1934,6 +2113,7 @@ renderQList();
             let found = null;
             try { found = window.ProtoAnchors.point(n); } catch (_) { /* 锚定异常按失效处理 */ }
             if (!found?.point) { noPoint.push(n); continue; }
+            if (found.point.visible === false) continue; // 滚出嵌套容器的序号随锚点隐藏，不算失锚。
             const pin = document.createElement('button');
             pin.type = 'button';
             pin.className = '__review_pin';
@@ -1993,11 +2173,12 @@ renderQList();
                 guide.type = 'button'; guide.className = '__review_guide';
                 guide.__rvTrig = trig;
                 guide.style.setProperty('--g-delay', (-(gi++ % 4) * 0.45) + 's');
-                guide.onclick = e => { e.preventDefault(); e.stopPropagation(); try { window.ProtoAnchors.reveal(guide.__rvTarget); } catch (_) { /* ignore */ } layout(); };
+                guide.onclick = async e => { e.preventDefault(); e.stopPropagation(); try { await window.ProtoAnchors.revealAndWait(guide.__rvTarget); } catch (_) { /* ignore */ } layout(); };
                 glayer.appendChild(guide);
             }
             guide.__rvTarget = g.target;
-            const html = '<span class="__review_guide_tag">' + GICON + '<span>' + g.label + ' · ' + g.notes.length + '</span></span>';
+            const safeLabel = String(g.label).replace(/[&<>"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[char]);
+            const html = '<span class="__review_guide_tag">' + GICON + '<span>' + safeLabel + ' · ' + g.notes.length + '</span></span>';
             if (guide.__rvHtml !== html) { guide.innerHTML = html; guide.__rvHtml = html; }
             guide.title = '点击“' + g.label + '”以显示 ' + g.notes.length + ' 处标注（' + g.notes.map(n => n.displayNumber).join(' ') + '）';
             guide.setAttribute('aria-label', guide.title);
