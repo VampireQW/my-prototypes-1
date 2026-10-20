@@ -263,7 +263,7 @@ table.rs td.act { text-align: center; }
 }
 .opt-group .op.sel { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
 
-/* 智能批阅卡片：白底无黄底，结论行浅灰底；评分理由整项已移除（用户 10-20 裁定） */
+/* 智能批阅卡片：白底无黄底，结论行浅灰底；右下角保留静态「评分理由」按钮（无展开交互、不展示理由内容） */
 .grade-card {
   background: var(--surface); border: 1px solid var(--border-strong);
   border-radius: var(--radius); overflow: hidden;
@@ -274,6 +274,8 @@ table.rs td.act { text-align: center; }
   padding: var(--space-1) var(--space-3);
 }
 .gc-body { padding: var(--space-2) var(--space-3); display: flex; flex-direction: column; gap: var(--space-1); }
+.gc-reason-row { display: flex; justify-content: flex-end; }
+.reason-link { color: var(--accent-text); font-size: 12px; cursor: default; }
 .score-input {
   width: 52px; height: 28px; text-align: center; font-size: 13px;
   border: 1px solid var(--border-interactive); border-radius: var(--radius);
@@ -980,6 +982,7 @@ function subjCell(q) {
     <div class="gc-body">
       <p class="gc-row"><span class="gc-label">正确答案：</span><span class="gc-text">${q.answer}</span></p>
       <p class="gc-row"><span class="gc-label">识别答案：</span><span class="gc-text">${q.recog}</span></p>
+      <div class="gc-reason-row"><span class="reason-link" data-proto-id="rs-reason-${q.no}">评分理由</span></div>
     </div>`;
   return `<div class="grade-card"><div class="gc-head">${head}</div>${rows}</div>`;
 }
