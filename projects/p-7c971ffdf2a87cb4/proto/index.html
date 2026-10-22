@@ -646,7 +646,7 @@ tr.row-err td{background:#fef6f6}
         + ' placeholder="'+(it.allowBlank?'可留空，学生写 / 算对':'请输入答案')+'" aria-label="第'+(i+1)+'题答案"></td>'
         + '<td class="c"><div class="ab-cell">'
         +   '<button type="button" class="switch" role="switch" aria-checked="'+it.allowBlank+'" aria-label="第'+(i+1)+'题允许不填" data-f="switch"></button>'
-        +   '<span class="ab-note'+(it.allowBlank?' on':'')+'">学生写/算对</span>'
+        +   '<span class="ab-note'+(it.allowBlank?' on':'')+'">学生写“/”算对</span>'
         +   (err?'<span class="ab-err">未设置答案</span>':'')
         + '</div></td>'
         + '<td class="c">'+(aiOk?'<span class="ai-ok">支持</span>':'<span class="ai-no">不支持</span>')+'</td>'
