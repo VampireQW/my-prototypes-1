@@ -1,0 +1,2124 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-proto-page="home" data-proto-state="default" data-proto-preview="web">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>答案及分值设置</title>
+<style>
+:root{
+  --blue:#409eff;
+  --blue-d:#337ecc;
+  --blue-l:#66b1ff;
+  --blue-plain-bg:#ecf5ff;
+  --blue-plain-bd:#b3d8ff;
+  --ink:#303133;
+  --ink-2:#606266;
+  --ink-3:#909399;
+  --bd:#dcdfe6;
+  --bd-l:#e4e7ed;
+  --bd-table:#ebeef5;
+  --red:#f56c6c;
+  --green:#67c23a;
+  --fill:#f5f7fa;
+  --head-fill:#fafafa;
+  --sans:"Helvetica Neue","PingFang SC","Microsoft YaHei",Arial,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:var(--sans);font-size:14px;color:var(--ink);background:#f2f3f5;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer;color:inherit;background:none;border:0}
+input,textarea{font:inherit;color:inherit}
+
+/* ── 背景页（题库） ─────────────────── */
+.page{height:100vh;display:flex;overflow:hidden}
+.side{width:208px;flex:none;background:#001529;color:rgba(255,255,255,.65);padding:16px 0;font-size:13px}
+.side .logo{color:#fff;font-weight:600;font-size:15px;padding:0 20px 18px;display:flex;align-items:center;gap:8px}
+.side .logo i{width:22px;height:22px;border-radius:6px;background:var(--blue);display:inline-block}
+.side a{display:block;padding:10px 20px;color:inherit;text-decoration:none}
+.side a.on{background:var(--blue);color:#fff}
+.main{flex:1;padding:16px 20px;overflow:hidden}
+.crumb{font-size:13px;color:var(--ink-3);margin-bottom:12px}
+.paper{background:#fff;border-radius:4px;padding:18px 22px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,21,41,.06)}
+.paper h3{margin:0 0 10px;font-size:15px}
+.paper p{margin:6px 0;color:var(--ink-2);font-size:13px;line-height:1.9}
+.paper .meta{font-size:12px;color:var(--ink-3)}
+.paper .tag{display:inline-block;font-size:12px;color:var(--blue);background:var(--blue-plain-bg);border-radius:2px;padding:1px 8px;margin-right:6px}
+
+/* ── 遮罩 + 弹窗 ────────────────────── */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:20;display:flex;align-items:center;justify-content:center;padding:24px}
+.mask[hidden]{display:none}
+.dialog{
+  width:min(1120px,100%);max-height:calc(100vh - 48px);background:#fff;border-radius:8px;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 12px 32px 4px rgba(0,0,0,.12),0 8px 20px rgba(0,0,0,.16);
+  animation:dlgIn .18s ease-out;
+}
+@keyframes dlgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.dlg-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 14px;flex:none}
+.dlg-head h2{margin:0;font-size:16px;font-weight:600;color:var(--ink)}
+.dlg-x{width:32px;height:32px;border-radius:4px;display:grid;place-items:center;color:var(--ink-3);transition:.15s}
+.dlg-x:hover{color:var(--blue);background:var(--fill)}
+.dlg-body{padding:2px 20px 16px;overflow-y:auto;flex:1;min-height:0}
+.dlg-foot{flex:none;display:flex;align-items:center;gap:10px;justify-content:flex-end;padding:12px 20px;border-top:1px solid var(--bd-table)}
+.foot-tip{margin-right:auto;font-size:12px;color:var(--ink-3)}
+.foot-tip b{color:var(--ink-2);font-weight:600}
+
+/* ── 提示条 ─────────────────────────── */
+.notice-bar{
+  display:flex;align-items:center;gap:10px;background:#f0f7ff;border:1px solid #deedfd;
+  border-radius:4px;padding:8px 12px;font-size:13px;color:#5d7fa3;
+}
+.notice-bar svg{flex:none;color:#8fb8e8}
+.notice-bar .nb-text{flex:1;min-width:0}
+.link{color:var(--blue);font-size:13px;display:inline-flex;align-items:center;gap:4px;padding:2px 4px;border-radius:4px;white-space:nowrap}
+.link:hover{color:var(--blue-l)}
+.link:focus-visible,.dlg-x:focus-visible,.switch:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* ── 按钮 ───────────────────────────── */
+.btn{height:32px;padding:0 16px;border:1px solid var(--bd);border-radius:4px;background:#fff;font-size:13px;color:var(--ink-2);transition:.15s}
+.btn:hover{color:var(--blue);border-color:var(--blue-plain-bd);background:var(--blue-plain-bg)}
+.btn-plain{height:32px;padding:0 14px;border:1px solid var(--blue-plain-bd);border-radius:4px;background:#fff;color:var(--blue);font-size:13px;white-space:nowrap;transition:.15s}
+.btn-plain:hover{background:var(--blue-plain-bg);border-color:var(--blue-l)}
+.btn-primary{height:32px;padding:0 18px;border:1px solid var(--blue);border-radius:4px;background:var(--blue);color:#fff;font-size:13px;transition:.15s}
+.btn-primary:hover{background:var(--blue-l);border-color:var(--blue-l)}
+.btn:focus-visible,.btn-plain:focus-visible,.btn-primary:focus-visible{outline:2px solid var(--blue-d);outline-offset:2px}
+
+/* ── 粘贴区 ─────────────────────────── */
+.paste{
+  width:100%;height:108px;margin:14px 0 12px;padding:10px 12px;resize:none;
+  border:1px solid var(--bd);border-radius:4px;font-size:13px;line-height:1.7;outline:none;transition:border-color .15s;
+}
+.paste:hover{border-color:#c0c4cc}
+.paste:focus{border-color:var(--blue)}
+.paste::placeholder{color:#a8abb2}
+
+/* ── 统计行 ─────────────────────────── */
+.stat-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--ink-2);margin-bottom:12px}
+.stat-row strong{color:var(--ink);font-weight:600}
+.stat-row .ml{margin-left:auto}
+.num-inp{
+  width:56px;height:30px;border:1px solid var(--bd);border-radius:4px;text-align:center;
+  font-size:13px;outline:none;transition:border-color .15s;font-variant-numeric:tabular-nums;
+}
+.num-inp:hover{border-color:#c0c4cc}
+.num-inp:focus{border-color:var(--blue)}
+
+/* ── 原始答案 ───────────────────────── */
+.raw-row{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.raw-label{flex:none;font-size:13px;color:var(--ink-2);padding-top:7px}
+.raw-box{
+  flex:1;min-height:34px;background:var(--fill);border-radius:4px;padding:7px 12px;
+  font-size:13px;color:var(--ink-2);line-height:1.7;word-break:break-all;
+}
+.raw-box .blank-mark{color:#b88230}
+
+/* ── 表格 ───────────────────────────── */
+table{width:100%;border-collapse:collapse;border:1px solid var(--bd-table);font-size:13px}
+th,td{border:1px solid var(--bd-table);padding:0;text-align:left}
+thead th{
+  background:var(--head-fill);color:var(--ink-2);font-weight:600;
+  padding:9px 12px;white-space:nowrap;
+}
+th .th-q{display:inline-grid;place-items:center;width:15px;height:15px;margin-left:5px;vertical-align:-2.5px;color:#c0c4cc;cursor:help;border-radius:50%}
+th .th-q:hover{color:var(--blue)}
+tbody td{padding:8px 12px;color:var(--ink);vertical-align:middle}
+tbody tr:hover td{background:#f9fafc}
+td.c,th.c{text-align:center}
+.col-no{width:56px}
+.col-score{width:92px}
+.col-blank{width:118px}
+.col-ai{width:100px}
+.cell-inp{
+  width:100%;height:32px;padding:0 10px;border:1px solid var(--bd);border-radius:4px;
+  font-size:13px;outline:none;transition:border-color .15s,box-shadow .15s;background:#fff;
+}
+.cell-inp:hover{border-color:#c0c4cc}
+.cell-inp:focus{border-color:var(--blue)}
+.cell-inp::placeholder{color:#a8abb2}
+.score-inp{width:60px;text-align:center;font-variant-numeric:tabular-nums}
+.cell-inp.blankable{border-style:dashed;border-color:var(--blue-plain-bd);background:#fbfdff}
+.cell-inp.err{border-color:var(--red)}
+tr.row-err td{background:#fef6f6}
+
+.ai-ok{color:var(--blue);font-size:13px}
+.ai-no{color:var(--ink-3);font-size:13px}
+
+/* ── 开关 ───────────────────────────── */
+.ab-cell{display:flex;flex-direction:column;align-items:center;gap:3px}
+.switch{
+  position:relative;width:36px;height:20px;border-radius:10px;background:#dcdfe6;
+  transition:background .2s;flex:none;padding:0;
+}
+.switch::after{
+  content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s;
+}
+.switch[aria-checked="true"]{background:var(--blue)}
+.switch[aria-checked="true"]::after{transform:translateX(16px)}
+.ab-note{font-size:12px;line-height:1.3;color:var(--blue);min-height:16px;visibility:hidden;white-space:nowrap}
+.ab-note.on{visibility:visible}
+.row-err .ab-err{font-size:12px;color:var(--red)}
+
+/* ── tooltip ────────────────────────── */
+[data-tip]{position:relative}
+[data-tip]::after{
+  content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  width:max-content;max-width:260px;white-space:normal;background:var(--ink);color:#fff;
+  font-size:12px;font-weight:400;line-height:1.6;padding:7px 10px;border-radius:4px;
+  opacity:0;pointer-events:none;transition:opacity .15s;z-index:60;text-align:left;
+}
+[data-tip]:hover::after,[data-tip]:focus-visible::after{opacity:1}
+
+/* ── 使用说明 popover ───────────────── */
+.help-pop{
+  position:absolute;z-index:70;width:380px;background:#fff;border:1px solid var(--bd-l);
+  border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.12);padding:12px 16px 14px;
+  font-size:13px;color:var(--ink-2);line-height:1.8;
+}
+.help-pop[hidden]{display:none}
+.help-pop h4{margin:0 0 6px;font-size:13px;color:var(--ink)}
+.help-pop ul{margin:0;padding-left:18px}
+.help-pop li{margin:3px 0}
+.help-pop code{background:var(--fill);padding:0 5px;border-radius:3px;font-size:12px;color:var(--ink)}
+
+/* ── toast ──────────────────────────── */
+.toasts{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:99;display:flex;flex-direction:column;gap:10px;align-items:center}
+.toast{
+  display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:4px;font-size:13px;
+  background:#f0f9eb;border:1px solid #e1f3d8;color:#529b2e;box-shadow:0 2px 12px rgba(0,0,0,.1);
+  animation:tIn .2s ease-out;
+}
+.toast.error{background:#fef0f0;border-color:#fde2e2;color:#c45656}
+.toast.info{background:#edf2fc;border-color:#e6ebf5;color:#5d7fa3}
+@keyframes tIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+
+/* ── 重开入口 ───────────────────────── */
+.reopen{position:fixed;inset:0;z-index:10;display:grid;place-items:center}
+.reopen[hidden]{display:none}
+
+@media (max-width:760px){
+  .side{display:none}
+  .stat-row .ml{margin-left:0}
+  .col-blank{width:96px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+</style>
+<script data-prototype-owned data-proto-hotspot-bootstrap data-proto-review="hotspots">
+/* 点击空白时短暂提示本次需求范围内的真实交互；未声明范围时不扫描整页。 */
+(() => {
+    'use strict';
+    if (window.ProtoHotspots) return;
+    const DURATION = 2000, MAX_HINTS = 80;
+    const COLORS = { fill: '#ff9f29' };
+    const EVENTS = new Set(['click', 'pointerdown', 'pointerup', 'mousedown', 'mouseup', 'touchend']);
+    const EDITABLE = 'input,textarea,select,[contenteditable]:not([contenteditable="false"])';
+    const BLOCKED = '[hidden],[inert],[aria-hidden="true"],[aria-disabled="true"],[data-proto-hotspot="false"]';
+    const CONTROL_TAGS = new Set(['BUTTON', 'A', 'AREA', 'INPUT', 'SELECT', 'TEXTAREA', 'SUMMARY']);
+    const CONTROL_ROLES = new Set(['button', 'link', 'checkbox', 'radio', 'switch', 'tab', 'menuitem', 'option', 'combobox', 'slider', 'textbox']);
+    const owned = el => !!el?.closest?.('[data-prototype-owned],.__review_pin,.__review_pop,.__review_guide');
+    let options = {}, layer, style, observer, timer = 0, frame = 0, started = 0, down = null;
+    const boxes = new Map();
+
+    // 先于业务脚本载入：只记录实际绑定，不运行任何按钮来试探功能。
+    const listeners = new WeakMap();
+    const nativeAdd = EventTarget.prototype.addEventListener, nativeRemove = EventTarget.prototype.removeEventListener;
+    const captureOf = config => typeof config === 'boolean' ? config : !!config?.capture;
+    EventTarget.prototype.addEventListener = function (type, listener, config) {
+        if (!EVENTS.has(type) || !listener || typeof listener !== 'function' && typeof listener.handleEvent !== 'function')
+            return nativeAdd.call(this, type, listener, config);
+        let entries = listeners.get(this);
+        if (!entries) { entries = new Set(); listeners.set(this, entries); }
+        const capture = captureOf(config);
+        const existing = [...entries].find(entry => entry.type === type && entry.listener === listener && entry.capture === capture && !entry.signal?.aborted);
+        if (existing) return nativeAdd.call(this, type, existing.wrapper, config);
+        const entry = { type, listener, capture, once: !!config?.once, signal: config?.signal };
+        entry.wrapper = function (event) {
+            if (entry.once) { entries.delete(entry); schedule(); }
+            return typeof listener === 'function' ? listener.call(this, event) : listener.handleEvent.call(listener, event);
+        };
+        const result = nativeAdd.call(this, type, entry.wrapper, config);
+        if (!entry.signal?.aborted) {
+            entries.add(entry);
+            if (entry.signal) nativeAdd.call(entry.signal, 'abort', () => { entries.delete(entry); schedule(); }, { once: true });
+            schedule();
+        }
+        return result;
+    };
+    EventTarget.prototype.removeEventListener = function (type, listener, config) {
+        const entries = listeners.get(this), capture = captureOf(config);
+        const entry = entries && [...entries].find(item => item.type === type && item.listener === listener && item.capture === capture);
+        if (!entry) return nativeRemove.call(this, type, listener, config);
+        const result = nativeRemove.call(this, type, entry.wrapper, config);
+        entries.delete(entry); schedule(); return result;
+    };
+
+    function binding(el) {
+        if ([...EVENTS].some(type => typeof el['on' + type] === 'function')) return true;
+        const reactRoot = Object.keys(el).some(key => key.startsWith('__reactContainer$'));
+        if (!reactRoot && [...(listeners.get(el) || [])].some(entry => !entry.signal?.aborted)) return true;
+        // React 的点击监听由根节点代理，真实业务回调在元素 props 上。
+        const props = Object.keys(el).find(key => key.startsWith('__reactProps$'));
+        return !!props && Object.entries(el[props] || {}).some(([key, value]) =>
+            /^on(Click|PointerDown|PointerUp|MouseDown|MouseUp|TouchEnd)(Capture)?$/.test(key) && typeof value === 'function');
+    }
+    function navigation(el) {
+        if (!el.matches('a[href],area[href]')) return false;
+        const href = el.getAttribute('href').trim();
+        if (!href || href === '#' || /^javascript:/i.test(href)) return false;
+        if (href.startsWith('#')) {
+            let id; try { id = decodeURIComponent(href.slice(1)); } catch (_) { return false; }
+            return !!document.getElementById(id) || !!document.getElementsByName(id).length;
+        }
+        return true;
+    }
+    function nativeAction(el) {
+        if (el.matches('select,input[type="checkbox"],input[type="radio"],input[type="file"],input[type="color"],input[type="range"]')) return true;
+        if (el.tagName === 'SUMMARY') return el.parentElement?.tagName === 'DETAILS' && el.parentElement.querySelector('summary') === el;
+        if (el.matches('button,input') && el.form) return el.type === 'submit' || el.type === 'reset';
+        return false;
+    }
+
+    function enabled() {
+        try { return typeof options.isEnabled === 'function' ? !!options.isEnabled() : options.enabled !== false; }
+        catch (_) { return false; }
+    }
+    function action(el) {
+        if (!(el instanceof Element) || el === document.body || el === document.documentElement || owned(el) || el.closest(BLOCKED) || el.matches(':disabled')) return false;
+        return el.dataset.protoHotspot === 'true' || binding(el) || navigation(el) || nativeAction(el);
+    }
+    function controlLike(el) {
+        return CONTROL_TAGS.has(el.tagName) && !(el.tagName === 'INPUT' && el.type === 'hidden')
+            || CONTROL_ROLES.has(el.getAttribute('role')) || el.dataset.protoHotspot === 'true';
+    }
+    function controlIssue(el) {
+        // 仅截图专用运行时中用户手动画出的矩形可使用自定尺寸。
+        if (window.ProtoScreenshot && el.parentElement?.id === 'screenshot-regions' && el.classList.contains('screenshot-region')) return null;
+        // 事件代理容器不能替代实际操作节点，未授权的子控件也不能让父容器整块高亮。
+        if (!CONTROL_TAGS.has(el.tagName) && [...el.querySelectorAll('*')].some(child =>
+            !owned(child) && (controlLike(child) || action(child)))) return 'container';
+        const rect = el.getBoundingClientRect();
+        // 长而矮的整行按钮可保留；高且大面积的卡片 / 面板需拆到具体控件。
+        if (rect.height > 96 && rect.width * rect.height > Math.min(64000, innerWidth * innerHeight * .12)) return 'oversized';
+        return null;
+    }
+    function currentScope() {
+        try { return typeof options.scope === 'function' ? options.scope() : options.scope; }
+        catch (_) { return null; }
+    }
+    function inScope(el, scope = currentScope()) {
+        if (scope?.mode === 'all') return true;
+        if (scope?.mode !== 'targets' || !Array.isArray(scope.protoIds)) return false;
+        // 范围只授权该控件自身；容器标注不授权内部的历史交互。
+        return scope.protoIds.includes(el.getAttribute('data-proto-id'));
+    }
+    function hitAction(target) {
+        if (currentScope()?.manualTargets?.length && scan().some(item => item.source === 'manual' && item.status === 'ready' && item.el.contains(target))) return true;
+        for (let el = target instanceof Element ? target : target?.parentElement; el && el !== document.documentElement; el = el.parentElement)
+            if ((controlLike(el) || action(el)) && !controlIssue(el) && rectFor(el)) return true;
+        return false;
+    }
+    function rectFor(el) {
+        if (!el?.isConnected || owned(el) || el.closest(BLOCKED) || el.matches(':disabled')) return null;
+        const original = el.getBoundingClientRect();
+        let left = Math.max(0, original.left), top = Math.max(0, original.top);
+        let right = Math.min(innerWidth, original.right), bottom = Math.min(innerHeight, original.bottom);
+        for (let node = el; node && node !== document.documentElement; node = node.parentElement) {
+            const css = getComputedStyle(node);
+            if (css.display === 'none' || css.visibility === 'hidden' || Number(css.opacity) === 0) return null;
+            if (node === el) continue;
+            const clip = node.getBoundingClientRect();
+            if (/hidden|clip|auto|scroll/.test(css.overflowX)) { left = Math.max(left, clip.left); right = Math.min(right, clip.right); }
+            if (/hidden|clip|auto|scroll/.test(css.overflowY)) { top = Math.max(top, clip.top); bottom = Math.min(bottom, clip.bottom); }
+        }
+        if (right - left < 4 || bottom - top < 4) return null;
+        if ((right - left) * (bottom - top) > innerWidth * innerHeight * .65 && !(window.ProtoScreenshot && el.parentElement?.id === 'screenshot-regions')) return null;
+        const points = [[.5, .5], [.2, .2], [.8, .8]];
+        if (!points.some(([x, y]) => {
+            const hit = document.elementFromPoint(left + (right - left) * x, top + (bottom - top) * y);
+            return hit === el || !!hit && el.contains(hit);
+        })) return null;
+        return { left, top, right, bottom };
+    }
+    function examine(el, manual = false) {
+        if (owned(el) || el.closest('[data-proto-hotspot="false"]')) return { status: 'excluded' };
+        if (el.matches(':disabled') || el.closest('[inert],[aria-disabled="true"]')) return { status: 'disabled' };
+        for (let node = el; node && node !== document.documentElement; node = node.parentElement) {
+            const css = getComputedStyle(node);
+            if (node.matches('[hidden],[aria-hidden="true"]') || css.display === 'none' || css.visibility === 'hidden' || Number(css.opacity) === 0)
+                return { status: 'hidden' };
+        }
+        if (/^(SCRIPT|STYLE|LINK|META|OPTION|OPTGROUP|PATH|SVG)$/.test(el.tagName)) return { status: 'unsupported' };
+        const issue = controlIssue(el);
+        if (issue) return { status: issue };
+        if (!manual && !action(el)) return { status: 'no-action' };
+        const bounds = el.getBoundingClientRect();
+        if (!bounds.width || !bounds.height) return { status: 'hidden' };
+        if (bounds.bottom <= 0 || bounds.top >= innerHeight || bounds.right <= 0 || bounds.left >= innerWidth) return { status: 'offscreen' };
+        const rect = rectFor(el);
+        return rect ? { status: 'ready', rect } : { status: 'occluded' };
+    }
+    function scan(scope = currentScope()) {
+        const elements = [...document.querySelectorAll('body *')], byId = new Map();
+        for (const el of elements) {
+            const id = el.getAttribute('data-proto-id');
+            if (id) { if (!byId.has(id)) byId.set(id, []); byId.get(id).push(el); }
+        }
+        const anchorFor = el => {
+            if (window.ProtoAnchors) {
+                const A = window.ProtoAnchors;
+                return { protoId: el.getAttribute('data-proto-id') || '', selector: A.selector(el), tag: el.tagName.toLowerCase(), text: A.text(el), parentText: A.text(el.parentElement) };
+            }
+            return { protoId: el.getAttribute('data-proto-id') || '', selector: el.id ? '#' + CSS.escape(el.id) : '', tag: el.tagName.toLowerCase() };
+        };
+        const resolve = anchor => {
+            if (anchor?.protoId) { const hits = byId.get(anchor.protoId) || []; return hits.length === 1 ? hits[0] : null; }
+            if (window.ProtoAnchors) return window.ProtoAnchors.resolveHidden(anchor);
+            try { const hits = [...document.querySelectorAll(anchor?.selector || ':not(*)')]; return hits.length === 1 ? hits[0] : null; } catch (_) { return null; }
+        };
+        let entries = [];
+        if (scope?.mode === 'targets' && Array.isArray(scope.protoIds)) {
+            entries = scope.protoIds.map(protoId => {
+                const hits = byId.get(protoId) || [];
+                const base = { protoId, key: 'proto:' + protoId, source: 'declared', anchor: { protoId } };
+                if (hits.length !== 1) return { ...base, status: hits.length ? 'duplicate' : 'missing' };
+                return { ...base, el: hits[0], label: labelFor(hits[0]), anchor: anchorFor(hits[0]), ...examine(hits[0]) };
+            });
+        } else if (scope?.mode === 'all') {
+            entries = elements.filter(el => action(el)).map(el => ({
+                protoId: el.getAttribute('data-proto-id') || el.id || el.tagName.toLowerCase(), source: 'automatic',
+                anchor: anchorFor(el), label: labelFor(el), key: 'all:' + (el.getAttribute('data-proto-id') || el.id || anchorFor(el).selector), el, ...examine(el)
+            }));
+        }
+        for (const target of scope?.manualTargets || []) {
+            const el = resolve(target.anchor);
+            const existing = el && entries.find(item => item.el === el);
+            if (existing) entries = entries.filter(item => item !== existing);
+            entries.push({ ...target, key: 'manual:' + target.id, source: 'manual', protoId: target.anchor.protoId || target.id, el,
+                ...(el ? examine(el, true) : { status: target.anchor.protoId && (byId.get(target.anchor.protoId)?.length || 0) > 1 ? 'duplicate' : 'missing' }) });
+        }
+        const excluded = (scope?.excludedTargets || []).map(target => resolve(target.anchor)).filter(Boolean);
+        for (const item of entries) if (item.el && excluded.includes(item.el)) item.status = 'excluded';
+        const ready = entries.filter(item => item.status === 'ready');
+        let count = 0;
+        for (const item of ready) {
+            if (ready.some(other => other.el !== item.el && item.el.contains(other.el))) item.status = 'contains-target';
+            else if (++count > MAX_HINTS) item.status = 'limit';
+        }
+        return entries;
+    }
+    function labelFor(el) { return (el.getAttribute('aria-label') || el.getAttribute('title') || el.textContent || el.value || el.tagName).replace(/\s+/g, ' ').trim().slice(0, 120); }
+    function candidate(el) { return el instanceof Element ? { ...examine(el, true), label: labelFor(el) } : { status: 'missing' }; }
+    // 只读诊断，不执行点击、不展开页面，也不修改 PRD / 提示配置。
+    function inspect() {
+        const scope = currentScope();
+        return { mode: scope?.mode || 'off', enabled: enabled(), items: scan(scope).map(({ el, ...item }) => item) };
+    }
+    function position(box, rect) {
+        box.style.left = Math.max(0, rect.left - 3) + 'px';
+        box.style.top = Math.max(0, rect.top - 3) + 'px';
+        box.style.width = Math.min(innerWidth, rect.right + 3) - Math.max(0, rect.left - 3) + 'px';
+        box.style.height = Math.min(innerHeight, rect.bottom + 3) - Math.max(0, rect.top - 3) + 'px';
+    }
+    function hide() {
+        clearTimeout(timer); timer = 0;
+        cancelAnimationFrame(frame); frame = 0;
+        boxes.clear(); layer?.replaceChildren();
+    }
+    function refresh() {
+        frame = 0;
+        if (!enabled()) { hide(); return; }
+        const ready = new Map(scan().filter(item => item.status === 'ready').map(item => [item.el, item.rect]));
+        for (const [el, box] of boxes) {
+            const rect = ready.get(el);
+            if (!rect) { box.remove(); boxes.delete(el); }
+            else position(box, rect);
+        }
+    }
+    function schedule() {
+        if (boxes.size && !frame) frame = requestAnimationFrame(refresh);
+    }
+    function show() {
+        if (!layer || !enabled()) { hide(); return 0; }
+        const scope = currentScope();
+        if (scope?.mode !== 'all' && (scope?.mode !== 'targets' || !scope.protoIds?.length && !scope.manualTargets?.length)) { hide(); return 0; }
+        if (boxes.size && performance.now() - started < DURATION) { refresh(); return boxes.size; }
+        hide();
+        for (const { el, rect } of scan(scope).filter(item => item.status === 'ready')) {
+            const box = document.createElement('div');
+            box.className = 'ph-box'; box.setAttribute('data-prototype-owned', '');
+            box.dataset.hotspotFor = el.getAttribute('data-proto-id') || el.id || el.tagName.toLowerCase();
+            position(box, rect); layer.appendChild(box); boxes.set(el, box);
+        }
+        if (boxes.size) { started = performance.now(); timer = setTimeout(hide, DURATION); }
+        return boxes.size;
+    }
+    function pointerDown(event) { down = { x: event.clientX, y: event.clientY, moved: false }; }
+    function pointerMove(event) {
+        if (down && Math.hypot(event.clientX - down.x, event.clientY - down.y) > 8) down.moved = true;
+    }
+    function click(event) {
+        const drag = down?.moved; down = null;
+        const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+        if (!enabled() || owned(target) || hitAction(target)) { hide(); return; }
+        if (event.defaultPrevented || event.button !== 0 || event.detail === 0 || drag || target?.closest(EDITABLE) || String(getSelection()).trim()) return;
+        show();
+    }
+    function mutations(records) {
+        if (!boxes.size) return;
+        for (const record of records) {
+            if (owned(record.target)) continue;
+            if (record.type === 'attributes' && /data-proto-(page|state)/.test(record.attributeName)) { hide(); return; }
+            if (record.type === 'childList' && [...record.addedNodes, ...record.removedNodes].every(node => node instanceof Element && owned(node))) continue;
+            schedule(); break;
+        }
+    }
+    function init(config = {}) {
+        options = config;
+        if (layer) { hide(); return window.ProtoHotspots; }
+        style = document.createElement('style'); style.setAttribute('data-prototype-owned', '');
+        style.textContent = `
+.ph-layer{--ph-fill:${COLORS.fill};--ph-opacity-low:.18;--ph-opacity-high:.42;--ph-opacity-still:.3;position:fixed;inset:0;z-index:2147481000;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;pointer-events:none!important;overflow:hidden;}
+.ph-layer .ph-box{position:absolute;box-sizing:border-box;margin:0;padding:0;border:0!important;outline:0!important;border-radius:6px;background:var(--ph-fill);box-shadow:none!important;pointer-events:none!important;opacity:var(--ph-opacity-still);animation:ph-discover ${DURATION}ms cubic-bezier(.4,0,.2,1) 1 forwards;}
+@keyframes ph-discover{0%{opacity:var(--ph-opacity-low)}20%{opacity:var(--ph-opacity-high)}45%{opacity:var(--ph-opacity-low)}70%{opacity:var(--ph-opacity-high)}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.ph-layer .ph-box{animation:none;opacity:var(--ph-opacity-still)}}
+`;
+        layer = document.createElement('div'); layer.className = 'ph-layer';
+        layer.setAttribute('data-prototype-owned', ''); layer.setAttribute('aria-hidden', 'true');
+        (document.head || document.documentElement).appendChild(style); document.documentElement.appendChild(layer);
+        document.addEventListener('pointerdown', pointerDown, true);
+        document.addEventListener('pointermove', pointerMove, true);
+        document.addEventListener('pointercancel', hide, true);
+        document.addEventListener('click', click);
+        document.addEventListener('scroll', schedule, true);
+        window.addEventListener('resize', schedule);
+        window.addEventListener('pagehide', hide);
+        observer = new MutationObserver(mutations);
+        observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['style', 'class', 'hidden', 'inert', 'disabled', 'aria-hidden', 'aria-disabled', 'role', 'onclick', 'href', 'type', 'data-proto-id', 'data-proto-hotspot', 'data-proto-state', 'data-proto-page'] });
+        return window.ProtoHotspots;
+    }
+    function destroy() {
+        hide(); observer?.disconnect(); observer = null;
+        document.removeEventListener('pointerdown', pointerDown, true);
+        document.removeEventListener('pointermove', pointerMove, true);
+        document.removeEventListener('pointercancel', hide, true);
+        document.removeEventListener('click', click);
+        document.removeEventListener('scroll', schedule, true);
+        window.removeEventListener('resize', schedule); window.removeEventListener('pagehide', hide);
+        layer?.remove(); style?.remove(); layer = null; style = null; down = null;
+    }
+    window.ProtoHotspots = { init, show, hide, destroy, inspect, candidate };
+})();
+
+</script>
+</head>
+<body>
+
+<!-- 背景：题库页 -->
+<div class="page" aria-hidden="true">
+  <nav class="side">
+    <div class="logo"><i></i>智慧教学平台</div>
+    <a href="#">首页</a>
+    <a href="#">作业布置</a>
+    <a href="#">考试管理</a>
+    <a href="#" class="on">题库</a>
+    <a href="#">学情中心</a>
+  </nav>
+  <div class="main">
+    <div class="crumb">题库 / 校本题库 / 英语 / 完形填空专项</div>
+    <div class="paper">
+      <h3>完形填空 · 生活的馈赠</h3>
+      <p class="meta"><span class="tag">英语</span><span class="tag">完形填空</span>高一 · 10 空 · 共 20 分 · 入库时间 2026-10-18</p>
+      <p>As we grow up, our grandparents often tell us that the real ______ of life are not gold or silver, but the people around us…</p>
+    </div>
+    <div class="paper">
+      <h3>阅读理解 · A Letter Home</h3>
+      <p class="meta"><span class="tag">英语</span><span class="tag">阅读理解</span>高一 · 5 小题 · 共 10 分 · 入库时间 2026-10-15</p>
+      <p>When Maya left her village for the city, her grandmother gave her a small wooden box…</p>
+    </div>
+  </div>
+</div>
+
+<!-- 重开入口 -->
+<div class="reopen" id="reopen" hidden>
+  <button class="btn-primary" id="btnReopen" style="height:36px">答案及分值设置</button>
+</div>
+
+<!-- 弹窗 -->
+<div class="mask" id="mask">
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle" data-proto-id="answer-dialog">
+    <header class="dlg-head">
+      <h2 id="dlgTitle">答案及分值设置</h2>
+      <button class="dlg-x" id="btnClose" aria-label="关闭">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1 1l12 12M13 1L1 13"/></svg>
+      </button>
+    </header>
+
+    <div class="dlg-body">
+      <div class="notice-bar" data-proto-id="notice-manual-review">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6.6"/><path d="M8 7.4v3.4M8 5v.2" stroke-linecap="round"/></svg>
+        <span class="nb-text">为确保批改准确性，涉及句子翻译等长文本答案，可能需要老师人工批阅</span>
+        <button class="link" id="btnHelp" aria-expanded="false" data-proto-id="btn-help" data-proto-hotspot="true">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6.6"/><path d="M6.2 6.2c.2-1 1-1.6 1.9-1.6 1 0 1.8.7 1.8 1.6 0 1.2-1.2 1.5-1.8 2.2-.2.3-.3.6-.3 1" stroke-linecap="round"/><path d="M8 11.4v.2" stroke-linecap="round"/></svg>
+          使用说明
+        </button>
+        <button class="btn-plain" id="btnAssignAll" data-proto-id="btn-assign-all" data-proto-hotspot="true">全部自动分配</button>
+      </div>
+
+      <div style="position:relative">
+        <div class="help-pop" id="helpPop" hidden>
+          <h4>答案录入规则</h4>
+          <ul>
+            <li>各空答案之间用分号 <code>;</code> 或 <code>；</code> 隔开，按顺序对应题号。</li>
+            <li>同一空有多个正确答案时，用斜杠 <code>/</code> 隔开，如 <code>that/which</code>。</li>
+            <li>某空允许不填：开启对应题的「允许不填」开关，学生写 <code>/</code> 判为正确；也可在粘贴时把该空写为 <code>/</code> 或 <code>不填</code>，系统自动开启。</li>
+            <li>学生完全留白（无作答痕迹）始终视为未作答，不得分。</li>
+          </ul>
+        </div>
+      </div>
+
+      <textarea class="paste" id="pasteBox" placeholder="请将答案粘贴到此处后再自动分配，规则可查看使用说明" aria-label="批量粘贴答案" data-proto-id="paste-answers"></textarea>
+
+      <div class="stat-row" data-proto-id="stat-row">
+        <strong id="rangeText">第1-10题</strong>
+        <span>共</span><input class="num-inp" id="subCount" value="1" inputmode="numeric" aria-label="小题数" data-proto-id="sub-count"><span>小题，每题</span>
+        <input class="num-inp" id="blankCount" value="10" inputmode="numeric" aria-label="每题空数" data-proto-id="blank-count"><span>空，每空</span>
+        <input class="num-inp" id="scoreEach" value="2.0" inputmode="decimal" aria-label="每空分值" data-proto-id="score-each"><span>分</span>
+        <span class="ml"></span>
+        <button class="btn-plain" id="btnAssign" data-proto-id="btn-assign" data-proto-hotspot="true">自动分配答案</button>
+      </div>
+
+      <div class="raw-row">
+        <span class="raw-label">原始答案</span>
+        <div class="raw-box" id="rawBox" data-proto-id="raw-answers"></div>
+      </div>
+
+      <table>
+        <caption class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">各题分值、答案、允许不填与智能批改设置</caption>
+        <thead>
+          <tr>
+            <th class="col-no c">题号</th>
+            <th class="col-score">分值</th>
+            <th data-proto-id="col-answer">答案（如果有多个答案，请使用“/”隔开）<button class="th-q" data-tip="同一空有多个正确答案时，用英文斜杠 / 隔开，如 that/which" aria-label="多答案录入说明">?</button></th>
+            <th class="col-blank c" data-proto-id="col-allow-blank">允许不填<button class="th-q" data-tip="开启后，学生作答“/”视为正确；完全留白仍属未作答，不得分" aria-label="允许不填说明">?</button></th>
+            <th class="col-ai c" data-proto-id="col-ai">智能批改</th>
+          </tr>
+        </thead>
+        <tbody id="qBody"></tbody>
+      </table>
+    </div>
+
+    <footer class="dlg-foot">
+      <span class="foot-tip" id="footTip"></span>
+      <button class="btn" id="btnCancel" data-proto-id="btn-cancel">取消</button>
+      <button class="btn-primary" id="btnOk" data-proto-id="btn-ok" data-proto-hotspot="true">确定</button>
+    </footer>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  /* 学生主动“不填”的可识别写法 */
+  const BLANK_TOKENS = new Set(['/','／','\\','-','—','–','×','不填','空','无']);
+
+  /* 初始数据（与题目对应） */
+  const seedAnswers = ['As','treasures','to keep','carefully','patient','makes','that/which','while/but','a','connecting'];
+  let items = seedAnswers.map((a,i)=>({score:'2.0', answer:a, allowBlank: i===6}));
+
+  const mask=$('mask'), qBody=$('qBody'), rawBox=$('rawBox'), footTip=$('footTip');
+
+  /* ── 渲染表格 ─────────────────────── */
+  function renderRows(errSet){
+    qBody.innerHTML = items.map((it,i)=>{
+      const hasAns = it.answer.trim()!=='';
+      const aiOk = hasAns || it.allowBlank;
+      const err = errSet && errSet.has(i);
+      return '<tr'+(err?' class="row-err"':'')+' data-i="'+i+'">'
+        + '<td class="c">'+(i+1)+'</td>'
+        + '<td><input class="cell-inp score-inp" data-f="score" value="'+esc(it.score)+'" inputmode="decimal" aria-label="第'+(i+1)+'题分值"></td>'
+        + '<td><input class="cell-inp ans-inp'+(it.allowBlank && !hasAns?' blankable':'')+(err?' err':'')+'" data-f="answer" value="'+esc(it.answer)+'" spellcheck="false" autocomplete="off"'
+        + ' placeholder="'+(it.allowBlank?'可留空，学生写 / 算对':'请输入答案')+'" aria-label="第'+(i+1)+'题答案"></td>'
+        + '<td class="c"><div class="ab-cell">'
+        +   '<button type="button" class="switch" role="switch" aria-checked="'+it.allowBlank+'" aria-label="第'+(i+1)+'题允许不填" data-f="switch"></button>'
+        +   '<span class="ab-note'+(it.allowBlank?' on':'')+'">学生写/算对</span>'
+        +   (err?'<span class="ab-err">未设置答案</span>':'')
+        + '</div></td>'
+        + '<td class="c">'+(aiOk?'<span class="ai-ok">支持</span>':'<span class="ai-no">不支持</span>')+'</td>'
+        + '</tr>';
+    }).join('');
+    renderRaw();
+    renderFoot();
+  }
+
+  /* ── 原始答案条 ───────────────────── */
+  function renderRaw(){
+    rawBox.innerHTML = items.map(it=>{
+      const a = it.answer.trim();
+      if (a) return esc(a);
+      return it.allowBlank ? '<span class="blank-mark">/</span>' : '（未设置）';
+    }).join('；');
+  }
+
+  /* ── 页脚统计 ─────────────────────── */
+  function renderFoot(){
+    const n = items.length;
+    const total = items.reduce((s,it)=>s+(parseFloat(it.score)||0),0);
+    const ab = items.filter(it=>it.allowBlank).length;
+    $('rangeText').textContent = '第1-'+n+'题';
+    $('blankCount').value = n;
+    footTip.innerHTML = '共 <b>'+n+'</b> 空 · 合计 <b>'+(Math.round(total*10)/10)+'</b> 分'
+      + (ab? ' · <b>'+ab+'</b> 空允许不填（学生写“/”算对）' : '');
+  }
+
+  /* ── 表格事件（委托） ─────────────── */
+  qBody.addEventListener('input', e=>{
+    const tr = e.target.closest('tr'); if(!tr) return;
+    const it = items[Number(tr.dataset.i)];
+    if (e.target.dataset.f==='answer'){
+      it.answer = e.target.value;
+      /* 智能批改列与样式联动 */
+      const hasAns = it.answer.trim()!=='';
+      e.target.classList.toggle('blankable', it.allowBlank && !hasAns);
+      tr.querySelector('.ai-ok,.ai-no')?.replaceWith(aiNode(hasAns||it.allowBlank));
+      renderRaw(); renderFoot();
+    }
+    if (e.target.dataset.f==='score'){ it.score = e.target.value; renderFoot(); }
+  });
+
+  qBody.addEventListener('click', e=>{
+    const sw = e.target.closest('.switch'); if(!sw) return;
+    const tr = sw.closest('tr');
+    const it = items[Number(tr.dataset.i)];
+    it.allowBlank = !it.allowBlank;
+    sw.setAttribute('aria-checked', String(it.allowBlank));
+    tr.querySelector('.ab-note').classList.toggle('on', it.allowBlank);
+    const inp = tr.querySelector('.ans-inp');
+    const hasAns = it.answer.trim()!=='';
+    inp.classList.toggle('blankable', it.allowBlank && !hasAns);
+    inp.placeholder = it.allowBlank ? '可留空，学生写 / 算对' : '请输入答案';
+    tr.classList.remove('row-err'); inp.classList.remove('err');
+    tr.querySelector('.ab-err')?.remove();
+    tr.querySelector('.ai-ok,.ai-no')?.replaceWith(aiNode(hasAns||it.allowBlank));
+    renderRaw(); renderFoot();
+  });
+
+  function aiNode(ok){
+    const s = document.createElement('span');
+    s.className = ok?'ai-ok':'ai-no';
+    s.textContent = ok?'支持':'不支持';
+    return s;
+  }
+
+  /* ── 自动分配 ─────────────────────── */
+  function assignFromPaste(){
+    const text = $('pasteBox').value.trim();
+    if (!text){ toast('请先粘贴答案，再自动分配','info'); return; }
+    const parts = text.split(/[;；]/).map(s=>s.trim());
+    let filled=0, blankHit=0;
+    items.forEach((it,i)=>{
+      if (i>=parts.length) return;
+      const p = parts[i];
+      if (p==='') return;
+      if (BLANK_TOKENS.has(p)){ it.answer=''; it.allowBlank=true; blankHit++; }
+      else { it.answer=p; }
+      filled++;
+    });
+    if (!filled){ toast('未识别到有效答案，请用分号分隔各空','error'); return; }
+    renderRows();
+    toast('已为 '+filled+' 个空分配答案'+(blankHit?'，其中 '+blankHit+' 空识别为允许不填':''),'success');
+  }
+  $('btnAssign').addEventListener('click', assignFromPaste);
+  $('btnAssignAll').addEventListener('click', assignFromPaste);
+
+  /* ── 空数 / 分值联动 ──────────────── */
+  $('blankCount').addEventListener('change', e=>{
+    let n = parseInt(e.target.value,10);
+    if (!Number.isFinite(n)) n = items.length;
+    n = Math.max(1, Math.min(30, n));
+    while (items.length < n) items.push({score:$('scoreEach').value||'2.0', answer:'', allowBlank:false});
+    items.length = n;
+    renderRows();
+  });
+  $('scoreEach').addEventListener('change', e=>{
+    const v = e.target.value.trim(); if(!v) return;
+    items.forEach(it=> it.score=v);
+    renderRows();
+  });
+
+  /* ── 使用说明 ──────────────────── */
+  $('btnHelp').addEventListener('click', e=>{
+    e.stopPropagation();
+    const p = $('helpPop'), open = p.hidden;
+    p.hidden = !open;
+    $('btnHelp').setAttribute('aria-expanded', String(open));
+    if (open){
+      const r = $('btnHelp').getBoundingClientRect();
+      p.style.top = (r.bottom + 6 + window.scrollY) + 'px';
+      p.style.left = Math.max(12, r.right - 380) + 'px';
+    }
+  });
+  document.addEventListener('click', e=>{
+    if (!$('helpPop').hidden && !e.target.closest('#helpPop')){ $('helpPop').hidden = true; $('btnHelp').setAttribute('aria-expanded','false'); }
+  });
+
+  /* ── 确定 / 取消 / 关闭 ───────────── */
+  $('btnOk').addEventListener('click', ()=>{
+    const err = new Set();
+    items.forEach((it,i)=>{ if (it.answer.trim()==='' && !it.allowBlank) err.add(i); });
+    if (err.size){
+      renderRows(err);
+      const first = [...err][0];
+      toast('第 '+[...err].map(i=>i+1).join('、')+' 题未设置答案，如允许学生不填，请开启「允许不填」','error');
+      const tr = qBody.querySelectorAll('tr')[first];
+      tr?.scrollIntoView({block:'center'});
+      tr?.querySelector('.ans-inp')?.focus();
+      return;
+    }
+    const payload = items.map((it,i)=>({
+      no:i+1, score:parseFloat(it.score)||0,
+      answers: it.answer.split('/').map(s=>s.trim()).filter(Boolean),
+      allowBlank: !!it.allowBlank
+    }));
+    console.log('答案及分值设置：', JSON.stringify(payload, null, 2));
+    toast('已保存 '+items.length+' 个空的答案与分值','success');
+    setTimeout(closeDlg, 600);
+  });
+  $('btnCancel').addEventListener('click', closeDlg);
+  $('btnClose').addEventListener('click', closeDlg);
+  mask.addEventListener('click', e=>{ if(e.target===mask) closeDlg(); });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape' && !mask.hidden) closeDlg(); });
+
+  function closeDlg(){ mask.hidden = true; $('reopen').hidden = false; $('btnReopen').focus(); }
+  $('btnReopen').addEventListener('click', ()=>{ $('reopen').hidden = true; mask.hidden = false; $('btnClose').focus(); });
+
+  /* ── toast ────────────────────────── */
+  function toast(msg, type){
+    const t = document.createElement('div');
+    t.className = 'toast'+(type==='error'?' error':type==='info'?' info':'');
+    t.textContent = msg;
+    $('toasts').appendChild(t);
+    setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .25s'; setTimeout(()=>t.remove(),260); }, 2600);
+  }
+
+  renderRows();
+})();
+</script>
+
+<!-- proto-text-edits:start -->
+<script type="application/json" id="proto-text-edits-data">[{"binding":{"anchor":{"tag":"tbody","key":"id","value":"qBody"},"path":[{"tag":"tr","match":[{"path":[{"tag":"td","index":1}],"text":"7"}]},{"tag":"td","column":["允许不填 ?"]},{"tag":"div","index":1},{"tag":"span","text":"学生写 / 算对"}]},"before":["学生写 / 算对"],"after":[""]}]</script>
+<script data-proto-text-runtime>
+/* 按稳定控件键重放手动文案；只改文字节点，保留原型事件和结构。 */
+(() => {
+    'use strict';
+    const blocked = new Set('SCRIPT STYLE TEMPLATE NOSCRIPT SVG MATH CANVAS IFRAME OBJECT TEXTAREA'.split(' '));
+    const keyed = ['data-proto-id', 'id', 'data-q', 'data-key', 'data-id', 'data-row-id', 'data-row-key', 'data-item-id', 'data-column-key', 'data-field', 'data-testid', 'name'];
+    const states = new WeakMap();
+    const normal = text => text.trim().replace(/\s+/g, ' ');
+    function nodes(element) {
+        const out = [];
+        const visit = node => {
+            if (node.nodeType === 3) { if (node.nodeValue.trim()) out.push(node); return; }
+            if (blocked.has(node.tagName)) return;
+            for (const child of node.childNodes || []) visit(child);
+        };
+        visit(element); return out;
+    }
+    function reactive(element) {
+        for (let node = element; node; node = node.parentElement) {
+            if (blocked.has(node.tagName) || node.hasAttribute?.('data-prototype-owned') ||
+                node.__vue__ || node.__vueParentComponent || Object.keys(node).some(k => k.startsWith('__reactFiber$')) ||
+                [...(node.attributes || [])].some(a => /^(v-for|v-text|v-html|ng-bind|ng-repeat|data-bind)$/.test(a.name))) return true;
+        }
+        return false;
+    }
+    const within = (parent, child) => { for (let n = child; n; n = n.parentElement) if (n === parent) return true; return false; };
+    const baseText = node => states.get(node.ownerDocument || node.parentElement?.ownerDocument)?.originals.get(node) ?? node.nodeValue;
+    const text = (element, own = false) => normal((own ? [...element.childNodes].filter(n => n.nodeType === 3) : nodes(element)).map(baseText).join(' '));
+    function ordinal(element) {
+        let index = 1;
+        for (let prev = element.previousElementSibling; prev; prev = prev.previousElementSibling) if (prev.tagName === element.tagName) index++;
+        return { tag: element.tagName.toLowerCase(), index };
+    }
+    function follow(element, path) {
+        for (const step of path) {
+            element = [...(element?.children || [])].filter(n => n.tagName.toLowerCase() === step.tag)[step.index - 1];
+            if (!element) return null;
+        }
+        return element;
+    }
+    function matches(element, criteria) {
+        return criteria.every(c => { const found = follow(element, c.path); return found && text(found, c.own) === c.text; });
+    }
+    function headerPaths(cell) {
+        let table = cell.parentElement;
+        while (table && table.tagName !== 'TABLE') table = table.parentElement;
+        if (!table) return [];
+        const head = [...table.children].find(n => n.tagName === 'THEAD'), grid = [];
+        const rows = [...(head?.children || [])].filter(n => n.tagName === 'TR');
+        rows.forEach((row, r) => {
+            grid[r] ||= []; let column = 0;
+            for (const th of row.children) {
+                if (!['TH', 'TD'].includes(th.tagName)) continue;
+                while (grid[r][column]) column++;
+                const width = Math.min(100, Math.max(1, Number(th.getAttribute('colspan')) || 1));
+                const height = Math.min(100, Math.max(1, th.getAttribute('rowspan') === '0' ? rows.length - r : Number(th.getAttribute('rowspan')) || 1));
+                for (let y = r; y < r + height; y++) {
+                    grid[y] ||= [];
+                    for (let x = column; x < column + width; x++) grid[y][x] = { node: th, label: text(th) };
+                }
+                column += width;
+            }
+        });
+        const paths = [];
+        for (let x = 0; x < (grid[0]?.length || 0); x++) {
+            const path = [], seen = new Set();
+            for (const row of grid) {
+                const h = row?.[x];
+                if (h?.label && !seen.has(h.node)) { path.push(h.label); seen.add(h.node); }
+            }
+            paths.push(path);
+        }
+        return paths;
+    }
+    function columnOf(cell, paths) {
+        if (!['TD', 'TH'].includes(cell.tagName) || Number(cell.getAttribute('colspan') || 1) !== 1) return null;
+        let index = 0;
+        for (const prev of cell.parentElement.children) {
+            if (prev === cell) break;
+            if (['TD', 'TH'].includes(prev.tagName)) index += Number(prev.getAttribute('colspan')) || 1;
+        }
+        const column = paths[index];
+        return column?.length ? column : null;
+    }
+    function landmarks(element, selected, siblings) {
+        if (element === selected) return null;
+        const candidates = [], own = text(element, true);
+        if (own && own.length <= 160) candidates.push({ path: [], own: true, text: own });
+        function visit(node, path) {
+            if (path.length >= 3 || candidates.length >= 24) return;
+            for (const child of node.children) {
+                if (blocked.has(child.tagName) || within(child, selected) || within(selected, child)) continue;
+                const childPath = [...path, ordinal(child)], value = text(child);
+                if (value && value.length <= 160) candidates.push({ path: childPath, text: value });
+                else visit(child, childPath);
+            }
+        }
+        visit(element, []);
+        const chosen = [];
+        for (const candidate of candidates) {
+            chosen.push(candidate);
+            if (siblings.filter(n => matches(n, chosen)).length === 1) return chosen;
+            if (chosen.length >= 3) break;
+        }
+        return null;
+    }
+    function part(element, selected) {
+        const tag = element.tagName.toLowerCase();
+        for (const key of keyed) {
+            const value = element.getAttribute(key);
+            if (value && value.length <= 256) return { tag, key, value };
+        }
+        if (['TD', 'TH'].includes(element.tagName)) {
+            const paths = headerPaths(element), column = columnOf(element, paths);
+            if (column && paths.filter(p => JSON.stringify(p) === JSON.stringify(column)).length === 1) return { tag, column };
+        }
+        const siblings = [...(element.parentElement?.children || [])].filter(n => n.tagName === element.tagName);
+        if (element === selected) {
+            const label = text(element);
+            if (label && label.length <= 160 && siblings.filter(n => text(n) === label).length === 1) return { tag, text: label };
+        }
+        if (['TR', 'LI', 'ARTICLE'].includes(element.tagName) || siblings.length > 1) {
+            const match = landmarks(element, selected, siblings);
+            if (match) return { tag, match };
+        }
+        return ordinal(element);
+    }
+    function locate(doc, binding) {
+        const a = binding.anchor;
+        const anchors = [...doc.getElementsByTagName(a.tag)].filter(n => !a.key || n.getAttribute(a.key) === a.value);
+        if (anchors.length !== 1) return null;
+        if (!a.key) {
+            // A body fallback must stay unique across equivalent unkeyed containers;
+            // inserting or moving another table/list must not retarget an old edit.
+            let candidates = anchors, identified = false;
+            for (const step of binding.path) {
+                candidates = candidates.flatMap(parent => {
+                    const children = [...parent.children].filter(n => n.tagName.toLowerCase() === step.tag);
+                    if (step.key) return children.filter(n => n.getAttribute(step.key) === step.value);
+                    if (step.match) return children.filter(n => matches(n, step.match));
+                    if (step.text) return children.filter(n => text(n) === step.text);
+                    if (step.column) {
+                        const paths = headerPaths(children[0] || parent);
+                        return children.filter(n => JSON.stringify(columnOf(n, paths)) === JSON.stringify(step.column));
+                    }
+                    return identified ? children.slice(step.index - 1, step.index) : children;
+                });
+                identified ||= !!(step.key || step.match || step.text || step.column);
+                if (!candidates.length || candidates.length > 2000) return null;
+            }
+            return candidates.length === 1 && !reactive(candidates[0]) ? candidates[0] : null;
+        }
+        let node = anchors[0];
+        for (const step of binding.path) {
+            const children = [...node.children].filter(n => n.tagName.toLowerCase() === step.tag);
+            if (step.key) {
+                const found = children.filter(n => n.getAttribute(step.key) === step.value);
+                if (found.length !== 1) return null;
+                node = found[0];
+            } else if (step.match || step.column || step.text) {
+                const paths = step.column ? headerPaths(children[0] || node) : null;
+                const found = children.filter(n => step.match ? matches(n, step.match) : step.text ? text(n) === step.text : JSON.stringify(columnOf(n, paths)) === JSON.stringify(step.column));
+                if (found.length !== 1) return null;
+                node = found[0];
+            } else node = children[step.index - 1];
+            if (!node) return null;
+        }
+        return reactive(node) ? null : node;
+    }
+    function bindings(element) {
+        const result = [], path = [];
+        for (const rule of states.get(element.ownerDocument)?.rules || []) {
+            if (locate(element.ownerDocument, rule.binding) === element) result.push(rule.binding);
+        }
+        for (let node = element; node && path.length <= 16; node = node.parentElement) {
+            for (const key of ['data-proto-id', 'id']) {
+                const value = node.getAttribute(key);
+                if (value && value.length <= 256) {
+                    const binding = { anchor: { tag: node.tagName.toLowerCase(), key, value }, path: [...path] };
+                    if (locate(element.ownerDocument, binding) === element && !result.some(b => JSON.stringify(b) === JSON.stringify(binding))) result.push(binding);
+                    if (result.length >= 12) return result;
+                }
+            }
+            if (node.tagName === 'BODY' && path.length) {
+                const binding = { anchor: { tag: 'body' }, path: [...path] };
+                if (locate(element.ownerDocument, binding) === element) result.push(binding);
+                break;
+            }
+            path.unshift(part(node, element));
+        }
+        return result;
+    }
+    function install(doc, rules) {
+        let state = states.get(doc);
+        if (state) { state.rules = rules; state.apply(); return; }
+        const Observer = doc.defaultView?.MutationObserver;
+        if (!Observer || !doc.documentElement) return;
+        state = { rules, observer: null, apply: null, originals: new WeakMap() };
+        state.apply = () => {
+            // Disconnect during our own writes so text changes do not feed back forever.
+            state.observer.disconnect();
+            try {
+                for (const rule of state.rules) {
+                    const element = locate(doc, rule.binding);
+                    if (!element) continue;
+                    const texts = nodes(element), current = texts.map(n => normal(n.nodeValue));
+                    if (texts.length !== rule.before.length ||
+                        ![rule.before, rule.after].some(expected => expected.every((t, i) => normal(t) === current[i]))) continue;
+                    texts.forEach((node, i) => {
+                        if (!state.originals.has(node)) state.originals.set(node, rule.before[i]);
+                        if (node.nodeValue.trim() === rule.after[i]) return;
+                        const prefix = node.nodeValue.match(/^\s*/)[0], suffix = node.nodeValue.match(/\s*$/)[0];
+                        node.nodeValue = prefix + rule.after[i] + suffix;
+                    });
+                }
+            } finally { state.observer.observe(doc.documentElement, { childList: true, characterData: true, subtree: true }); }
+        };
+        state.observer = new Observer(state.apply); states.set(doc, state); state.apply();
+        doc.addEventListener('DOMContentLoaded', state.apply, { once: true });
+    }
+    window.ProtoTextRuntime = { bindings, install };
+    const data = document.getElementById('proto-text-edits-data');
+    if (data) { try { install(document, JSON.parse(data.textContent)); } catch (_) { /* Keep the original prototype usable if an override was edited externally. */ } }
+})();
+
+</script>
+<!-- proto-text-edits:end -->
+<!-- proto-review-bundle -->
+<script data-proto-review="appearance">
+/* PRD 内容色板与序号外观；编辑、导出和发布共用。 */
+(() => {
+    'use strict';
+    const TEXT_COLORS = [
+        ['#191919', '黑色'], ['#1684fc', '蓝色'], ['#8a38f5', '紫色'], ['#666666', '灰色'],
+        ['#fbfbfb', '白色'], ['#ec4954', '红色'], ['#ff9f29', '橙色']
+    ];
+    const DEFAULT_PIN = '#2563eb', INK = '#191919', STROKE = '#4e5560', ON_BLUE = '#ffffff';
+    const PIN_COLORS = [
+        [DEFAULT_PIN, '默认蓝色'],
+        ['#acbcd1', '灰蓝'], ['#ff9e93', '珊瑚'], ['#ff9e47', '橙色'], ['#fdd143', '黄色'], ['#9dc4ff', '浅蓝'],
+        ['#38cde7', '青色'], ['#54d691', '绿色'], ['#daa3ff', '紫色'], ['#ff94e4', '粉色']
+    ];
+    const LEGACY_PIN_COLORS = ['#e6e6e6'];
+    function pinColor(note) {
+        const color = String(note?.color || '').toLowerCase();
+        return PIN_COLORS.some(([hex]) => hex === color) || LEGACY_PIN_COLORS.includes(color) ? color : DEFAULT_PIN;
+    }
+    function applyPin(element, note) {
+        const color = pinColor(note), custom = color !== DEFAULT_PIN;
+        element.style.setProperty('--pin-fill', color);
+        element.style.setProperty('--pin-ink', custom ? INK : ON_BLUE);
+        element.style.setProperty('--pin-stroke', custom ? STROKE : ON_BLUE);
+    }
+    window.ProtoAppearance = { TEXT_COLORS, PIN_COLORS, DEFAULT_PIN, pinColor, applyPin };
+})();
+
+</script>
+<script data-proto-review="anchors">
+/* 稳定锚点与可见元素选择；不向业务 DOM 注入高亮 class。
+   基线复用自「原型生成全流程」extension/content/anchors.js；标注工作台增补折叠引导、条件显现路径与响应式落点。
+   全流程已于 2026-09-26 归档至 独立项目\_归档\原型生成全流程\。 */
+(() => {
+    'use strict';
+    if (globalThis.ProtoAnchors) return;
+    const owned = (el) => !!el?.closest?.('[data-prototype-owned]');
+    const text = (el) => (el?.innerText || el?.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 400);
+    const loose = (s) => (s || '').replace(/\s+/g, '');
+    const grams = (s) => { const set = new Set(); for (let i = 0; i + 1 < s.length; i++) set.add(s.slice(i, i + 2)); return set; };
+    /* 文本身份校验：短文本（按钮、标签、单元格）必须逐字相同；长文本（面板、表格、整个筛选区）只要求字符二元组包含率 ≥ .75。
+       容器的 innerText 会随条件行显隐、计数、日期等动态内容变化，逐字比对会把整块面板判成「目标变化」，序号全部消失。
+       隐藏子树的 innerText 退化为 textContent 丢掉 span 间空格，故两侧先去掉全部空白再比。 */
+    function sameText(el, expected) {
+        if (!expected) return true;
+        const a = loose(text(el)), b = loose(expected);
+        if (a === b) return true;
+        if (Math.min(a.length, b.length) < 24) return false;
+        const ga = grams(a), gb = grams(b);
+        let hit = 0;
+        for (const g of ga) if (gb.has(g)) hit++;
+        return hit / Math.min(ga.size, gb.size) >= 0.75;
+    }
+    // 选择器就是页面唯一 id：id 本身即身份，文本变化（占位符→已选值、计数刷新）不视为目标变化。
+    const idBound = (anchor) => /^#[^\s>+~]+$/.test(anchor?.selector || '');
+    const visible = (el) =>
+        !!el &&
+        !owned(el) &&
+        el.getClientRects().length > 0 &&
+        getComputedStyle(el).display !== 'none' &&
+        getComputedStyle(el).visibility !== 'hidden';
+    function selector(el) {
+        if (el.id && document.querySelectorAll('#' + CSS.escape(el.id)).length === 1)
+            return '#' + CSS.escape(el.id);
+        const path = [];
+        for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
+            let part = n.tagName.toLowerCase();
+            if (n.id && document.querySelectorAll('#' + CSS.escape(n.id)).length === 1) {
+                path.unshift('#' + CSS.escape(n.id));
+                break;
+            }
+            const same = n.parentElement
+                ? [...n.parentElement.children].filter((x) => x.tagName === n.tagName)
+                : [];
+            if (same.length > 1) part += `:nth-of-type(${same.indexOf(n) + 1})`;
+            path.unshift(part);
+        }
+        return path.join(' > ');
+    }
+    function controlLabel(el) {
+        const byFor = el.id ? document.querySelector(`label[for="${CSS.escape(el.id)}"]`) : null;
+        const label = el.labels?.[0] || byFor || el.closest('label') || el.closest('.f-item,.form-item,.form-group,.field')?.querySelector('label');
+        return text(label).replace(/[：:]$/, '').slice(0, 80);
+    }
+    function conditionRow(el, kind, value, option, targetRect, explicit = false, label = '') {
+        if (!el || owned(el) || !visible(el) || el.disabled || el.getAttribute?.('aria-disabled') === 'true') return null;
+        const r = el.getBoundingClientRect();
+        const dx = r.left + r.width / 2 - (targetRect.left + targetRect.width / 2);
+        const dy = r.top + r.height / 2 - (targetRect.top + targetRect.height / 2);
+        return { selector: selector(el), kind, value, option: String(option || '').slice(0, 80),
+            label: String(label || controlLabel(el)).slice(0, 80), explicit, distance: explicit ? -1 : Math.hypot(dx, dy) };
+    }
+    function captureConditions(target, targetRect) {
+        /* 通用“显现路径”：记录创建标注时使目标可见的状态控件，目标日后 display:none 或被动态移出 DOM，
+           仍能把引导挂回条件控件并恢复当时状态。自动覆盖 native select/checkbox/radio 与常见 ARIA 控件；
+           任意自定义 JS 控件用祖先 data-proto-reveal-by/value/label 显式声明，避免靠文案猜业务动作。 */
+        const rows = [], seen = new Set();
+        const add = row => {
+            if (!row) return;
+            const key = `${row.selector}\n${row.kind}\n${row.value}`;
+            if (!seen.has(key)) { seen.add(key); rows.push(row); }
+        };
+        for (let n = target; n && n !== document.documentElement; n = n.parentElement) {
+            const by = n.getAttribute?.('data-proto-reveal-by');
+            if (!by) continue;
+            let control = null;
+            try { control = document.querySelector(by); } catch (_) { /* 声明选择器失效 */ }
+            if (!control) continue;
+            const raw = n.getAttribute('data-proto-reveal-value') ?? '';
+            const kind = control.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control.type) ? control.type : 'click';
+            const value = kind === 'select' ? raw : kind === 'click' ? raw || 'true' : raw === 'true';
+            add(conditionRow(control, kind, value, raw || text(control), targetRect, true, n.getAttribute('data-proto-reveal-label') || ''));
+        }
+        for (const el of document.querySelectorAll('select,input[type="checkbox"],input[type="radio"]')) {
+            if (!visible(el)) continue;
+            let kind, value, initial, option = '';
+            if (el.tagName === 'SELECT') {
+                kind = 'select'; value = el.value;
+                const def = [...el.options].find(o => o.defaultSelected) || el.options[0];
+                initial = def?.value ?? '';
+                option = el.selectedOptions?.[0]?.textContent?.trim() || value;
+                if (value === initial) continue;
+            } else {
+                kind = el.type; value = !!el.checked; initial = !!el.defaultChecked;
+                if (value === initial || (kind === 'radio' && !value)) continue;
+                // checkbox 同时记录「由默认勾选切为未勾选」；radio 只记录当前选中的新项，避免同组旧项制造反向条件。
+                option = el.value || controlLabel(el);
+            }
+            add(conditionRow(el, kind, value, option, targetRect));
+        }
+        const aria = '[role="tab"][aria-selected="true"],[aria-pressed="true"],[aria-expanded="true"][aria-controls],[role="radio"][aria-checked="true"],[role="checkbox"][aria-checked="true"]';
+        for (const el of document.querySelectorAll(aria)) {
+            const kind = el.matches('[role="tab"]') ? 'aria-selected' : el.hasAttribute('aria-pressed') ? 'aria-pressed' :
+                el.hasAttribute('aria-expanded') ? 'aria-expanded' : 'aria-checked';
+            add(conditionRow(el, kind, 'true', text(el) || controlLabel(el), targetRect));
+        }
+        return rows.sort((a, b) => a.distance - b.distance).slice(0, 12).map(({ distance, ...row }) => row);
+    }
+    function serialize(el) {
+        const r = el.getBoundingClientRect();
+        const clean = el.cloneNode(true);
+        clean.querySelectorAll('[data-prototype-owned],script').forEach((n) => n.remove());
+        const conditions = captureConditions(el, r);
+        const anchor = {
+            protoId: el.getAttribute('data-proto-id') || '',
+            selector: selector(el),
+            tag: el.tagName.toLowerCase(),
+            text: text(el),
+            parentText: text(el.parentElement),
+            htmlSnippet: clean.outerHTML.slice(0, 1800),
+            rect: {
+                x: Math.round(r.x + scrollX),
+                y: Math.round(r.y + scrollY),
+                width: Math.round(r.width),
+                height: Math.round(r.height),
+            },
+        };
+        if (conditions.length) anchor.conditions = conditions;
+        return anchor;
+    }
+    function resolve(anchor) {
+        if (!anchor) return { element: null, reason: '尚未绑定元素' };
+        if (anchor.protoId) {
+            const list = [
+                ...document.querySelectorAll(`[data-proto-id="${CSS.escape(anchor.protoId)}"]`),
+            ].filter(visible);
+            if (list.length === 1 && (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag))
+                return { element: list[0] };
+            return {
+                element: null,
+                reason: list.length > 1 ? '稳定 ID 重复，请重新绑定' : '目标已移除或当前状态不可见',
+            };
+        }
+        try {
+            const list = [...document.querySelectorAll(anchor.selector || ':not(*)')].filter(visible);
+            if (
+                list.length === 1 &&
+                (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag) &&
+                (idBound(anchor) || sameText(list[0], anchor.text))
+            )
+                return { element: list[0] };
+        } catch (_) {
+            /* 旧选择器可能失效，继续尝试唯一文本。 */
+        }
+        if (anchor.text && /^[a-z][a-z0-9-]*$/i.test(anchor.tag || '')) {
+            const candidates = [...document.querySelectorAll(anchor.tag)].filter(
+                (el) =>
+                    visible(el) &&
+                    sameText(el, anchor.text) &&
+                    sameText(el.parentElement, anchor.parentText),
+            );
+            if (candidates.length === 1) return { element: candidates[0] };
+            if (candidates.length > 1) return { element: null, reason: '存在多个同名目标，请重新绑定' };
+        }
+        return { element: null, reason: '目标变化，等待重新定位' };
+    }
+    function at(x, y) {
+        // 截图标注始终绑定图片自身；覆盖其上的热区可随时移动、删除。
+        const image = document.querySelector('html[data-proto-screenshot="true"] #screenshot-image');
+        if (image) {
+            const bounds = image.getBoundingClientRect();
+            if (x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom) return image;
+        }
+        return (
+            document
+                .elementsFromPoint(x, y)
+                .find((el) => !owned(el) && !['HTML', 'BODY'].includes(el.tagName)) || null
+        );
+    }
+    /* 元素的可见矩形：被视口与各级 overflow 祖先裁剪后的区域。
+       reach 记录被裁掉的每一侧「用户滚动能否把它露出来」：裁剪者是滚动容器 / 视口且尚未滚到尽头 → 能；
+       overflow:hidden|clip、滚到尽头、或视口比元素窄导致的负向溢出（flex 居中的手机壳左缘在 x<0）→ 不能。 */
+    function rect(el, fullDocument = false) {
+        const r = el.getBoundingClientRect(), doc = document.documentElement;
+        const vp = fullDocument
+            ? { left: -scrollX, top: -scrollY, right: doc.scrollWidth - scrollX, bottom: doc.scrollHeight - scrollY }
+            : { left: 0, top: 0, right: innerWidth, bottom: innerHeight };
+        const clip = { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+        const by = {};   // 每侧由谁裁掉（裁到同一坐标的全部记下）：null = 视口 / 文档边界，否则为滚动容器节点；未被裁为 undefined
+        const cut = (k, v, node, tighter) => {
+            if (tighter(v, clip[k])) { clip[k] = v; by[k] = [node]; }
+            else if (by[k] && Math.abs(v - clip[k]) < 0.5) by[k].push(node);   // 视口与滚动容器边缘重合：任一能滚即算滚得出来
+        };
+        const gt = (a, b) => a > b, lt = (a, b) => a < b;
+        cut('left', vp.left, null, gt); cut('top', vp.top, null, gt);
+        cut('right', vp.right, null, lt); cut('bottom', vp.bottom, null, lt);
+        for (let n = el.parentElement; n; n = n.parentElement) {
+            if (fullDocument && n === document.scrollingElement) continue;
+            const s = getComputedStyle(n), p = n.getBoundingClientRect();
+            if (/(auto|scroll|hidden|clip)/.test(s.overflowX)) {
+                cut('left', p.left + n.clientLeft, n, gt);
+                cut('right', p.left + n.clientLeft + n.clientWidth, n, lt);
+            }
+            if (/(auto|scroll|hidden|clip)/.test(s.overflowY)) {
+                cut('top', p.top + n.clientTop, n, gt);
+                cut('bottom', p.top + n.clientTop + n.clientHeight, n, lt);
+            }
+        }
+        const scrollable = (n, axis) => n === null ? !fullDocument : /(auto|scroll)/.test(getComputedStyle(n)['overflow' + axis]);
+        const canScroll = (n, axis, before) => {
+            if (!scrollable(n, axis)) return false;
+            const pos = n ? (axis === 'X' ? n.scrollLeft : n.scrollTop) : (axis === 'X' ? scrollX : scrollY);
+            if (before) return pos > 0.5;
+            const size = n ? (axis === 'X' ? n.clientWidth : n.clientHeight) : (axis === 'X' ? innerWidth : innerHeight);
+            const total = n ? (axis === 'X' ? n.scrollWidth : n.scrollHeight) : (axis === 'X' ? doc.scrollWidth : doc.scrollHeight);
+            return pos + size < total - 0.5;
+        };
+        const reachable = (k, axis, before) => !by[k] || by[k].some((n) => canScroll(n, axis, before));
+        const reach = { left: reachable('left', 'X', true), right: reachable('right', 'X', false),
+            top: reachable('top', 'Y', true), bottom: reachable('bottom', 'Y', false) };
+        return { x: clip.left, y: clip.top, width: Math.max(0, clip.right - clip.left), height: Math.max(0, clip.bottom - clip.top),
+            visible: clip.right > clip.left && clip.bottom > clip.top, reach };
+    }
+    function placement(el, x, y) {
+        if (!el) return { kind: 'document', x: x + scrollX, y: y + scrollY };
+        const r = el.getBoundingClientRect(), px = x - r.left + el.scrollLeft, py = y - r.top + el.scrollTop;
+        // 同存绝对偏移与比例：绝对值保持旧行为，rx/ry 让响应式控件变窄/变高后仍能落在同一相对位置。
+        return { kind: 'element', x: px, y: py,
+            rx: r.width > 0 ? Math.max(0, Math.min(1, px / r.width)) : 0,
+            ry: r.height > 0 ? Math.max(0, Math.min(1, py / r.height)) : 0 };
+    }
+    function point(note, fullDocument = false) {
+        const p = note.placement;
+        if (p?.kind === 'document') {
+            const x = p.x - scrollX, y = p.y - scrollY;
+            if (p.x > document.documentElement.scrollWidth || p.y > document.documentElement.scrollHeight)
+                return { reason: '页面尺寸已变化，请重新定位', point: null, rect: null };
+            const visible = fullDocument || (x >= 0 && y >= 0 && x < innerWidth && y < innerHeight);
+            return { point: { x, y, visible }, rect: { x, y, width: 0, height: 0, visible } };
+        }
+        const found = resolve(note.anchor);
+        if (!found.element) return { reason: found.reason, point: null, rect: null };
+        const element = found.element, r = element.getBoundingClientRect(), clip = rect(element, fullDocument);
+        if (!p) return { element, rect: clip, point: { x: clip.x, y: clip.y, visible: clip.visible }, legacy: true };
+        const ew = Math.max(r.width, element.scrollWidth), eh = Math.max(r.height, element.scrollHeight);
+        let px = p.x, py = p.y;
+        if (Number.isFinite(p.rx) && Number.isFinite(p.ry)) {
+            px = p.rx * ew; py = p.ry * eh;
+        } else {
+            // 旧锚点无 rx/ry：仅当当前响应式尺寸缩小导致绝对偏移越界、且偏移在创建时 rect 内时，按原尺寸比例回退。
+            const base = note.anchor?.rect;
+            if (px > ew && base?.width > 0 && px <= base.width) px = px / base.width * ew;
+            if (py > eh && base?.height > 0 && py <= base.height) py = py / base.height * eh;
+        }
+        if (px > ew || py > eh)
+            return { element, reason: '落点超出目标范围，请重新定位', rect: clip, point: null };
+        let x = r.left + px - element.scrollLeft, y = r.top + py - element.scrollTop;
+        // 元素本身可见、落点却落在被裁掉的那一侧，且那一侧再怎么滚也露不出来（视口比元素窄、overflow:hidden、已滚到尽头）：
+        // 把落点夹回可见区边缘，否则整宽元素左缘的序号在窄视口里永远不出现。还能滚出来的照旧隐藏，等用户滚过来。
+        if (clip.visible && clip.reach) {
+            const right = clip.x + clip.width, bottom = clip.y + clip.height;
+            if (x < clip.x && !clip.reach.left) x = clip.x;
+            if (x > right && !clip.reach.right) x = right;
+            if (y < clip.y && !clip.reach.top) y = clip.y;
+            if (y > bottom && !clip.reach.bottom) y = bottom;
+        }
+        const visible = clip.visible && x >= clip.x && x <= clip.x + clip.width && y >= clip.y && y <= clip.y + clip.height;
+        return { element, rect: clip, point: { x, y, visible } };
+    }
+    function inBox(box) {
+        const nodes = [
+            ...document.querySelectorAll(
+                'button,input,img,a,p,h1,h2,h3,h4,li,label,select,textarea,[data-proto-id]',
+            ),
+        ].filter((el) => {
+            if (!visible(el)) return false;
+            const r = el.getBoundingClientRect();
+            return (
+                r.width &&
+                r.height &&
+                r.left < box.right &&
+                r.right > box.left &&
+                r.top < box.bottom &&
+                r.bottom > box.top &&
+                [[.5,.5],[.1,.1],[.9,.1],[.1,.9],[.9,.9]].some(([u,v]) => {
+                    const hit = at(r.left + r.width * u, r.top + r.height * v);
+                    return hit === el || (hit && el.contains(hit));
+                })
+            );
+        });
+        return nodes.filter((el) => !nodes.some((other) => other !== el && other.contains(el))).slice(0, 100);
+    }
+    function currentIds() {
+        return {
+            pageId: document.documentElement.dataset.protoPage || 'main',
+            stateId: document.documentElement.dataset.protoState || 'default',
+        };
+    }
+    async function enterState(stateId) {
+        if (typeof window.PrototypeBridge?.enter === 'function') await window.PrototypeBridge.enter(stateId);
+        return currentIds();
+    }
+    // ---------- 折叠区展开 / 引导（标注工作台“点序号联动展开”与“点击引导”复用；全流程已归档，此为标注侧增补） ----------
+    function hidden(el) {
+        if (!el) return true;
+        const cs = getComputedStyle(el);
+        return cs.display === 'none' || cs.visibility === 'hidden' || el.getClientRects().length === 0;
+    }
+    function resolveHidden(anchor) {
+        // 与 resolve 同规则但不过滤可见性：定位被折叠/隐藏的目标元素
+        if (!anchor) return null;
+        const all = (sel) => { try { return [...document.querySelectorAll(sel)].filter((el) => !owned(el)); } catch (_) { return []; } };
+        if (anchor.protoId) {
+            const list = all(`[data-proto-id="${CSS.escape(anchor.protoId)}"]`);
+            return list.length === 1 && (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag) ? list[0] : null;
+        }
+        const list = all(anchor.selector || ':not(*)');
+        if (list.length === 1 && (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag) && (idBound(anchor) || sameText(list[0], anchor.text))) return list[0];
+        if (anchor.text && /^[a-z][a-z0-9-]*$/i.test(anchor.tag || '')) {
+            const c = all(anchor.tag).filter((el) => sameText(el, anchor.text) && sameText(el.parentElement, anchor.parentText));
+            if (c.length === 1) return c[0];
+        }
+        return null;
+    }
+    function conditionValue(el, condition) {
+        if (condition.kind === 'select') return el.value;
+        if (condition.kind === 'checkbox' || condition.kind === 'radio') return !!el.checked;
+        if (condition.kind.startsWith('aria-')) return el.getAttribute(condition.kind);
+        return null;
+    }
+    function conditionGuideLabel(condition) {
+        const value = condition.option || condition.value || condition.label || '条件';
+        if (condition.kind === 'select') return `选择 ${value}`;
+        if (condition.kind === 'aria-selected') return `切换到 ${value}`;
+        if (condition.kind === 'aria-expanded') return `展开 ${condition.label || value}`;
+        return `开启 ${condition.label || value}`;
+    }
+    function conditionTrigger(anchor) {
+        const rows = Array.isArray(anchor?.conditions) ? anchor.conditions : [];
+        let fallback = null;
+        for (const condition of rows) {
+            let el = null;
+            try { el = document.querySelector(condition.selector || ':not(*)'); } catch (_) { /* 旧条件选择器失效 */ }
+            if (!el || owned(el) || !visible(el)) continue;
+            const hit = { element: el, condition, label: conditionGuideLabel(condition) };
+            if (conditionValue(el, condition) !== condition.value) return hit;
+            // 条件已满足却仍不可见：原生 change 与显式声明允许重放同值事件兜底（satisfied 标记，排在折叠触发器之后）；
+            // ARIA 同值点击可能反向关闭，不作为 fallback。
+            if (!fallback && (condition.explicit || ['select', 'checkbox', 'radio'].includes(condition.kind))) fallback = { ...hit, satisfied: true };
+        }
+        return fallback;
+    }
+    function manualCondition(anchor, attempted = new Set()) {
+        const steps = anchor?.revealSteps || [];
+        const controls = steps.map(step => {
+            let matches = [];
+            try { matches = [...document.querySelectorAll(step.protoId ? `[data-proto-id="${CSS.escape(step.protoId)}"]` : step.selector || ':not(*)')]; } catch (_) { /* invalid locator */ }
+            return matches.length === 1 && !owned(matches[0]) && visible(matches[0]) && !matches[0].disabled && matches[0].getAttribute('aria-disabled') !== 'true' ? matches[0] : null;
+        });
+        for (let i = 0; i < steps.length; i++) {
+            const condition = steps[i], element = controls[i];
+            if (!element || attempted.has(element)) continue;
+            if (condition.kind === 'click' && controls.slice(i + 1).some(next => {
+                if (!next) return false;
+                const controlled = (element.getAttribute('aria-controls') || '').split(/\s+/).filter(Boolean);
+                for (let branch = next; branch && branch !== document.body; branch = branch.parentElement) {
+                    if (controlled.includes(branch.id) || branch.getAttribute('data-proto-reveal-by') === condition.selector) return true;
+                }
+                return false;
+            })) continue;
+            if (condition.kind !== 'click' && conditionValue(element, condition) === condition.value) continue;
+            return { element, condition, label: condition.label || conditionGuideLabel(condition) };
+        }
+        return null;
+    }
+    function applyCondition(hit) {
+        if (!hit?.element) return false;
+        const { element, condition } = hit;
+        if (condition.kind === 'select') element.value = condition.value;
+        else if (condition.kind === 'checkbox' || condition.kind === 'radio') element.checked = !!condition.value;
+        else { element.click(); return true; }
+        element.dispatchEvent(new Event('input', { bubbles: true }));
+        element.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+    }
+    const failedRevealTriggers = new WeakMap();
+    const DISCLOSURE_WORDS = /(?:展开|更多|显示|查看|收起|高级|筛选|折叠|expand|more|show|toggle)/i;
+    function revealFailed(el, trigger) {
+        return !!el && !!trigger && !!failedRevealTriggers.get(el)?.has(trigger);
+    }
+    function markRevealFailed(el, trigger) {
+        if (!el || !trigger) return;
+        let failed = failedRevealTriggers.get(el);
+        if (!failed) failedRevealTriggers.set(el, (failed = new WeakSet()));
+        failed.add(trigger);
+    }
+    function neighboringBranch(hiddenNode, trigger) {
+        const parent = hiddenNode?.parentElement;
+        if (!parent || !trigger) return false;
+        let branch = trigger;
+        while (branch && branch.parentElement !== parent) branch = branch.parentElement;
+        return !!branch && (branch === hiddenNode.previousElementSibling || branch === hiddenNode.nextElementSibling);
+    }
+    function weakRevealCandidate(target, hiddenNode, trigger) {
+        if (!trigger || owned(trigger) || hiddenNode.contains(trigger) || !visible(trigger) || revealFailed(target, trigger)) return false;
+        // 旧锚点没有 aria-controls 时，只接受隐藏分支相邻区域中的明确展开语义；不能把同容器内任意“导出/新建”按钮猜成触发器。
+        if (!neighboringBranch(hiddenNode, trigger)) return false;
+        if (trigger.tagName === 'SUMMARY' || trigger.getAttribute?.('aria-expanded') === 'false') return true;
+        const role = trigger.getAttribute?.('role');
+        if (trigger.tagName !== 'BUTTON' && role !== 'button') return false;
+        const label = `${text(trigger)} ${trigger.getAttribute?.('aria-label') || ''} ${trigger.getAttribute?.('title') || ''}`;
+        return DISCLOSURE_WORDS.test(label);
+    }
+    function revealTrigger(el, strongOnly = false) {
+        // 找到能让 el 显现的折叠触发器：原生 details / aria-controls 是强关联；相邻且有展开语义的按钮仅作旧锚点退路
+        for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+            if (n.tagName === 'DETAILS' && !n.open && !revealFailed(el, n)) return n;
+            if (n.id) {
+                const ctrls = [...document.querySelectorAll('[aria-controls]')].filter((c) =>
+                    !owned(c) && !revealFailed(el, c) && (c.getAttribute('aria-controls') || '').split(/\s+/).includes(n.id));
+                const hit = ctrls.find((c) => c.getAttribute('aria-expanded') === 'false') || ctrls.find((c) => visible(c));
+                if (hit && visible(hit)) return hit;
+            }
+        }
+        if (strongOnly) return null;
+        for (let n = el; n && n !== document.body; n = n.parentElement) {
+            if (!hidden(n)) continue;
+            const scope = n.parentElement || document;
+            const cand = [...scope.querySelectorAll('[aria-expanded="false"], summary, button, [role="button"]')]
+                .find((t) => weakRevealCandidate(el, n, t));
+            if (cand) return cand;
+        }
+        return null;
+    }
+    function declaredCondition(el) {
+        // 从外向内找当前可用的入口；导入标注没有 conditions 时也读取页面上的显现声明。
+        const chain = [];
+        for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) chain.unshift(n);
+        for (const node of chain) {
+            const by = node.getAttribute?.('data-proto-reveal-by');
+            if (!by || !hidden(node)) continue;
+            let controls = [];
+            try { controls = [...document.querySelectorAll(by)]; } catch (_) { continue; }
+            if (controls.length !== 1) continue;
+            const control = controls[0];
+            if (owned(control) || !visible(control) || control.disabled || control.getAttribute('aria-disabled') === 'true' || revealFailed(el, control)) continue;
+            const raw = node.getAttribute('data-proto-reveal-value') ?? 'true';
+            const kind = control.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control.type) ? control.type : 'click';
+            const condition = { selector: by, kind, value: kind === 'select' ? raw : kind === 'click' ? raw : raw === 'true', explicit: true,
+                label: node.getAttribute('data-proto-reveal-label') || controlLabel(control), option: raw };
+            return { element: control, condition, label: node.getAttribute('data-proto-reveal-label') || conditionGuideLabel(condition) };
+        }
+        return null;
+    }
+    function revealHint(anchor, el = resolveHidden(anchor)) {
+        if (el && !hidden(el)) return null; // 目标已显现；若落点异常应走失锚/响应式回退，不能继续显示条件引导
+        if (anchor?.revealSteps?.length) {
+            const manual = manualCondition(anchor);
+            return manual ? { trigger: manual.element, target: anchor, label: manual.label, kind: 'condition' } : null;
+        }
+        const declared = el ? declaredCondition(el) : null;
+        if (declared) return { trigger: declared.element, target: anchor || el, label: declared.label, kind: 'condition' };
+        // 优先语义明确的 details / aria-controls；其次用创建标注时记录的、当前值确实不同的状态条件；
+        // 再用邻近按钮弱推断；条件值已满足却仍隐藏的同值重放排最后（否则弹层折叠时会误显「选择 智能体」）。
+        const direct = el ? revealTrigger(el, true) : null;
+        if (direct) return { trigger: direct, target: el, label: '展开', kind: 'disclosure' };
+        const condition = conditionTrigger(anchor);
+        const conditionHint = condition ? { trigger: condition.element, target: anchor, label: condition.label, kind: 'condition' } : null;
+        if (conditionHint && !condition.satisfied) return conditionHint;
+        const fallback = el ? revealTrigger(el) : null;
+        if (fallback) return { trigger: fallback, target: el, label: '展开', kind: 'disclosure' };
+        return conditionHint;
+    }
+    function reveal(target, attempted = new Set(), notify = true) {
+        const anchor = target && target.nodeType === 1 ? null : target;
+        let el = target && target.nodeType === 1 ? target : resolveHidden(target);
+        if (anchor?.revealSteps?.length) {
+            if (el && !hidden(el)) return el;
+            for (let i = 0; i < anchor.revealSteps.length; i++) {
+                const hit = manualCondition(anchor, attempted);
+                if (!hit) break;
+                attempted.add(hit.element);
+                applyCondition(hit);
+                el = resolveHidden(anchor);
+                if (el && !hidden(el)) return el;
+            }
+            return null;
+        }
+        // 条件控件先恢复到创建标注时的值；change/click 处理器可同步显现，也可由 MutationObserver 在异步渲染后接力。
+        const condition = (el ? declaredCondition(el) : null) || (anchor ? conditionTrigger(anchor) : null);
+        if (condition && !condition.satisfied && !attempted.has(condition.element)) {
+            attempted.add(condition.element);
+            if (applyCondition(condition)) el = resolveHidden(anchor) || el;
+        }
+        // 同一触发器只点一次：Vue/React 类原型点击后 DOM 在 nextTick 才更新，同步判定仍为隐藏，
+        // 循环里重复点同一个按钮会把刚展开的区域再折回去（偶数次 = 没展开）。多层折叠靠后续重排接力。
+        const clicked = attempted;
+        let lastAttempt = null;
+        for (let g = 0; el && g < 10 && hidden(el); g++) {
+            const declared = declaredCondition(el);
+            const trig = declared?.element || revealTrigger(el);
+            if (!trig || clicked.has(trig)) break;
+            clicked.add(trig);
+            lastAttempt = { element: el, trigger: trig };
+            if (declared) applyCondition(declared);
+            else if (trig.tagName === 'DETAILS') trig.open = true; else trig.click();
+            if (anchor) el = resolveHidden(anchor) || el;
+        }
+        // 折叠触发器都试过仍不可见：最后才重放已满足的同值条件（select 的 change 处理器可能负责重建区域）。
+        if ((!el || hidden(el)) && condition?.satisfied && !attempted.has(condition.element)) {
+            attempted.add(condition.element);
+            if (applyCondition(condition)) el = resolveHidden(anchor) || el;
+        }
+        if ((!el || hidden(el)) && lastAttempt && notify) {
+            // 给 Vue/React 等异步渲染留出时间；仍未显现就记住这组无效关联，并通知两种标注层移除假引导。
+            setTimeout(() => {
+                const current = anchor ? resolveHidden(anchor) : lastAttempt.element;
+                if (current && hidden(current)) {
+                    markRevealFailed(current, lastAttempt.trigger);
+                    document.dispatchEvent(new CustomEvent('proto-anchors:reveal-failed', { detail: { target: current, trigger: lastAttempt.trigger } }));
+                }
+            }, 450);
+        }
+        return !el || hidden(el) ? null : el;
+    }
+    const pendingReveals = new Map();
+    function revealAndWait(target) {
+        const key = target?.nodeType === 1 ? target : `${target?.protoId || ''}\n${target?.selector || ''}`;
+        if (pendingReveals.has(key)) return pendingReveals.get(key);
+        const operation = (async () => {
+            const attempted = new Set(), deadline = Date.now() + 1800;
+            do {
+                const el = reveal(target, attempted, false);
+                if (el) return el;
+                if (!attempted.size) return null;
+                await new Promise(resolve => setTimeout(resolve, 32));
+            } while (Date.now() < deadline);
+            const current = target?.nodeType === 1 ? target : resolveHidden(target);
+            if (current && !hidden(current)) return current;
+            if (current) for (const trigger of attempted) markRevealFailed(current, trigger);
+            document.dispatchEvent(new CustomEvent('proto-anchors:reveal-failed', { detail: { target: current } }));
+            return null;
+        })();
+        pendingReveals.set(key, operation);
+        operation.finally(() => { if (pendingReveals.get(key) === operation) pendingReveals.delete(key); }).catch(() => {});
+        return operation;
+    }
+    globalThis.ProtoAnchors = {
+        owned,
+        text,
+        visible,
+        hidden,
+        selector,
+        serialize,
+        resolve,
+        resolveHidden,
+        revealTrigger,
+        revealHint,
+        reveal,
+        revealAndWait,
+        rect,
+        placement,
+        point,
+        at,
+        inBox,
+        currentIds,
+        enterState,
+    };
+})();
+
+</script>
+<script data-proto-review="order">
+/* 展示编号投影：不改元数据 number，所有定位与编辑始终使用稳定 id。
+   排序键是页面逻辑坐标（视口坐标加回各级滚动偏移），从上到下、从左到右。
+   目标当前不可见、但能在主页面流里靠「展开 / 选中 / 点击」显现的标注（折叠区、条件行、页签），
+   用它的显现触发器位置代位参与主序，编号在展开前后保持一致，而不是被甩到末尾；
+   落在弹窗 / 抽屉 / 提示等分支容器里的目标整体排在主页序号之后再自然排序；彻底失锚的排最后。 */
+(() => {
+    'use strict';
+    const stable = (a, b) => String(a.id).localeCompare(String(b.id), 'en');
+    function logicalPoint(found, win) {
+        if (!found?.point) return null;
+        const { element, legacy } = found;
+        const point = legacy && element ? element.getBoundingClientRect() : found.point;
+        let x = point.x + win.scrollX, y = point.y + win.scrollY;
+        for (let node = legacy ? element?.parentElement : element; node && node !== win.document.scrollingElement; node = node.parentElement) {
+            x += node.scrollLeft || 0;
+            y += node.scrollTop || 0;
+        }
+        return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;
+    }
+    /* 分支容器判定：目标所在的祖先链里有对话框 / 抽屉 / 提示 / 下拉等「离开主页面流」的容器。
+       语义属性（<dialog>、role、aria-modal、popover）直接判定；类名只作弱线索，且要求容器本身是 fixed / absolute 定位，
+       否则页面主流里的 notification-list、message-item 之类命名会被误判。
+       原型可用 data-proto-branch="true|false" 在任意祖先上显式声明，覆盖自动推断。 */
+    const BRANCH_ROLE = /^(dialog|alertdialog|tooltip|menu)$/;
+    const BRANCH_CLASS = /(^|[^a-z])(modal|dialog|drawer|popover|popup|toast|tooltip|dropdown|sheet|snackbar|notification|message)(?![a-z])/i;
+    function inBranch(el, win) {
+        const doc = win.document;
+        for (let n = el; n && n !== doc.body && n !== doc.documentElement; n = n.parentElement) {
+            if (n.hasAttribute('data-proto-branch')) return n.getAttribute('data-proto-branch') !== 'false';
+            if (n.tagName === 'DIALOG' || n.hasAttribute('popover') || n.getAttribute('aria-modal') === 'true' || BRANCH_ROLE.test(n.getAttribute('role') || '')) return true;
+            if (BRANCH_CLASS.test(n.getAttribute('class') || '') && /^(fixed|absolute)$/.test(win.getComputedStyle(n).position)) return true;
+        }
+        return false;
+    }
+    /* 目标不可见时的代位坐标：优先目标自身仍有的几何（visibility:hidden 一类），否则取显现触发器的下缘——
+       紧跟触发器所在行之后，在其下方显现的内容也就落在正确的行序里。无触发器（真失锚）返回 null。 */
+    function proxyPoint(note, el, win) {
+        const PA = win.ProtoAnchors;
+        if (el && !PA.hidden?.(el)) return null;                         // 元素可见却定不到落点：落点失效，按失锚置底
+        if (el && el.getClientRects().length) return logicalPoint({ element: el, point: el.getBoundingClientRect(), legacy: true }, win);
+        let hint = null;
+        try {
+            hint = PA.revealHint?.(note.anchor, el) ||
+                (el && PA.revealTrigger?.(el) ? { trigger: PA.revealTrigger(el) } : null);
+        } catch (_) { /* 条件选择器失效等同无触发器 */ }
+        const trigger = hint?.trigger;
+        if (!trigger || !trigger.getClientRects?.().length) return null;
+        const p = logicalPoint({ element: trigger, point: {}, legacy: true }, win);
+        return p && { x: p.x, y: p.y + trigger.getBoundingClientRect().height };
+    }
+    function rows(list) {
+        const sorted = list.slice().sort((a, b) => a.point.y - b.point.y || a.point.x - b.point.x || stable(a.note, b.note));
+        const result = [];
+        for (let i = 0; i < sorted.length;) {
+            const top = sorted[i].point.y, row = [];
+            while (i < sorted.length && sorted[i].point.y - top <= 12) row.push(sorted[i++]);
+            row.sort((a, b) => a.point.x - b.point.x || a.point.y - b.point.y || stable(a.note, b.note));
+            result.push(...row);
+        }
+        return result;
+    }
+    /* records: { note, point, group }。group 0 = 主页面流，1 = 分支容器；同组内按行序，组间主页面流在前；无 point 的失锚置底。 */
+    function arrange(records) {
+        const placed = records.filter(r => r.point);
+        const result = [
+            ...rows(placed.filter(r => !r.group)),
+            ...rows(placed.filter(r => r.group)),
+            ...records.filter(r => !r.point).sort((a, b) => stable(a.note, b.note)),
+        ];
+        return result.map((r, i) => ({ ...r.note, displayNumber: i + 1 }));
+    }
+    function classify(note, win) {
+        const PA = win.ProtoAnchors;
+        let found = null;
+        try { found = PA.point(note); } catch (_) { /* 未就绪或失效锚点 */ }
+        let point = logicalPoint(found, win), el = found?.element || null;
+        if (!el && note.anchor) { try { el = PA.resolveHidden?.(note.anchor) || null; } catch (_) { /* 旧选择器失效 */ } }
+        if (!point && note.anchor) { try { point = proxyPoint(note, el, win); } catch (_) { /* 代位失败按失锚处理 */ } }
+        const group = el && inBranch(el, win) ? 1 : 0;
+        return { note, point, group };
+    }
+    function project(notes, win, pending = null) {
+        const records = notes.map(note => classify(note, win));
+        if (pending?.point) records.push({ note: { id: '~pending' }, point: pending.point, group: pending.group || 0 });
+        return arrange(records);
+    }
+    function previewNumber(notes, win, x, y) {
+        const element = win.ProtoAnchors.at(x, y);
+        const point = logicalPoint({ element, point: { x, y } }, win);
+        const group = element && inBranch(element, win) ? 1 : 0;
+        return project(notes, win, { point, group }).find(n => n.id === '~pending')?.displayNumber || notes.length + 1;
+    }
+    globalThis.ProtoOrder = { arrange, project, previewNumber, logicalPoint, inBranch };
+})();
+
+</script>
+<script data-proto-review="bridge">
+/* 评审壳 ↔ 原型页桥：随导出内嵌进每个原型 HTML，跑在 iframe 内。
+   壳与原型改用 postMessage 通信，不再由壳跨文档注入脚本——ZIP 解压后 file:// 直接打开时
+   每个 file 都是独立源，壳拿不到 iframe 的 document，旧注入方式静默失效（无序号、无引导、右栏乱序）。
+   加载顺序：proto-hotspots.js（先于业务脚本）→ proto-appearance.js → proto-anchors.js → proto-order.js → 本文件 → review-pins.js。
+   独立打开原型（不在壳内）时本文件不做任何事。 */
+(() => {
+    'use strict';
+    if (window.__reviewBridgeBoot) return;
+    window.__reviewBridgeBoot = true;
+    if (window.parent === window || !window.ProtoAnchors) return;
+
+    const post = (msg) => { try { window.parent.postMessage(Object.assign({ __review: 1 }, msg), '*'); } catch (_) { /* 壳未就绪 */ } };
+    const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    let asideOpen = true;
+    let hintScopes = [];
+
+    // review-pins.js 启动时读取的宿主对象：标注在 init 消息到达后填充，正文 HTML 由壳预渲染（气泡层无 Markdown 渲染器）。
+    window.__REVIEW__ = {
+        notes: [],
+        asideOpen: () => asideOpen,
+        onSync: (map, state, stale) => post({ type: 'sync', map, state, stale }),
+        onFocus: (noteId) => post({ type: 'focus', noteId }),
+        renderBody: (note) => note.bodyHtml || '<p>' + esc(note.body || '') + '</p>',
+    };
+    window.ProtoHotspots?.init({ scope: () => {
+        const state = window.ProtoAnchors.currentIds?.().stateId || 'default';
+        return hintScopes.find(item => item.id === state)?.interactionHints;
+    } });
+
+    // 气泡层在本文件之后加载；init 早到时等它就位再重排（最多等 5s）。
+    function relayout(tries) {
+        if (window.__reviewRelayout) { window.__reviewRelayout(); return; }
+        if ((tries || 0) < 50) setTimeout(() => relayout((tries || 0) + 1), 100);
+    }
+
+    async function reveal(note) {
+        const A = window.ProtoAnchors;
+        let found = null;
+        try { found = A.point(note); } catch (_) { /* 锚定异常 */ }
+        if (!found?.element && !found?.point) {
+            // 目标被折叠/隐藏：先联动展开对应折叠区，再重新定位与重排气泡
+            try { await (A.revealAndWait?.(note.anchor) ?? A.reveal?.(note.anchor)); } catch (_) { /* ignore */ }
+            try { window.__reviewRelayout?.(); } catch (_) { /* ignore */ }
+            try { found = A.point(note); } catch (_) { /* ignore */ }
+        }
+        if (found?.element?.id === 'screenshot-image' && found.point && document.documentElement.dataset.protoScreenshot === 'true')
+            window.scrollTo({ top: Math.max(0, found.point.y + window.scrollY - window.innerHeight / 2), behavior: 'smooth' });
+        else if (found?.element) found.element.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        else if (found?.point) window.scrollTo({ top: Math.max(0, found.point.y + window.scrollY - window.innerHeight / 2), behavior: 'smooth' });
+    }
+
+    window.addEventListener('message', (e) => {
+        if (e.source !== window.parent || !e.data || e.data.__review !== 1) return;
+        const m = e.data;
+        switch (m.type) {
+            case 'init':
+                hintScopes = Array.isArray(m.hintScopes) ? m.hintScopes : [];
+                window.ProtoHotspots?.hide();
+                document.documentElement.dataset.protoHost = 'review';
+                window.__REVIEW__.notes = Array.isArray(m.notes) ? m.notes : [];
+                asideOpen = m.asideOpen !== false;
+                if (m.enterState) { try { window.ProtoAnchors.enterState?.(m.enterState)?.catch?.(() => {}); } catch (_) { /* ignore */ } }
+                relayout();
+                break;
+            case 'aside':
+                asideOpen = !!m.open;
+                try { window.__reviewHidePop?.(); } catch (_) { /* ignore */ }
+                break;
+            case 'enterState':
+                try { window.ProtoAnchors.enterState?.(m.stateId)?.catch?.(() => {}); } catch (_) { /* ignore */ }
+                break;
+            case 'reveal':
+                if (m.note) reveal(m.note);
+                break;
+            case 'hidePop':
+                try { window.__reviewHidePop?.(); } catch (_) { /* ignore */ }
+                break;
+            case 'showHotspots':
+                window.ProtoHotspots?.show();
+                break;
+            default:
+                break;
+        }
+    });
+
+    let ids = {};
+    try { ids = window.ProtoAnchors.currentIds?.() || {}; } catch (_) { /* ignore */ }
+    post({ type: 'ready', ids });
+})();
+
+</script>
+<script data-proto-review="pins">
+/* 评审壳只读气泡层：随导出内嵌进每个原型 HTML（review_export.inject_bundle），跑在被评审原型页面内。
+   依赖同页先加载的 proto-anchors.js / proto-order.js / review-bridge.js；通过 window.__REVIEW__（由 bridge 建立，内部走 postMessage）与壳父页通信。
+   只读：无编辑、无拖动、无删除。 */
+(() => {
+    'use strict';
+    if (window.__reviewPinsBoot) return;
+    window.__reviewPinsBoot = true;
+    const R = window.__REVIEW__;
+    if (!R || !window.ProtoAnchors || !window.ProtoOrder) return;
+
+    const style = document.createElement('style');
+    style.textContent = `
+.__review_pin{position:absolute;display:grid;place-items:center;min-width:36px;height:36px;padding:0 8px;border:3px solid #fff;border-radius:50% 50% 50% 2px;background:#2563eb;color:#fff;font:600 13px/1 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;box-shadow:0 8px 24px rgba(16,24,40,.24);transform:translateY(-100%);cursor:pointer;pointer-events:auto;}
+.__review_pin:hover{background:#1d4ed8;}
+.__review_pin:not(.__stale){background:var(--pin-fill);color:var(--pin-ink);border-color:var(--pin-stroke);}
+.__review_pin:not(.__stale):hover{background:var(--pin-fill);filter:brightness(.96);}
+.__review_pin.__stale{background:#626b78;cursor:default;}
+@media(prefers-color-scheme:dark){.__review_pin{border-color:#121519;}}
+.__review_pop{position:fixed;z-index:2147482001;width:min(360px,calc(100vw - 16px));max-width:calc(100vw - 16px);overflow:visible;border:1px solid #d8dee3;border-radius:10px;background:#fff;color:#1a1d23;font:14px/1.7 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;letter-spacing:.02em;box-shadow:0 8px 24px rgba(16,24,40,.24);display:none;}
+.__review_pop_body{max-height:calc(100vh - 16px);overflow:auto;overscroll-behavior:contain;padding:12px 14px;border-radius:inherit;}
+.__review_pop_resize{position:absolute;top:0;bottom:0;width:12px;cursor:ew-resize;touch-action:none;z-index:3;background:transparent;}
+/* 热区以浮窗真实边框为中心，不画独立蓝细条；视觉仍是浮窗自身边缘，命中区向内外各扩 6px。 */
+.__review_pop_resize_w{left:0;transform:translateX(-50%);}.__review_pop_resize_e{right:0;transform:translateX(50%);}
+.__review_pop.pop-resizing{user-select:none;}
+.__review_pop.pop-resizing,.__review_pop.pop-resizing *{cursor:ew-resize!important;}
+@media(prefers-color-scheme:dark){.__review_pop{background:#121519;color:#f2f4f7;border-color:#363c44;}}
+.__review_pop_body>:first-child{margin-top:0;}.__review_pop_body>:last-child{margin-bottom:0;}
+.__review_pop p{margin:0 0 10px;overflow-wrap:anywhere;}
+.__review_pop img{display:block;max-width:100%;height:auto;margin:8px 0;border-radius:6px;}
+.__review_pop h1{font-size:18px;}.__review_pop h2{font-size:16px;}.__review_pop h3,.__review_pop h4{font-size:14px;}
+.__review_pop ul,.__review_pop ol{padding-left:20px;margin:6px 0 10px;}.__review_pop li.task{list-style:none;margin-left:-18px;}
+.__review_pop code{font-family:ui-monospace,Consolas,monospace;font-size:13px;background:rgba(127,127,127,.16);padding:1px 5px;border-radius:4px;}
+.__review_pop pre{background:rgba(127,127,127,.14);padding:10px;border-radius:6px;white-space:pre-wrap;overflow-wrap:anywhere;}.__review_pop pre code{background:none;padding:0;}
+.__review_pop table{border-collapse:collapse;width:100%;}.__review_pop th,.__review_pop td{border:1px solid #d8dee3;padding:6px;text-align:left;}
+@media(prefers-color-scheme:dark){.__review_pop th,.__review_pop td{border-color:#363c44;}}
+.__review_pop blockquote{border-left:3px solid #d8dee3;margin:8px 0;padding:2px 12px;color:#4e5560;}.__review_pop a{color:#2563eb;}.__review_pop hr{border:0;border-top:1px solid #d8dee3;}
+/* 点击引导：与操作界面 .pa-guide 同式——亮黄色系，与蓝色水滴序号在 色相 / 形状 / 动效 三方面区分。
+   框 = 透明可点区：虚线、静态不呼吸；悬停转实线 + 加深底色 + 外环。标签 = 与框左上角拼成一体的选区式标签，只有标签呼吸。
+   偏离 DESIGN_MASTER --accent-amber #b45309（实看发褐）：框线 #d97706（白底 3.19:1），标签 #fbbf24 配深棕字 #5c3300（6.52:1）。
+   固定浅色、不随 prefers-color-scheme 切换：引导叠在原型页面上，颜色跟随页面而非系统。 */
+.__review_guide{--g-line:#d97706;--g-fill:#fbbf24;--g-ink:#5c3300;position:absolute;box-sizing:border-box;margin:0;padding:0;border:2px dashed var(--g-line);border-radius:0 8px 8px 8px;background:rgba(251,191,36,.10);cursor:pointer;pointer-events:auto;transition:background-color 150ms ease-out,box-shadow 150ms ease-out;}
+.__review_guide:hover{border-style:solid;background:rgba(251,191,36,.30);box-shadow:0 0 0 3px rgba(251,191,36,.38);}
+.__review_guide:active{background:rgba(251,191,36,.45);}
+.__review_guide:focus-visible{outline:2px solid var(--g-line);outline-offset:2px;}
+.__review_guide_tag{position:absolute;box-sizing:border-box;left:-2px;top:-2px;transform:translateY(-100%);display:inline-flex;align-items:center;gap:3px;height:18px;padding:0 7px 0 5px;border:1px solid var(--g-line);border-radius:6px 6px 6px 0;background:var(--g-fill);color:var(--g-ink);font:600 11px/1 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;white-space:nowrap;pointer-events:none;animation:__rvGuideTag 1.8s ease-in-out infinite;animation-delay:var(--g-delay,0s);}
+.__review_guide_tag svg{width:10px;height:10px;animation:__rvGuideBob 1.8s ease-in-out infinite;animation-delay:var(--g-delay,0s);}
+.__review_guide:hover .__review_guide_tag{animation:none;box-shadow:0 0 0 3px rgba(251,191,36,.38);}
+.__review_guide.__review_guide_below{border-radius:8px 8px 8px 0;}
+.__review_guide.__review_guide_below .__review_guide_tag{top:auto;bottom:-2px;transform:translateY(100%);border-radius:0 6px 6px 6px;}
+.__review_guide.__review_guide_end{border-radius:8px 0 8px 8px;}
+.__review_guide.__review_guide_end .__review_guide_tag{left:auto;right:-2px;border-radius:6px 6px 0 6px;}
+.__review_guide.__review_guide_below.__review_guide_end{border-radius:8px 8px 0 8px;}
+.__review_guide.__review_guide_below.__review_guide_end .__review_guide_tag{border-radius:6px 0 6px 6px;}
+@keyframes __rvGuideTag{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0),0 1px 2px rgba(92,51,0,.18);}50%{box-shadow:0 0 0 4px rgba(251,191,36,.42),0 1px 2px rgba(92,51,0,.18);}}
+@keyframes __rvGuideBob{0%,100%{transform:translateY(-1px);}50%{transform:translateY(1px);}}
+@media(prefers-reduced-motion:reduce){.__review_guide_tag,.__review_guide_tag svg{animation:none;}}
+`;
+    (document.head || document.documentElement).appendChild(style);
+
+    const layer = document.createElement('div');
+    layer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147482000;';
+    document.documentElement.appendChild(layer);
+    // 引导框独立图层：序号层每次重排 replaceChildren 整体重建，引导框要按触发器复用（保住悬停态、呼吸相位与点击）
+    const glayer = document.createElement('div');
+    glayer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147481999;';
+    glayer.setAttribute('data-prototype-owned', '');   // 引导框是 <button>，标记自有以免 revealTrigger 兜底搜索把它当成原型触发器
+    document.documentElement.appendChild(glayer);
+
+    // 收起态气泡：PRD 侧栏收起时，点序号在序号旁展示正文；正文独立滚动，左右边缘可拖宽。
+    let pop = null, popBody = null, popResizing = null, popNoteId = null;
+    function setPinExpanded(noteId, expanded) {
+        if (!noteId) return;
+        layer.querySelector(`.__review_pin[data-note-id="${CSS.escape(noteId)}"]`)?.setAttribute('aria-expanded', String(expanded));
+    }
+    function hidePop() {
+        if (pop) pop.style.display = 'none';
+        setPinExpanded(popNoteId, false);
+        popNoteId = null;
+    }
+    function startPopResize(e, handle, side) {
+        if (!pop || e.button !== 0) return;
+        e.preventDefault(); e.stopPropagation();
+        const rect = pop.getBoundingClientRect(), startX = e.clientX, startW = rect.width, fixedRight = rect.right;
+        popResizing = { handle, side, pointerId: e.pointerId };
+        pop.classList.add('pop-resizing');
+        document.documentElement.style.cursor = 'ew-resize';
+        document.documentElement.style.userSelect = 'none';
+        // 指针按下后由 window 兜住整段拖动；不依赖鼠标始终停留在 12px 边缘热区，也不依赖 pointer capture 是否成功。
+        try { handle.setPointerCapture(e.pointerId); } catch (_) { /* 浏览器不支持时 window 监听仍可工作 */ }
+        const move = ev => {
+            if (!popResizing || ev.pointerId !== e.pointerId) return;
+            ev.preventDefault();
+            const raw = side === 'e' ? startW + (ev.clientX - startX) : startW - (ev.clientX - startX);
+            const minW = Math.min(280, innerWidth - 16), maxW = Math.max(minW, Math.min(720, innerWidth - 16));
+            const edgeMax = side === 'e' ? innerWidth - rect.left - 8 : fixedRight - 8;
+            const width = Math.max(minW, Math.min(Math.round(raw), maxW, edgeMax));
+            pop.style.width = width + 'px';
+            if (side === 'w') pop.style.left = Math.max(8, fixedRight - width) + 'px';
+        };
+        const up = ev => {
+            if (!popResizing || ev.pointerId !== e.pointerId) return;
+            popResizing = null; pop.classList.remove('pop-resizing');
+            document.documentElement.style.cursor = '';
+            document.documentElement.style.userSelect = '';
+            window.removeEventListener('pointermove', move, true); window.removeEventListener('pointerup', up, true); window.removeEventListener('pointercancel', up, true);
+            try { if (handle.hasPointerCapture(e.pointerId)) handle.releasePointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+        };
+        window.addEventListener('pointermove', move, { capture: true, passive: false });
+        window.addEventListener('pointerup', up, true);
+        window.addEventListener('pointercancel', up, true);
+    }
+    function ensurePop() {
+        if (pop) return;
+        pop = document.createElement('div');
+        pop.id = '__review_popover'; pop.className = '__review_pop';
+        pop.setAttribute('role', 'dialog');
+        pop.setAttribute('data-prototype-owned', '');
+        pop.addEventListener('click', e => e.stopPropagation());
+        popBody = document.createElement('div'); popBody.className = '__review_pop_body';
+        pop.appendChild(popBody);
+        for (const side of ['w', 'e']) {
+            const handle = document.createElement('span');
+            handle.className = `__review_pop_resize __review_pop_resize_${side}`;
+            handle.setAttribute('aria-hidden', 'true'); handle.title = '拖动调节宽度';
+            handle.onpointerdown = e => startPopResize(e, handle, side);
+            pop.appendChild(handle);
+        }
+        document.documentElement.appendChild(pop);
+    }
+    function showPop(note, pin) {
+        ensurePop();
+        setPinExpanded(popNoteId, false);
+        popNoteId = note.id;
+        pin.setAttribute('aria-expanded', 'true');
+        popBody.innerHTML = R.renderBody ? R.renderBody(note) : (note.body || '');
+        popBody.scrollTop = 0;
+        pop.style.display = 'block';
+        pop.style.visibility = 'hidden';
+        pop.style.left = '0px'; pop.style.top = '0px';
+        const pw = pop.offsetWidth, ph = pop.offsetHeight;
+        const px = parseFloat(pin.style.left) || 0, py = parseFloat(pin.style.top) || 0;
+        const W = innerWidth, H = innerHeight;
+        let left = px + 16, top = py - ph - 8;
+        if (left + pw > W - 8) left = px - pw - 16;
+        left = Math.max(8, Math.min(left, W - pw - 8));
+        if (top < 8) top = py + 8;
+        top = Math.max(8, Math.min(top, H - ph - 8));
+        pop.style.left = left + 'px'; pop.style.top = top + 'px';
+        pop.style.visibility = 'visible';
+    }
+    function togglePop(note, pin) {
+        if (pop && pop.style.display === 'block' && popNoteId === note.id) { hidePop(); return; }
+        showPop(note, pin);
+    }
+    window.__reviewHidePop = hidePop;
+    window.__reviewPopNoteId = () => (pop && pop.style.display === 'block' ? popNoteId : null);
+    window.__reviewRelayout = () => { try { layout(); } catch (_) { /* ignore */ } };
+    document.addEventListener('click', e => {
+        if (pop && pop.style.display === 'block' && !pop.contains(e.target) && !e.target.closest?.('.__review_pin')) hidePop();
+    }, true);
+    // scroll 监听用了 capture，气泡自身 overflow:auto 的滚动也会冒到 window；旧逻辑因此鼠标一滚正文就关气泡。
+    // 只在气泡外部（原型页面 / 其他滚动容器）发生滚动时关闭；气泡内部滚动保持打开。
+    window.addEventListener('scroll', e => {
+        if (pop && pop.style.display === 'block' && pop.contains(e.target)) return;
+        hidePop();
+        scheduleLayout();
+    }, { passive: true, capture: true });
+    window.addEventListener('resize', () => { hidePop(); scheduleLayout(); }, { passive: true });
+
+    let layoutFrame = 0;
+    function scheduleLayout() {
+        if (layoutFrame) return;
+        layoutFrame = requestAnimationFrame(() => { layoutFrame = 0; layout(); });
+    }
+
+    const stateOf = () => document.documentElement.dataset.protoState || 'default';
+    let lastState = '', lastX = -1, lastY = -1, lastW = 0, lastH = 0, lastHtml = '';
+    let lastOrder = '', lastStale = '';
+
+    function layout() {
+        const state = stateOf();
+        if (state !== lastState) hidePop(); // 只在原型状态切换时关气泡；纯几何重排不关（避免侧栏收起引发的 reflow 误关刚弹出的气泡）
+        const notes = (R.notes || []).filter(n => n.stateId === state);
+        const arranged = window.ProtoOrder.project(notes, window);
+        const stale = [], noPoint = [];
+        layer.replaceChildren();
+        for (const n of arranged) {
+            let found = null;
+            try { found = window.ProtoAnchors.point(n); } catch (_) { /* 锚定异常按失效处理 */ }
+            if (!found?.point) { noPoint.push(n); continue; }
+            if (found.point.visible === false) continue; // 滚出嵌套容器的序号随锚点隐藏，不算失锚。
+            const pin = document.createElement('button');
+            pin.type = 'button';
+            pin.className = '__review_pin';
+            window.ProtoAppearance?.applyPin(pin, n);
+            pin.dataset.noteId = n.id;
+            pin.textContent = n.displayNumber;
+            pin.setAttribute('aria-label', `标注 ${n.displayNumber}`);
+            pin.setAttribute('aria-haspopup', 'dialog');
+            pin.setAttribute('aria-controls', '__review_popover');
+            pin.setAttribute('aria-expanded', String(popNoteId === n.id && pop?.style.display === 'block'));
+            pin.style.left = found.point.x + 'px';
+            pin.style.top = found.point.y + 'px';
+            pin.onclick = e => {
+                e.preventDefault(); e.stopPropagation();
+                // PRD 侧栏展开：定位到右栏对应内容；收起：就地弹气泡展示内容。
+                if (R.asideOpen && R.asideOpen()) { hidePop(); R.onFocus?.(n.id); }
+                else togglePop(n, pin);
+            };
+            layer.appendChild(pin);
+        }
+        // 无落点分流（Feature 1 引导 + 失锚判定）：元素还在且被折叠/隐藏 → 正常颜色，可展开的盖透明脉冲描边框引导；
+        // 元素真找不到、或可见但落点失效（目标变化）才算失锚（右栏灰显、置底、不可点）。
+        const groups = new Map();
+        for (const n of noPoint) {
+            let el = null; try { el = window.ProtoAnchors.resolveHidden(n.anchor); } catch (_) { /* ignore */ }
+            let hint = null;
+            try { hint = window.ProtoAnchors.revealHint?.(n.anchor, el); } catch (_) { /* ignore */ }
+            if (!hint && el && window.ProtoAnchors.hidden(el)) {
+                let trigger = null; try { trigger = window.ProtoAnchors.revealTrigger(el); } catch (_) { /* ignore */ }
+                if (trigger) hint = { trigger, target: el, label: '展开', kind: 'disclosure' };
+            }
+            if (!hint?.trigger) {
+                if (!el || !window.ProtoAnchors.hidden(el)) stale.push(n.id); // 元素仍在但隐藏、只是暂无可操作引导时也不算失锚
+                continue;
+            }
+            let g = groups.get(hint.trigger);
+            const actionKey = `${hint.kind}\n${hint.label}`;
+            if (!g) groups.set(hint.trigger, (g = { target: hint.target, label: hint.label, actionKey, notes: [] }));
+            if (g.actionKey === actionKey) g.notes.push(n);
+        }
+        const GICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+        const existing = [...glayer.querySelectorAll('.__review_guide')];
+        const alive = new Set();
+        let gi = existing.length;   // 新建引导错峰呼吸（与 proto-annotate.js 一致）：负 delay 立处不同相位
+        groups.forEach((g, trig) => {
+            const r = trig.getBoundingClientRect();
+            if (r.width === 0 && r.height === 0) return;
+            // 描边框套在触发器外 4px，小图标至少 22px 保证可点；裁到视口内，完全出视口就不画（与 proto-annotate.js layoutGuides 同算法）
+            const pad = 4, w = Math.max(r.width + pad * 2, 22), h = Math.max(r.height + pad * 2, 22);
+            let left = r.left + r.width / 2 - w / 2, top = r.top + r.height / 2 - h / 2;
+            const right = Math.min(innerWidth - 2, left + w), bottom = Math.min(innerHeight - 2, top + h);
+            left = Math.max(2, left); top = Math.max(2, top);
+            if (right - left < 8 || bottom - top < 8) return;
+            let guide = existing.find(x => x.__rvTrig === trig);
+            if (!guide) {
+                guide = document.createElement('button');
+                guide.type = 'button'; guide.className = '__review_guide';
+                guide.__rvTrig = trig;
+                guide.style.setProperty('--g-delay', (-(gi++ % 4) * 0.45) + 's');
+                guide.onclick = async e => { e.preventDefault(); e.stopPropagation(); try { await window.ProtoAnchors.revealAndWait(guide.__rvTarget); } catch (_) { /* ignore */ } layout(); };
+                glayer.appendChild(guide);
+            }
+            guide.__rvTarget = g.target;
+            const safeLabel = String(g.label).replace(/[&<>"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[char]);
+            const html = '<span class="__review_guide_tag">' + GICON + '<span>' + safeLabel + ' · ' + g.notes.length + '</span></span>';
+            if (guide.__rvHtml !== html) { guide.innerHTML = html; guide.__rvHtml = html; }
+            guide.title = '点击“' + g.label + '”以显示 ' + g.notes.length + ' 处标注（' + g.notes.map(n => n.displayNumber).join(' ') + '）';
+            guide.setAttribute('aria-label', guide.title);
+            guide.style.left = left + 'px'; guide.style.top = top + 'px';
+            guide.style.width = (right - left) + 'px'; guide.style.height = (bottom - top) + 'px';
+            guide.classList.toggle('__review_guide_below', top < 24);            // 贴顶时标签改挂底边，不被视口切掉
+            guide.classList.toggle('__review_guide_end', left + 84 > innerWidth); // 贴右时标签改挂右角
+            alive.add(guide);
+        });
+        existing.forEach(x => { if (!alive.has(x)) x.remove(); });
+        const orderKey = JSON.stringify(arranged.map(n => [n.id, n.displayNumber]));
+        const staleKey = JSON.stringify(stale);
+        if (orderKey !== lastOrder || staleKey !== lastStale || state !== lastState) {
+            lastOrder = orderKey; lastStale = staleKey; lastState = state;
+            R.onSync?.(Object.fromEntries(arranged.map(n => [n.id, n.displayNumber])), state, stale);
+        }
+    }
+
+    document.addEventListener('proto-anchors:reveal-failed', layout);
+
+    setInterval(() => {
+        const html = document.documentElement.outerHTML.length;
+        if (stateOf() !== lastState || scrollX !== lastX || scrollY !== lastY ||
+            innerWidth !== lastW || innerHeight !== lastH || html !== lastHtml) {
+            lastX = scrollX; lastY = scrollY; lastW = innerWidth; lastH = innerHeight; lastHtml = html;
+            layout();
+        }
+    }, 350);
+
+    layout();
+})();
+
+</script>
+</body>
+</html>
