@@ -600,7 +600,7 @@ tr.row-err td{background:#fef6f6}
             <th class="col-no c">题号</th>
             <th class="col-score">分值</th>
             <th data-proto-id="col-answer">答案（如果有多个答案，请使用“/”隔开）<button class="th-q" data-tip="同一空有多个正确答案时，用英文斜杠 / 隔开，如 that/which" aria-label="多答案录入说明">?</button></th>
-            <th class="col-blank c" data-proto-id="col-allow-blank">允许不填<button class="th-q" data-tip="开启后，学生作答“/”视为正确；完全留白仍属未作答，不得分" aria-label="允许不填说明">?</button></th>
+            <th class="col-blank c" data-proto-id="col-allow-blank">允许不填<button class="th-q" data-tip="开启后，学生作答“/”或左侧输入的答案均算正确；完全留白算未作答，不得分" aria-label="允许不填说明">?</button></th>
             <th class="col-ai c" data-proto-id="col-ai">智能批改</th>
           </tr>
         </thead>
@@ -1317,7 +1317,9 @@ tr.row-err td{background:#fef6f6}
         const ew = Math.max(r.width, element.scrollWidth), eh = Math.max(r.height, element.scrollHeight);
         let px = p.x, py = p.y;
         if (Number.isFinite(p.rx) && Number.isFinite(p.ry)) {
-            px = p.rx * ew; py = p.ry * eh;
+            // placement 的比例以边框矩形归一化，复原必须使用同一尺寸。
+            // tooltip / 绝对定位子节点可撑大 scrollWidth/Height，却没有改变控件本身。
+            px = p.rx * r.width; py = p.ry * r.height;
         } else {
             // 旧锚点无 rx/ry：仅当当前响应式尺寸缩小导致绝对偏移越界、且偏移在创建时 rect 内时，按原尺寸比例回退。
             const base = note.anchor?.rect;
