@@ -140,6 +140,8 @@
             .note .markdown > :last-child { margin-bottom: 0; }
             .note.stale { opacity: .55; cursor: default; }
             .note.flash { animation: note-flash 1.2s ease; }
+            .note.selected .note-head { background: var(--soft); border-radius: 6px; box-shadow: 0 0 0 4px var(--soft); }
+            .note.selected .note-no { outline: 2px solid var(--accent); outline-offset: 3px; }
             @keyframes note-flash { 0%, 45% { background: var(--soft); } 100% { background: transparent; } }
             .empty { margin: 40px; padding: 24px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
             [hidden] { display: none !important; }
@@ -813,7 +815,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
             </aside>
         </main>
         <noscript>请开启 JavaScript 查看评审内容（页面树、PRD 与标注气泡均依赖脚本渲染）。</noscript>
-        <script type="application/json" id="review-data">{"name": "答案分值设置弹窗", "projectId": "p-7c971ffdf2a87cb4", "revision": 33, "publishedAt": "2026-10-23T00:52:35.580648+00:00", "pages": [{"id": "home", "title": "答案及分值设置", "file": "index.html", "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": [], "manualTargets": [], "excludedTargets": [{"id": "8d0607ca-b8f3-4c04-9f45-556a371f6ae1", "anchor": {"protoId": "btn-assign-all", "selector": "#btnAssignAll", "tag": "button", "text": "全部自动分配", "parentText": "为确保批改准确性，涉及句子翻译等长文本答案，可能需要老师人工批阅 使用说明 全部自动分配"}}, {"id": "excluded-8c169185", "anchor": {"protoId": "btn-ok", "selector": "#btnOk", "tag": "button", "text": "确定", "parentText": "共 10 空 · 合计 20 分 · 1 空允许不填（学生写“/”算对） 取消 确定"}}]}}]}], "clients": [], "defaultPage": "", "documents": [{"id": "3e48d378-093a-4738-a9a6-dfbe3c2e3e66", "pageId": "home", "stateId": "default", "markdown": "## 需求目标\n\n- 填空答案支持「允许不填」题目属性：开启后学生写「/」判为正确，完全留白仍属未作答。\n- 修改范围：**<span style=\"color:#ec4954\">前台-英语填空智批；中台-定制校本-英语填空智批<\/span>**\n- 所有历史数据均为“关闭”\n", "confirmed": false, "updatedAt": "2026-10-22T08:53:30.630Z"}], "annotations": [{"id": "74526dbd-1010-4d4c-ab5a-1f5d17aa6d43", "pageId": "home", "stateId": "default", "number": 10, "body": "### 页面显示\n\n- 答案列旁新增“允许不填”开关列，每空一个；开启后开关下方显示“学生写 / 算对”。\n- 列头增加问号，问号文案：开启后，学生作答“/”或左侧输入的答案视为正确；完全留白仍属未作答，不得分。\n\n### 业务规则\n\n- 开启后该空学生作答“/”判为正确；完全留白仍属未作答、不得分。\n- 开启后该空答案可留空，输入框呈虚线态。\n\n### 交互说明\n\n1. 点击该空开关切换是否允许不填，各空独立。\n", "anchor": {"protoId": "col-allow-blank", "selector": "#mask > div > div > table > thead > tr > th:nth-of-type(4)", "tag": "th", "text": "允许不填?", "parentText": "题号 分值 答案（如果有多个答案，请使用“/”隔开）? 允许不填? 智能批改", "htmlSnippet": "<th class=\"col-blank c\" data-proto-id=\"col-allow-blank\">允许不填<button class=\"th-q\" data-tip=\"开启后，学生作答“/”或左侧输入的答案均算正确；完全留白算未作答，不得分\" aria-label=\"允许不填说明\">?<\/button><\/th>", "rect": {"x": 1090, "y": 370, "width": 118, "height": 36}}, "placement": {"kind": "element", "x": 106.79999999999995, "y": 32.099993896484364, "rx": 0.9050847457627115, "ry": 0.9016851638396294}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-22T09:38:35.003Z"}, {"id": "0d5ff92b-719f-4bae-9944-c8036d654510", "pageId": "home", "stateId": "default", "number": 11, "body": "### 业务规则\n\n- 答案为空且未开启“允许不填”时，该空显示“不支持”智能批改。", "anchor": {"protoId": "col-ai", "selector": "#mask > div > div > table > thead > tr > th:nth-of-type(5)", "tag": "th", "text": "智能批改", "parentText": "题号 分值 答案（如果有多个答案，请使用“/”隔开）? 允许不填? 智能批改", "htmlSnippet": "<th class=\"col-ai c\" data-proto-id=\"col-ai\">智能批改<\/th>", "rect": {"x": 1208, "y": 370, "width": 100, "height": 36}}, "placement": {"kind": "element", "x": 92, "y": 9.799993896484352, "rx": 0.92, "ry": 0.27528070973080926}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-22T09:38:30.855Z"}], "prototypeVersions": {"index.html": "ced850109d9d928c6401"}}</script>
+        <script type="application/json" id="review-data">{"name": "答案分值设置弹窗", "projectId": "p-7c971ffdf2a87cb4", "revision": 33, "publishedAt": "2026-10-23T01:04:30.544513+00:00", "pages": [{"id": "home", "title": "答案及分值设置", "file": "index.html", "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": [], "manualTargets": [], "excludedTargets": [{"id": "8d0607ca-b8f3-4c04-9f45-556a371f6ae1", "anchor": {"protoId": "btn-assign-all", "selector": "#btnAssignAll", "tag": "button", "text": "全部自动分配", "parentText": "为确保批改准确性，涉及句子翻译等长文本答案，可能需要老师人工批阅 使用说明 全部自动分配"}}, {"id": "excluded-8c169185", "anchor": {"protoId": "btn-ok", "selector": "#btnOk", "tag": "button", "text": "确定", "parentText": "共 10 空 · 合计 20 分 · 1 空允许不填（学生写“/”算对） 取消 确定"}}]}}]}], "clients": [], "defaultPage": "", "documents": [{"id": "3e48d378-093a-4738-a9a6-dfbe3c2e3e66", "pageId": "home", "stateId": "default", "markdown": "## 需求目标\n\n- 填空答案支持「允许不填」题目属性：开启后学生写「/」判为正确，完全留白仍属未作答。\n- 修改范围：**<span style=\"color:#ec4954\">前台-英语填空智批；中台-定制校本-英语填空智批<\/span>**\n- 所有历史数据均为“关闭”\n", "confirmed": false, "updatedAt": "2026-10-22T08:53:30.630Z"}], "annotations": [{"id": "74526dbd-1010-4d4c-ab5a-1f5d17aa6d43", "pageId": "home", "stateId": "default", "number": 10, "body": "### 页面显示\n\n- 答案列旁新增“允许不填”开关列，每空一个；开启后开关下方显示“学生写 / 算对”。\n- 列头增加问号，问号文案：开启后，学生作答“/”或左侧输入的答案视为正确；完全留白仍属未作答，不得分。\n\n### 业务规则\n\n- 开启后该空学生作答“/”判为正确；完全留白仍属未作答、不得分。\n- 开启后该空答案可留空，输入框呈虚线态。\n\n### 交互说明\n\n1. 点击该空开关切换是否允许不填，各空独立。\n", "anchor": {"protoId": "col-allow-blank", "selector": "#mask > div > div > table > thead > tr > th:nth-of-type(4)", "tag": "th", "text": "允许不填?", "parentText": "题号 分值 答案（如果有多个答案，请使用“/”隔开）? 允许不填? 智能批改", "htmlSnippet": "<th class=\"col-blank c\" data-proto-id=\"col-allow-blank\">允许不填<button class=\"th-q\" data-tip=\"开启后，学生作答“/”或左侧输入的答案均算正确；完全留白算未作答，不得分\" aria-label=\"允许不填说明\">?<\/button><\/th>", "rect": {"x": 1090, "y": 370, "width": 118, "height": 36}}, "placement": {"kind": "element", "x": 106.79999999999995, "y": 32.099993896484364, "rx": 0.9050847457627115, "ry": 0.9016851638396294}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-22T09:38:35.003Z"}, {"id": "0d5ff92b-719f-4bae-9944-c8036d654510", "pageId": "home", "stateId": "default", "number": 11, "body": "### 业务规则\n\n- 答案为空且未开启“允许不填”时，该空显示“不支持”智能批改。", "anchor": {"protoId": "col-ai", "selector": "#mask > div > div > table > thead > tr > th:nth-of-type(5)", "tag": "th", "text": "智能批改", "parentText": "题号 分值 答案（如果有多个答案，请使用“/”隔开）? 允许不填? 智能批改", "htmlSnippet": "<th class=\"col-ai c\" data-proto-id=\"col-ai\">智能批改<\/th>", "rect": {"x": 1208, "y": 370, "width": 100, "height": 36}}, "placement": {"kind": "element", "x": 92, "y": 9.799993896484352, "rx": 0.92, "ry": 0.27528070973080926}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-22T09:38:30.855Z"}], "prototypeVersions": {"index.html": "22eb094d2a951457690d"}}</script>
         <script>
             'use strict';
             const $ = (id) => document.getElementById(id);
@@ -918,6 +920,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
             let loadedFile = null;
             let frameReady = false;     // 当前 iframe 页已握手（收到 ready 且已下发 init）
             let projectNavigation = null;
+            let selectedNoteId = null;
 
             const safePath = (path) => {
                 const parts = String(path || '').replace(/\\/g, '/').split('/');
@@ -967,6 +970,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
             // ---------- 页面 / 状态切换 ----------
             function selectPage(page, stateId) {
                 const samePage = current.page?.id === page.id && loadedFile === page.file;
+                if (current.page?.id !== page.id || current.stateId !== stateId) selectedNoteId = null;
                 current = { page, stateId };
                 buildTree();
                 ProtoProjectNavigation.applyPreview(frame,page.states?.find(s=>s.id===stateId)?.previewType || page.previewType || data.clients?.find(c=>c.id===page.clientId)?.previewType || data.previewType || 'web');
@@ -1004,11 +1008,13 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                 if (actual && actual.id !== current.page.id) {
                     /* 原型内部导航到了另一个已登记页面：跟随。 */
                     current = { page: actual, stateId: actual.states.some((s) => s.id === ids.stateId) ? ids.stateId : actual.states[0].id };
+                    selectedNoteId = null;
                     orders = {};
                     pendingState = null;
                     syncChrome();
                 } else if (ids.stateId && ids.stateId !== current.stateId && current.page.states?.some((s) => s.id === ids.stateId)) {
                     current.stateId = ids.stateId;
+                    selectedNoteId = null;
                     syncChrome();
                 }
                 let enterState = null;
@@ -1019,7 +1025,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                 frameReady = true;
                 // 先按当前页/状态判定 PRD 是否为空，再把真实侧栏开合态下发给 iframe；避免切页瞬间沿用上一页状态。
                 renderAside();
-                post({ type: 'init', notes: pageNotes(), asideOpen: prdAsideOpen(), enterState,
+                post({ type: 'init', notes: pageNotes(), asideOpen: prdAsideOpen(), enterState, selectedNoteId,
                     hintScopes: (current.page?.states || []).map(state => ({id: state.id, interactionHints: state.interactionHints})) });
             }
             window.addEventListener('message', (e) => {
@@ -1034,6 +1040,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                 if (!frameReady) return;   // 握手前的空 sync 丢掉，免右栏闪一下“–”
                 if (m.type === 'sync') onPinSync(m.map || {}, m.state || 'default', m.stale || []);
                 else if (m.type === 'focus') onPinFocus(m.noteId);
+                else if (m.type === 'selection') selectReviewNote(m.noteId);
             });
 
             // ---------- 气泡层回调 ----------
@@ -1042,11 +1049,13 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                 if (current.page && state !== current.stateId && current.page.states?.some((s) => s.id === state)) {
                     /* 原型自身切换了状态（页内交互）：右栏与页面树跟随。 */
                     current.stateId = state;
+                    selectedNoteId = null;
                     syncChrome();
                 }
                 if (state === current.stateId) renderAside();
             }
             function onPinFocus(noteId) {
+                selectReviewNote(noteId);
                 const row = $('notes').querySelector(`[data-note-id="${CSS.escape(noteId)}"]`);
                 if (!row) return;
                 // 与 viewer extScrollNoteIntoView 同语义（单套同源）：定位行首（序号）进视口，行首已可见则不滚。
@@ -1060,7 +1069,17 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
             }
             function reveal(note) {
                 // 定位在原型页内完成（review-bridge.js：目标被折叠隐藏时先联动展开再滚到位）
+                selectReviewNote(note.id);
                 post({ type: 'reveal', note });
+            }
+            function selectReviewNote(noteId) {
+                selectedNoteId = data.annotations.some(n => n.id === noteId && n.pageId === current.page?.id && n.stateId === current.stateId) ? noteId : null;
+                for (const row of $('notes').querySelectorAll('.note')) {
+                    const selected = row.dataset.noteId === selectedNoteId;
+                    row.classList.toggle('selected', selected);
+                    row.setAttribute('aria-current', String(selected));
+                }
+                post({ type: 'select', noteId: selectedNoteId });
             }
 
             // ---------- 右栏 PRD ----------
@@ -1098,8 +1117,9 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                 host.replaceChildren();
                 for (const [note, num, stale] of rows) {
                     const row = document.createElement('section');
-                    row.className = 'note' + (stale ? ' stale' : '');
+                    row.className = 'note' + (stale ? ' stale' : '') + (note.id === selectedNoteId ? ' selected' : '');
                     row.dataset.noteId = note.id;
+                    row.setAttribute('aria-current', String(note.id === selectedNoteId));
                     row.tabIndex = 0;
                     row.setAttribute('aria-label', `标注 ${num}${stale ? '，已失锚' : '，回车定位到原型位置'}`);
                     const no = document.createElement('span');
