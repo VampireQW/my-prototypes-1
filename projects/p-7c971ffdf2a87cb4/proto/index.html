@@ -1760,9 +1760,11 @@ tr.row-err td{background:#fef6f6}
     // review-pins.js 启动时读取的宿主对象：标注在 init 消息到达后填充，正文 HTML 由壳预渲染（气泡层无 Markdown 渲染器）。
     window.__REVIEW__ = {
         notes: [],
+        selectedNoteId: null,
         asideOpen: () => asideOpen,
         onSync: (map, state, stale) => post({ type: 'sync', map, state, stale }),
         onFocus: (noteId) => post({ type: 'focus', noteId }),
+        onSelect: (noteId) => post({ type: 'selection', noteId }),
         renderBody: (note) => note.bodyHtml || '<p>' + esc(note.body || '') + '</p>',
     };
     window.ProtoHotspots?.init({ scope: () => {
@@ -1801,6 +1803,8 @@ tr.row-err td{background:#fef6f6}
                 window.ProtoHotspots?.hide();
                 document.documentElement.dataset.protoHost = 'review';
                 window.__REVIEW__.notes = Array.isArray(m.notes) ? m.notes : [];
+                window.__REVIEW__.selectedNoteId = m.selectedNoteId || null;
+                window.__reviewSelectNote?.(window.__REVIEW__.selectedNoteId);
                 asideOpen = m.asideOpen !== false;
                 if (m.enterState) { try { window.ProtoAnchors.enterState?.(m.enterState)?.catch?.(() => {}); } catch (_) { /* ignore */ } }
                 relayout();
@@ -1813,7 +1817,11 @@ tr.row-err td{background:#fef6f6}
                 try { window.ProtoAnchors.enterState?.(m.stateId)?.catch?.(() => {}); } catch (_) { /* ignore */ }
                 break;
             case 'reveal':
-                if (m.note) reveal(m.note);
+                if (m.note) { window.__REVIEW__.selectedNoteId = m.note.id; window.__reviewSelectNote?.(m.note.id); reveal(m.note); }
+                break;
+            case 'select':
+                window.__REVIEW__.selectedNoteId = m.noteId || null;
+                window.__reviewSelectNote?.(window.__REVIEW__.selectedNoteId);
                 break;
             case 'hidePop':
                 try { window.__reviewHidePop?.(); } catch (_) { /* ignore */ }
@@ -1851,6 +1859,7 @@ tr.row-err td{background:#fef6f6}
 .__review_pin:not(.__stale){background:var(--pin-fill);color:var(--pin-ink);border-color:var(--pin-stroke);}
 .__review_pin:not(.__stale):hover{background:var(--pin-fill);filter:brightness(.96);}
 .__review_pin.__stale{background:#626b78;cursor:default;}
+.__review_pin.__review_selected{outline:3px solid #2563eb;outline-offset:3px;z-index:2;}
 @media(prefers-color-scheme:dark){.__review_pin{border-color:#121519;}}
 .__review_pop{position:fixed;box-sizing:border-box;z-index:2147482001;width:min(360px,calc(100vw - 16px));max-width:calc(100vw - 16px);overflow:visible;border:1px solid #d8dee3;border-radius:10px;background:#fff;color:#1a1d23;font:14px/1.7 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;letter-spacing:.02em;box-shadow:0 8px 24px rgba(16,24,40,.24);display:none;}
 .__review_pop_body{box-sizing:border-box;max-height:calc(100vh - 36px);overflow:auto;overscroll-behavior:contain;padding:4px 14px 12px;border-radius:inherit;}
@@ -1912,6 +1921,17 @@ tr.row-err td{background:#fef6f6}
     let pop = null, popBody = null, popResizing = null, popNoteId = null;
     let popMoving = null, popMoveCleanup = null;
     const owned = el => !!(el?.closest?.('[data-prototype-owned]') || el?.parentElement?.closest?.('[data-prototype-owned]'));
+    let selectedNoteId = R.selectedNoteId || null;
+    function selectNote(noteId) {
+        selectedNoteId = (R.notes || []).some(n => n.id === noteId && n.stateId === stateOf()) ? noteId : null;
+        R.selectedNoteId = selectedNoteId;
+        for (const pin of layer.querySelectorAll('.__review_pin')) {
+            const selected = pin.dataset.noteId === selectedNoteId;
+            pin.classList.toggle('__review_selected', selected);
+            pin.setAttribute('aria-current', String(selected));
+        }
+    }
+    window.__reviewSelectNote = selectNote;
     function setPinExpanded(noteId, expanded) {
         if (!noteId) return;
         layer.querySelector(`.__review_pin[data-note-id="${CSS.escape(noteId)}"]`)?.setAttribute('aria-expanded', String(expanded));
@@ -2088,6 +2108,7 @@ tr.row-err td{background:#fef6f6}
         const state = stateOf();
         if (state !== lastState) hidePop(); // 只在原型状态切换时关气泡；纯几何重排不关（避免侧栏收起引发的 reflow 误关刚弹出的气泡）
         const notes = (R.notes || []).filter(n => n.stateId === state);
+        if (selectedNoteId && !notes.some(n => n.id === selectedNoteId)) selectNote(null);
         const arranged = window.ProtoOrder.project(notes, window);
         const stale = [], noPoint = [];
         const visibleIds = new Set();
@@ -2102,6 +2123,8 @@ tr.row-err td{background:#fef6f6}
             pin.className = '__review_pin';
             window.ProtoAppearance?.applyPin(pin, n);
             pin.dataset.noteId = n.id;
+            pin.classList.toggle('__review_selected', n.id === selectedNoteId);
+            pin.setAttribute('aria-current', String(n.id === selectedNoteId));
             pin.textContent = n.displayNumber;
             pin.setAttribute('aria-label', `标注 ${n.displayNumber}`);
             pin.setAttribute('aria-haspopup', 'dialog');
@@ -2111,6 +2134,8 @@ tr.row-err td{background:#fef6f6}
             pin.style.top = found.point.y + 'px';
             pin.onclick = e => {
                 e.preventDefault(); e.stopPropagation();
+                selectNote(n.id);
+                R.onSelect?.(n.id);
                 // PRD 侧栏展开：定位到右栏对应内容；收起：就地弹气泡展示内容。
                 if (R.asideOpen && R.asideOpen()) { hidePop(); R.onFocus?.(n.id); }
                 else togglePop(n, pin);
