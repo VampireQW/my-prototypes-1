@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#2855e7">
+<title>作业批阅 · 主观题智能批阅</title>
+<style>
+/* finesse · register=h5 · morph=A-app-shell+E-longform · cobalt+gold · reference-led */
+:root{--blue:#2855e7;--blue-deep:#1746c8;--blue-light:#5687f5;--gold:#ffd54f;--gold-deep:#f7ad28;--page:#f5f6f9;--surface:#fdfdfe;--ink:#20232b;--muted:#8c8f98;--line:rgba(33,46,80,.08);--ease:cubic-bezier(.32,.86,.28,1)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--blue)}
+body{display:flex;align-items:center;justify-content:center;font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:var(--ink)}
+button,input,a{font:inherit}button{border:0;background:none;color:inherit;cursor:pointer}a{color:inherit;text-decoration:none}
+button:active,a:active,[role="button"]:active{filter:brightness(.94)}
+button:focus-visible,a:focus-visible,input:focus-visible,[role="button"]:focus-visible{outline:2px solid var(--gold-deep);outline-offset:2px}
+.back:focus-visible,.share:focus-visible{outline:2px solid var(--blue);outline-offset:-4px;border-radius:8px}
+svg{display:block}.icon{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.phone{position:relative;width:100%;height:100%;overflow:hidden;background:var(--page);display:flex;flex-direction:column}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--page)}
+.statusbar{flex:none;height:calc(env(safe-area-inset-top) + 43px);padding:calc(env(safe-area-inset-top) + 10px) 25px 0;display:flex;align-items:flex-start;justify-content:space-between;background:var(--blue);color:#fdfdfe;font-size:15px;font-weight:700;line-height:20px;z-index:12}
+.status-left{display:flex;align-items:center;gap:7px}.status-right{display:flex;align-items:center;gap:7px}.statusbar .mute{width:17px;height:17px}.statusbar .wifi{width:19px;height:19px}.signal{display:flex;align-items:flex-end;gap:2px;height:15px}.signal i{display:block;width:3px;border-radius:2px;background:currentColor}.signal i:nth-child(1){height:5px}.signal i:nth-child(2){height:8px}.signal i:nth-child(3){height:11px}.signal i:nth-child(4){height:14px}
+.battery{position:relative;width:28px;height:14px;border:1px solid rgba(255,255,255,.65);border-radius:4px;padding:1px}.battery:after{content:"";position:absolute;right:-3px;top:4px;width:2px;height:5px;border-radius:0 2px 2px 0;background:rgba(255,255,255,.65)}.battery span{display:block;width:72%;height:100%;border-radius:2px;background:#fdfdfe}.battery em{position:absolute;inset:-3px 0;text-align:center;font-size:10px;font-style:normal;color:#263b70}
+.topnav{flex:none;height:64px;background:var(--blue);color:rgba(255,255,255,.8);display:grid;grid-template-columns:1fr 1fr 1.12fr 1fr .88fr;align-items:center;padding:0 15px}
+.topnav button{height:56px;font-size:17px;font-weight:500;white-space:nowrap}.topnav button.on{color:#fdfdfe;font-size:20px;font-weight:700}.topnav .scan{display:grid;place-items:center}.topnav .scan .icon{width:27px;height:27px}
+.home-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:clip;padding-bottom:calc(env(safe-area-inset-bottom) + 100px);scrollbar-width:none}.home-scroll::-webkit-scrollbar,#detailApp::-webkit-scrollbar{display:none}
+.filters{height:64px;padding:11px 12px;display:grid;grid-template-columns:1fr 12px 1fr 48px;gap:6px;align-items:center;background:#fafafd;border-bottom:1px solid var(--line)}
+.date-wrap{height:36px;border:1px solid rgba(40,50,70,.13);border-radius:20px;background:#f7f7f9;overflow:hidden}.date-wrap input{width:100%;height:100%;border:0;outline:0;background:transparent;text-align:center;color:#85878e;font-size:13px;appearance:none;-webkit-appearance:none}.date-wrap input::-webkit-calendar-picker-indicator{display:none}.dash{text-align:center;color:#555}.filter-btn{height:44px;color:var(--blue);font-size:16px}
+.ad-shell{position:relative;margin:10px 12px 8px;height:126px;border-radius:10px;overflow:hidden;background:#2863df;box-shadow:0 5px 16px rgba(32,77,183,.14)}
+.ad-slide{position:relative;height:100%;padding:18px 14px 23px;text-align:center;color:#fdfdfe;overflow:hidden;cursor:pointer;background:radial-gradient(circle at 86% 20%,rgba(130,190,255,.55),transparent 40%),linear-gradient(110deg,#1749cf,#2f68eb 65%,#4a82ef)}
+.ad-slide:before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.25) 1px,transparent 1px);background-size:12px 12px;mask-image:linear-gradient(90deg,#000,transparent 25%,transparent 75%,#000);opacity:.6}
+.ad-slide:after{content:"✦";position:absolute;left:18px;top:43px;color:#fdfdfe;font-size:20px;text-shadow:330px 36px 0 rgba(255,255,255,.8)}
+.ad-title{position:relative;font-size:19px;line-height:1.35;font-weight:900;letter-spacing:.2px;white-space:nowrap}.ad-title b{color:var(--gold);font-weight:900}.ad-sub{position:relative;margin-top:5px;font-size:11px;letter-spacing:1px;color:#e8efff}.ad-cta{position:relative;display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:4px 14px;border-radius:20px;background:linear-gradient(#ffe876,#ffc64b);color:#684700;font-size:11px;font-weight:800;box-shadow:0 3px 7px rgba(80,50,0,.18)}
+.assignment{background:var(--surface);padding:16px 13px 13px;margin-bottom:8px;border-top:1px solid rgba(30,45,80,.025);border-bottom:1px solid rgba(30,45,80,.035)}
+.assignment[hidden]{display:none}.assignment h2{font-size:16.5px;line-height:1.55;font-weight:700;letter-spacing:.1px}.stats{display:flex;gap:18px;margin-top:9px;color:#9698a0;font-size:13px;white-space:nowrap}.stats b{font-weight:400;color:#6f727b}.card-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:18px;min-height:32px}.card-bottom time{font-size:13px;color:#858791}.grade-btn{position:relative;min-width:68px;height:32px;padding:0 14px;border:1px solid var(--blue);border-radius:18px;color:var(--blue);font-size:14px;background:#f8faff}.grade-btn:after{content:"";position:absolute;inset:-6px -3px}.grade-btn.done{background:#f5f8ff}
+.tabbar{position:absolute;z-index:20;left:0;right:0;bottom:0;height:calc(env(safe-area-inset-bottom) + 77px);padding:5px 9px calc(env(safe-area-inset-bottom) + 12px);display:grid;grid-template-columns:repeat(5,1fr);background:rgba(253,253,254,.97);border-top:1px solid var(--line)}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#555963;font-size:11px;min-height:52px;border-radius:28px}.tab .icon{width:23px;height:23px}.tab.on{color:var(--blue);background:#f0f1f4;font-weight:600}.home-ind{position:absolute;z-index:25;bottom:calc(env(safe-area-inset-bottom) + 4px);left:50%;transform:translateX(-50%);width:118px;height:4px;border-radius:4px;background:#24262b;opacity:.72;pointer-events:none}
+.fab{position:absolute;z-index:19;right:18px;bottom:calc(env(safe-area-inset-bottom) + 88px);width:57px;height:57px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#3976f4,#1554e5);color:#fdfdfe;border:2px solid rgba(255,255,255,.65);box-shadow:0 5px 13px rgba(26,80,214,.3)}.fab .icon{width:31px;height:31px;stroke-width:1.6}.fab small{position:absolute;font-size:8px;font-weight:800;bottom:12px;background:var(--blue);padding:0 2px}
+.toast{position:absolute;z-index:100;left:50%;bottom:calc(env(safe-area-inset-bottom) + 94px);transform:translate(-50%,12px);max-width:84%;padding:10px 16px;border-radius:22px;background:rgba(28,32,45,.9);color:#fdfdfe;font-size:13px;white-space:nowrap;opacity:0;pointer-events:none;transition:.25s}.toast.on{opacity:1;transform:translate(-50%,0)}
+.detail{z-index:60;transform:translateX(100%);visibility:hidden;transition:transform .42s var(--ease),visibility 0s .42s;background:#f5f8ff}.detail.on{transform:none;visibility:visible;transition:transform .42s var(--ease)}
+.detail-bar{flex:none;height:52px;display:grid;grid-template-columns:52px 1fr 52px;align-items:center;background:#fdfdfe;border-bottom:1px solid var(--line);z-index:5}.detail-bar h1{text-align:center;font-size:17px}.back{height:48px;display:grid;place-items:center;color:#343a49}.back .icon{width:25px;height:25px}.share{height:48px;display:grid;place-items:center;color:#4b5568}.share .icon{width:21px;height:21px}
+#detailApp{flex:1;min-height:0;overflow-y:auto;overflow-x:clip;scrollbar-width:none;padding-bottom:20px}.hero{position:relative;padding:28px 20px 24px;color:#fdfdfe;overflow:hidden;background:radial-gradient(circle at 85% 5%,rgba(132,187,255,.55),transparent 42%),linear-gradient(135deg,#1546c8,#2e64e8 62%,#447cef)}.hero:after{content:"";position:absolute;width:170px;height:170px;border:1px solid rgba(255,255,255,.16);border-radius:50%;right:-85px;top:80px;box-shadow:0 0 0 26px rgba(255,255,255,.025)}
+.kicker{position:relative;z-index:1;display:inline-block;padding:4px 12px;border:1px solid rgba(255,255,255,.42);border-radius:20px;color:#dce8ff;font-size:11px;letter-spacing:2px}.hero h2{position:relative;z-index:1;margin-top:15px;font-size:34px;line-height:1.2;letter-spacing:1px}.hero h2 span{color:var(--gold)}.hero .slogan{position:relative;z-index:1;margin-top:10px;font-size:16px;color:#eaf1ff}.hero .slogan b{color:var(--gold)}
+.contact-card{position:relative;z-index:1;margin-top:20px;padding:12px 14px;border:1px solid rgba(255,255,255,.22);border-radius:15px;background:rgba(255,255,255,.1)}.contact-card h3{font-size:13px;color:#eaf1ff}.contact-grid{display:grid;gap:8px;margin-top:9px}.contact-grid a{display:block;font-size:12px;line-height:1.5}.contact-grid b{display:inline-block;min-width:103px;color:var(--gold);font-size:14px}.contact-grid span{color:#e0eaff}
+.section{padding:30px 16px}.sec-head{text-align:center;margin-bottom:22px}.sec-head .tag{display:inline-block;padding:3px 12px;border-radius:16px;background:#e7efff;color:var(--blue-deep);font-size:11px;font-weight:800;letter-spacing:2px}.sec-head h2{margin-top:9px;font-size:25px}.sec-head p{margin-top:6px;color:#68758e;font-size:13px}.gold-bar{width:44px;height:4px;margin:11px auto 0;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--gold-deep))}
+.advantages{display:grid;gap:11px}.advantage{display:flex;gap:14px;align-items:center;padding:17px 16px;border:1px solid #e1eaff;border-radius:17px;background:#fdfdfe;box-shadow:0 6px 18px rgba(31,79,216,.05)}.adv-icon{flex:none;width:48px;height:48px;display:grid;place-items:center;border-radius:15px;background:#eaf1ff;color:var(--blue)}.adv-icon .icon{width:29px;height:29px}.advantage h3{font-size:17px;color:var(--blue-deep)}.advantage h3 b{color:var(--gold-deep)}.advantage p{margin-top:4px;font-size:13px;line-height:1.65;color:#4c586f}
+.eff{margin:0 16px;padding:22px 18px;border-radius:20px;text-align:center;background:linear-gradient(125deg,#1746c8,#3974ed);color:#fdfdfe}.eff h2{font-size:23px}.eff h2 b{color:var(--gold)}.eff p{margin-top:7px;font-size:13px;color:#e0eaff}.eff-num{margin-top:15px;font-size:43px;font-weight:900;color:var(--gold)}.eff-label{font-size:12px;color:#e0eaff}
+.flow-card{position:relative;padding:18px 14px 16px;border:1px solid #dce7fb;border-radius:20px;background:linear-gradient(180deg,#fdfdfe,#f5f8ff);margin-bottom:14px;overflow:hidden;box-shadow:0 8px 24px rgba(31,79,216,.06)}.flow-card:before{content:"";position:absolute;right:-35px;top:-45px;width:120px;height:120px;border-radius:50%;background:rgba(76,126,237,.06)}.flow-head{position:relative;display:flex;align-items:flex-start;gap:8px}.flow-card h3{flex:1;font-size:15px;line-height:1.5;color:var(--blue-deep)}.flow-card h3 span{display:inline-block;margin-right:6px;padding:2px 7px;border-radius:9px;background:#fff2c9;color:#7b5200;font-size:10px;vertical-align:2px}.flow-head small{flex:none;padding:4px 7px;border-radius:8px;background:#e9f0ff;color:#5c73a1;font-size:9px;font-weight:800;letter-spacing:.5px}.steps{position:relative;margin-top:16px}.step{position:relative;display:flex;align-items:center;min-height:58px}.step p{position:relative;z-index:1;width:calc(50% - 34px);padding:8px 9px;border:1px solid #e0e9f9;border-radius:11px;background:#fdfdfe;box-shadow:0 3px 9px rgba(31,79,216,.04);font-size:12.5px;font-weight:650;line-height:1.35;text-align:right;color:#3d4960}.step:nth-of-type(even) p{margin-left:auto;text-align:left}.dot{position:absolute;z-index:2;left:50%;transform:translateX(-50%);width:30px;height:30px;display:grid;place-items:center;border:3px solid #fdfdfe;border-radius:50%;background:linear-gradient(#3670ee,#1f4fd8);color:#fdfdfe;font-size:12px;font-weight:800;box-shadow:0 3px 8px rgba(31,79,216,.2)}.step:last-child .dot{background:linear-gradient(#ffe574,#f7ad28);color:#674500}.flow-curve{position:absolute;z-index:0;top:29px;left:50%;width:70px;height:calc(100% - 58px);transform:translateX(-50%);overflow:visible;pointer-events:none}.flow-curve path{fill:none;stroke:#8faef0;stroke-width:2;stroke-linecap:round;stroke-dasharray:3 4;vector-effect:non-scaling-stroke}
+.scene-section{background:#eef4ff}.scene{margin-bottom:16px;border:1px solid #e0e9fb;border-radius:18px;background:#fdfdfe;overflow:hidden}.scene-label{display:flex;align-items:center;gap:8px;padding:13px 16px;background:linear-gradient(120deg,#1f55d7,#4d82ed);color:#fdfdfe}.scene-label.green{background:linear-gradient(120deg,#168c71,#38b894)}.scene-label.orange{background:linear-gradient(120deg,#d77c19,#f4ac32)}.scene-label span{font-size:18px;font-weight:850}.scene-label small{font-size:12px;opacity:.9}.scene-copy{padding:15px 16px 5px}.scene-copy h3{font-size:17px;color:var(--blue-deep)}.scene-copy p{margin-top:6px;font-size:13px;line-height:1.75;color:#4d596f}.scene-copy b{color:#d98a18}
+.mock{margin:14px 12px 15px;border:1px solid #dbe4f5;border-radius:11px;overflow:hidden;background:#f8faff;box-shadow:0 4px 12px rgba(31,79,216,.07)}.mock-top{height:27px;display:flex;align-items:center;gap:4px;padding:0 9px;background:#eaf0fb}.mock-top i{width:5px;height:5px;border-radius:50%;background:#b1bfd9}.mock-top span{margin-left:auto;font-size:8px;color:#72809a}.mock-body{padding:12px}.mock-title{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700}.score{padding:3px 8px;border-radius:9px;background:#e9f8ef;color:#238455;font-size:10px}.answer{margin-top:9px;padding:9px;border-radius:8px;background:#fdfdfe;border:1px solid #e7ecf5;font-size:10px;line-height:1.8;color:#536078}.answer mark{background:#fff0ac;color:#765300;border-radius:2px}.answer .good{text-decoration:underline wavy #36a472;text-underline-offset:2px}.analysis{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:9px}.analysis div{padding:7px 3px;text-align:center;border-radius:7px;background:#edf3ff;color:#4e638c;font-size:9px}.analysis b{display:block;margin-bottom:2px;color:var(--blue-deep);font-size:13px}.reason{margin-top:8px;padding-left:8px;border-left:3px solid #f5b840;color:#68758c;font-size:10px;line-height:1.65}
+.qr-section{position:relative;padding:30px 20px 34px;text-align:center;overflow:hidden;background:linear-gradient(145deg,#eaf1ff,#f8faff)}.qr-section:before{content:"";position:absolute;left:-60px;bottom:-75px;width:180px;height:180px;border:1px solid rgba(40,85,231,.09);border-radius:50%;box-shadow:0 0 0 24px rgba(40,85,231,.025)}.qr-card{position:relative;width:218px;margin:18px auto 0;padding:14px 14px 12px;border:1px solid #dce6f8;border-radius:22px;background:#fdfdfe;box-shadow:0 12px 30px rgba(31,79,216,.1)}.qr-card img{display:block;width:188px;height:188px;object-fit:contain}.qr-card p{margin-top:9px;font-size:12px;color:#59677f}.qr-card b{color:var(--blue-deep)}.landing-footer{padding:30px 20px 25px;text-align:center;background:#142c66;color:#fdfdfe}.landing-footer h2{font-size:21px;line-height:1.55}.landing-footer h2 b{color:var(--gold)}.landing-footer p{margin-top:9px;color:#b9c8ee;font-size:12px}.landing-footer .fine{margin-top:19px;color:#8497c3;font-size:10px}
+.consult-bar{flex:none;display:block;padding:10px 16px calc(env(safe-area-inset-bottom) + 12px);border-top:1px solid var(--line);background:rgba(253,253,254,.98)}.consult-bar a{width:100%;height:46px;display:flex;align-items:center;justify-content:center;border-radius:23px;font-size:15px;font-weight:750}.consult-primary{background:linear-gradient(#ffe574,#ffc140);color:#674500;box-shadow:0 4px 10px rgba(150,100,0,.16)}
+@media (min-width:560px){body{background:radial-gradient(circle at 50% 0,#293b68,#11182b 70%)}.phone{width:406px;height:min(880px,94vh);border-radius:42px;border:1px solid rgba(255,255,255,.12);box-shadow:0 40px 100px -25px rgba(5,13,35,.8),0 0 0 9px #172036}}
+@media (max-width:370px){.ad-title{font-size:17px}.topnav{padding:0 8px}.topnav button{font-size:15px}.topnav button.on{font-size:18px}.stats{gap:11px;font-size:12px}.assignment h2{font-size:15.5px}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.ad-slide:after{display:none}}
+</style>
+<script data-prototype-owned data-proto-hotspot-bootstrap data-proto-review="hotspots">
+/* 点击空白时短暂提示本次需求范围内的真实交互；未声明范围时不扫描整页。 */
+(() => {
+    'use strict';
+    if (window.ProtoHotspots) return;
+    const DURATION = 2000, MAX_HINTS = 80;
+    const COLORS = { fill: '#ff9f29' };
+    const EVENTS = new Set(['click', 'pointerdown', 'pointerup', 'mousedown', 'mouseup', 'touchend']);
+    const EDITABLE = 'input,textarea,select,[contenteditable]:not([contenteditable="false"])';
+    const BLOCKED = '[hidden],[inert],[aria-hidden="true"],[aria-disabled="true"],[data-proto-hotspot="false"]';
+    const CONTROL_TAGS = new Set(['BUTTON', 'A', 'AREA', 'INPUT', 'SELECT', 'TEXTAREA', 'SUMMARY']);
+    const CONTROL_ROLES = new Set(['button', 'link', 'checkbox', 'radio', 'switch', 'tab', 'menuitem', 'option', 'combobox', 'slider', 'textbox']);
+    const owned = el => !!el?.closest?.('[data-prototype-owned],.__review_pin,.__review_pop,.__review_guide');
+    let options = {}, layer, style, observer, timer = 0, frame = 0, started = 0, down = null;
+    const boxes = new Map();
+
+    // 先于业务脚本载入：只记录实际绑定，不运行任何按钮来试探功能。
+    const listeners = new WeakMap();
+    const nativeAdd = EventTarget.prototype.addEventListener, nativeRemove = EventTarget.prototype.removeEventListener;
+    const captureOf = config => typeof config === 'boolean' ? config : !!config?.capture;
+    EventTarget.prototype.addEventListener = function (type, listener, config) {
+        if (!EVENTS.has(type) || !listener || typeof listener !== 'function' && typeof listener.handleEvent !== 'function')
+            return nativeAdd.call(this, type, listener, config);
+        let entries = listeners.get(this);
+        if (!entries) { entries = new Set(); listeners.set(this, entries); }
+        const capture = captureOf(config);
+        const existing = [...entries].find(entry => entry.type === type && entry.listener === listener && entry.capture === capture && !entry.signal?.aborted);
+        if (existing) return nativeAdd.call(this, type, existing.wrapper, config);
+        const entry = { type, listener, capture, once: !!config?.once, signal: config?.signal };
+        entry.wrapper = function (event) {
+            if (entry.once) { entries.delete(entry); schedule(); }
+            return typeof listener === 'function' ? listener.call(this, event) : listener.handleEvent.call(listener, event);
+        };
+        const result = nativeAdd.call(this, type, entry.wrapper, config);
+        if (!entry.signal?.aborted) {
+            entries.add(entry);
+            if (entry.signal) nativeAdd.call(entry.signal, 'abort', () => { entries.delete(entry); schedule(); }, { once: true });
+            schedule();
+        }
+        return result;
+    };
+    EventTarget.prototype.removeEventListener = function (type, listener, config) {
+        const entries = listeners.get(this), capture = captureOf(config);
+        const entry = entries && [...entries].find(item => item.type === type && item.listener === listener && item.capture === capture);
+        if (!entry) return nativeRemove.call(this, type, listener, config);
+        const result = nativeRemove.call(this, type, entry.wrapper, config);
+        entries.delete(entry); schedule(); return result;
+    };
+
+    function binding(el) {
+        if ([...EVENTS].some(type => typeof el['on' + type] === 'function')) return true;
+        const reactRoot = Object.keys(el).some(key => key.startsWith('__reactContainer$'));
+        if (!reactRoot && [...(listeners.get(el) || [])].some(entry => !entry.signal?.aborted)) return true;
+        // React 的点击监听由根节点代理，真实业务回调在元素 props 上。
+        const props = Object.keys(el).find(key => key.startsWith('__reactProps$'));
+        return !!props && Object.entries(el[props] || {}).some(([key, value]) =>
+            /^on(Click|PointerDown|PointerUp|MouseDown|MouseUp|TouchEnd)(Capture)?$/.test(key) && typeof value === 'function');
+    }
+    function navigation(el) {
+        if (!el.matches('a[href],area[href]')) return false;
+        const href = el.getAttribute('href').trim();
+        if (!href || href === '#' || /^javascript:/i.test(href)) return false;
+        if (href.startsWith('#')) {
+            let id; try { id = decodeURIComponent(href.slice(1)); } catch (_) { return false; }
+            return !!document.getElementById(id) || !!document.getElementsByName(id).length;
+        }
+        return true;
+    }
+    function nativeAction(el) {
+        if (el.matches('select,input[type="checkbox"],input[type="radio"],input[type="file"],input[type="color"],input[type="range"]')) return true;
+        if (el.tagName === 'SUMMARY') return el.parentElement?.tagName === 'DETAILS' && el.parentElement.querySelector('summary') === el;
+        if (el.matches('button,input') && el.form) return el.type === 'submit' || el.type === 'reset';
+        return false;
+    }
+
+    function enabled() {
+        try { return typeof options.isEnabled === 'function' ? !!options.isEnabled() : options.enabled !== false; }
+        catch (_) { return false; }
+    }
+    function action(el) {
+        if (!(el instanceof Element) || el === document.body || el === document.documentElement || owned(el) || el.closest(BLOCKED) || el.matches(':disabled')) return false;
+        return el.dataset.protoHotspot === 'true' || binding(el) || navigation(el) || nativeAction(el);
+    }
+    function controlLike(el) {
+        return CONTROL_TAGS.has(el.tagName) && !(el.tagName === 'INPUT' && el.type === 'hidden')
+            || CONTROL_ROLES.has(el.getAttribute('role')) || el.dataset.protoHotspot === 'true';
+    }
+    function controlIssue(el) {
+        // 仅截图专用运行时中用户手动画出的矩形可使用自定尺寸。
+        if (window.ProtoScreenshot && el.parentElement?.id === 'screenshot-regions' && el.classList.contains('screenshot-region')) return null;
+        // 事件代理容器不能替代实际操作节点，未授权的子控件也不能让父容器整块高亮。
+        if (!CONTROL_TAGS.has(el.tagName) && [...el.querySelectorAll('*')].some(child =>
+            !owned(child) && (controlLike(child) || action(child)))) return 'container';
+        const rect = el.getBoundingClientRect();
+        // 长而矮的整行按钮可保留；高且大面积的卡片 / 面板需拆到具体控件。
+        if (rect.height > 96 && rect.width * rect.height > Math.min(64000, innerWidth * innerHeight * .12)) return 'oversized';
+        return null;
+    }
+    function currentScope() {
+        try { return typeof options.scope === 'function' ? options.scope() : options.scope; }
+        catch (_) { return null; }
+    }
+    function inScope(el, scope = currentScope()) {
+        if (scope?.mode === 'all') return true;
+        if (scope?.mode !== 'targets' || !Array.isArray(scope.protoIds)) return false;
+        // 范围只授权该控件自身；容器标注不授权内部的历史交互。
+        return scope.protoIds.includes(el.getAttribute('data-proto-id'));
+    }
+    function hitAction(target) {
+        if (currentScope()?.manualTargets?.length && scan().some(item => item.source === 'manual' && item.status === 'ready' && item.el.contains(target))) return true;
+        for (let el = target instanceof Element ? target : target?.parentElement; el && el !== document.documentElement; el = el.parentElement)
+            if ((controlLike(el) || action(el)) && !controlIssue(el) && rectFor(el)) return true;
+        return false;
+    }
+    function rectFor(el) {
+        if (!el?.isConnected || owned(el) || el.closest(BLOCKED) || el.matches(':disabled')) return null;
+        const original = el.getBoundingClientRect();
+        let left = Math.max(0, original.left), top = Math.max(0, original.top);
+        let right = Math.min(innerWidth, original.right), bottom = Math.min(innerHeight, original.bottom);
+        for (let node = el; node && node !== document.documentElement; node = node.parentElement) {
+            const css = getComputedStyle(node);
+            if (css.display === 'none' || css.visibility === 'hidden' || Number(css.opacity) === 0) return null;
+            if (node === el) continue;
+            const clip = node.getBoundingClientRect();
+            if (/hidden|clip|auto|scroll/.test(css.overflowX)) { left = Math.max(left, clip.left); right = Math.min(right, clip.right); }
+            if (/hidden|clip|auto|scroll/.test(css.overflowY)) { top = Math.max(top, clip.top); bottom = Math.min(bottom, clip.bottom); }
+        }
+        if (right - left < 4 || bottom - top < 4) return null;
+        if ((right - left) * (bottom - top) > innerWidth * innerHeight * .65 && !(window.ProtoScreenshot && el.parentElement?.id === 'screenshot-regions')) return null;
+        const points = [[.5, .5], [.2, .2], [.8, .8]];
+        if (!points.some(([x, y]) => {
+            const hit = document.elementFromPoint(left + (right - left) * x, top + (bottom - top) * y);
+            return hit === el || !!hit && el.contains(hit);
+        })) return null;
+        return { left, top, right, bottom };
+    }
+    function examine(el, manual = false) {
+        if (owned(el) || el.closest('[data-proto-hotspot="false"]')) return { status: 'excluded' };
+        if (el.matches(':disabled') || el.closest('[inert],[aria-disabled="true"]')) return { status: 'disabled' };
+        for (let node = el; node && node !== document.documentElement; node = node.parentElement) {
+            const css = getComputedStyle(node);
+            if (node.matches('[hidden],[aria-hidden="true"]') || css.display === 'none' || css.visibility === 'hidden' || Number(css.opacity) === 0)
+                return { status: 'hidden' };
+        }
+        if (/^(SCRIPT|STYLE|LINK|META|OPTION|OPTGROUP|PATH|SVG)$/.test(el.tagName)) return { status: 'unsupported' };
+        const issue = controlIssue(el);
+        if (issue) return { status: issue };
+        if (!manual && !action(el)) return { status: 'no-action' };
+        const bounds = el.getBoundingClientRect();
+        if (!bounds.width || !bounds.height) return { status: 'hidden' };
+        if (bounds.bottom <= 0 || bounds.top >= innerHeight || bounds.right <= 0 || bounds.left >= innerWidth) return { status: 'offscreen' };
+        const rect = rectFor(el);
+        return rect ? { status: 'ready', rect } : { status: 'occluded' };
+    }
+    function scan(scope = currentScope()) {
+        const elements = [...document.querySelectorAll('body *')], byId = new Map();
+        for (const el of elements) {
+            const id = el.getAttribute('data-proto-id');
+            if (id) { if (!byId.has(id)) byId.set(id, []); byId.get(id).push(el); }
+        }
+        const anchorFor = el => {
+            if (window.ProtoAnchors) {
+                const A = window.ProtoAnchors;
+                return { protoId: el.getAttribute('data-proto-id') || '', selector: A.selector(el), tag: el.tagName.toLowerCase(), text: A.text(el), parentText: A.text(el.parentElement) };
+            }
+            return { protoId: el.getAttribute('data-proto-id') || '', selector: el.id ? '#' + CSS.escape(el.id) : '', tag: el.tagName.toLowerCase() };
+        };
+        const resolve = anchor => {
+            if (anchor?.protoId) { const hits = byId.get(anchor.protoId) || []; return hits.length === 1 ? hits[0] : null; }
+            if (window.ProtoAnchors) return window.ProtoAnchors.resolveHidden(anchor);
+            try { const hits = [...document.querySelectorAll(anchor?.selector || ':not(*)')]; return hits.length === 1 ? hits[0] : null; } catch (_) { return null; }
+        };
+        let entries = [];
+        if (scope?.mode === 'targets' && Array.isArray(scope.protoIds)) {
+            entries = scope.protoIds.map(protoId => {
+                const hits = byId.get(protoId) || [];
+                const base = { protoId, key: 'proto:' + protoId, source: 'declared', anchor: { protoId } };
+                if (hits.length !== 1) return { ...base, status: hits.length ? 'duplicate' : 'missing' };
+                return { ...base, el: hits[0], label: labelFor(hits[0]), anchor: anchorFor(hits[0]), ...examine(hits[0]) };
+            });
+        } else if (scope?.mode === 'all') {
+            entries = elements.filter(el => action(el)).map(el => ({
+                protoId: el.getAttribute('data-proto-id') || el.id || el.tagName.toLowerCase(), source: 'automatic',
+                anchor: anchorFor(el), label: labelFor(el), key: 'all:' + (el.getAttribute('data-proto-id') || el.id || anchorFor(el).selector), el, ...examine(el)
+            }));
+        }
+        for (const target of scope?.manualTargets || []) {
+            const el = resolve(target.anchor);
+            const existing = el && entries.find(item => item.el === el);
+            if (existing) entries = entries.filter(item => item !== existing);
+            entries.push({ ...target, key: 'manual:' + target.id, source: 'manual', protoId: target.anchor.protoId || target.id, el,
+                ...(el ? examine(el, true) : { status: target.anchor.protoId && (byId.get(target.anchor.protoId)?.length || 0) > 1 ? 'duplicate' : 'missing' }) });
+        }
+        const excluded = (scope?.excludedTargets || []).map(target => resolve(target.anchor)).filter(Boolean);
+        for (const item of entries) if (item.el && excluded.includes(item.el)) item.status = 'excluded';
+        const ready = entries.filter(item => item.status === 'ready');
+        let count = 0;
+        for (const item of ready) {
+            if (ready.some(other => other.el !== item.el && item.el.contains(other.el))) item.status = 'contains-target';
+            else if (++count > MAX_HINTS) item.status = 'limit';
+        }
+        return entries;
+    }
+    function labelFor(el) { return (el.getAttribute('aria-label') || el.getAttribute('title') || el.textContent || el.value || el.tagName).replace(/\s+/g, ' ').trim().slice(0, 120); }
+    function candidate(el) { return el instanceof Element ? { ...examine(el, true), label: labelFor(el) } : { status: 'missing' }; }
+    // 只读诊断，不执行点击、不展开页面，也不修改 PRD / 提示配置。
+    function inspect() {
+        const scope = currentScope();
+        return { mode: scope?.mode || 'off', enabled: enabled(), items: scan(scope).map(({ el, ...item }) => item) };
+    }
+    function position(box, rect) {
+        box.style.left = Math.max(0, rect.left - 3) + 'px';
+        box.style.top = Math.max(0, rect.top - 3) + 'px';
+        box.style.width = Math.min(innerWidth, rect.right + 3) - Math.max(0, rect.left - 3) + 'px';
+        box.style.height = Math.min(innerHeight, rect.bottom + 3) - Math.max(0, rect.top - 3) + 'px';
+    }
+    function hide() {
+        clearTimeout(timer); timer = 0;
+        cancelAnimationFrame(frame); frame = 0;
+        boxes.clear(); layer?.replaceChildren();
+    }
+    function refresh() {
+        frame = 0;
+        if (!enabled()) { hide(); return; }
+        const ready = new Map(scan().filter(item => item.status === 'ready').map(item => [item.el, item.rect]));
+        for (const [el, box] of boxes) {
+            const rect = ready.get(el);
+            if (!rect) { box.remove(); boxes.delete(el); }
+            else position(box, rect);
+        }
+    }
+    function schedule() {
+        if (boxes.size && !frame) frame = requestAnimationFrame(refresh);
+    }
+    function show() {
+        if (!layer || !enabled()) { hide(); return 0; }
+        const scope = currentScope();
+        if (scope?.mode !== 'all' && (scope?.mode !== 'targets' || !scope.protoIds?.length && !scope.manualTargets?.length)) { hide(); return 0; }
+        if (boxes.size && performance.now() - started < DURATION) { refresh(); return boxes.size; }
+        hide();
+        for (const { el, rect } of scan(scope).filter(item => item.status === 'ready')) {
+            const box = document.createElement('div');
+            box.className = 'ph-box'; box.setAttribute('data-prototype-owned', '');
+            box.dataset.hotspotFor = el.getAttribute('data-proto-id') || el.id || el.tagName.toLowerCase();
+            position(box, rect); layer.appendChild(box); boxes.set(el, box);
+        }
+        if (boxes.size) { started = performance.now(); timer = setTimeout(hide, DURATION); }
+        return boxes.size;
+    }
+    function pointerDown(event) { down = { x: event.clientX, y: event.clientY, moved: false }; }
+    function pointerMove(event) {
+        if (down && Math.hypot(event.clientX - down.x, event.clientY - down.y) > 8) down.moved = true;
+    }
+    function click(event) {
+        const drag = down?.moved; down = null;
+        const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+        if (!enabled() || owned(target) || hitAction(target)) { hide(); return; }
+        if (event.defaultPrevented || event.button !== 0 || event.detail === 0 || drag || target?.closest(EDITABLE) || String(getSelection()).trim()) return;
+        show();
+    }
+    function mutations(records) {
+        if (!boxes.size) return;
+        for (const record of records) {
+            if (owned(record.target)) continue;
+            if (record.type === 'attributes' && /data-proto-(page|state)/.test(record.attributeName)) { hide(); return; }
+            if (record.type === 'childList' && [...record.addedNodes, ...record.removedNodes].every(node => node instanceof Element && owned(node))) continue;
+            schedule(); break;
+        }
+    }
+    function init(config = {}) {
+        options = config;
+        if (layer) { hide(); return window.ProtoHotspots; }
+        style = document.createElement('style'); style.setAttribute('data-prototype-owned', '');
+        style.textContent = `
+.ph-layer{--ph-fill:${COLORS.fill};--ph-opacity-low:.18;--ph-opacity-high:.42;--ph-opacity-still:.3;position:fixed;inset:0;z-index:2147481000;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;pointer-events:none!important;overflow:hidden;}
+.ph-layer .ph-box{position:absolute;box-sizing:border-box;margin:0;padding:0;border:0!important;outline:0!important;border-radius:6px;background:var(--ph-fill);box-shadow:none!important;pointer-events:none!important;opacity:var(--ph-opacity-still);animation:ph-discover ${DURATION}ms cubic-bezier(.4,0,.2,1) 1 forwards;}
+@keyframes ph-discover{0%{opacity:var(--ph-opacity-low)}20%{opacity:var(--ph-opacity-high)}45%{opacity:var(--ph-opacity-low)}70%{opacity:var(--ph-opacity-high)}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.ph-layer .ph-box{animation:none;opacity:var(--ph-opacity-still)}}
+`;
+        layer = document.createElement('div'); layer.className = 'ph-layer';
+        layer.setAttribute('data-prototype-owned', ''); layer.setAttribute('aria-hidden', 'true');
+        (document.head || document.documentElement).appendChild(style); document.documentElement.appendChild(layer);
+        document.addEventListener('pointerdown', pointerDown, true);
+        document.addEventListener('pointermove', pointerMove, true);
+        document.addEventListener('pointercancel', hide, true);
+        document.addEventListener('click', click);
+        document.addEventListener('scroll', schedule, true);
+        window.addEventListener('resize', schedule);
+        window.addEventListener('pagehide', hide);
+        observer = new MutationObserver(mutations);
+        observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['style', 'class', 'hidden', 'inert', 'disabled', 'aria-hidden', 'aria-disabled', 'role', 'onclick', 'href', 'type', 'data-proto-id', 'data-proto-hotspot', 'data-proto-state', 'data-proto-page'] });
+        return window.ProtoHotspots;
+    }
+    function destroy() {
+        hide(); observer?.disconnect(); observer = null;
+        document.removeEventListener('pointerdown', pointerDown, true);
+        document.removeEventListener('pointermove', pointerMove, true);
+        document.removeEventListener('pointercancel', hide, true);
+        document.removeEventListener('click', click);
+        document.removeEventListener('scroll', schedule, true);
+        window.removeEventListener('resize', schedule); window.removeEventListener('pagehide', hide);
+        layer?.remove(); style?.remove(); layer = null; style = null; down = null;
+    }
+    window.ProtoHotspots = { init, show, hide, destroy, inspect, candidate };
+})();
+
+</script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-scan" viewBox="0 0 24 24"><path d="M8 3H4a1 1 0 0 0-1 1v4M16 3h4a1 1 0 0 1 1 1v4M8 21H4a1 1 0 0 1-1-1v-4M16 21h4a1 1 0 0 0 1-1v-4M3 12h18"/></symbol>
+<symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10H4zM17 9l5 6M22 9l-5 6"/></symbol>
+<symbol id="i-wifi" viewBox="0 0 24 24"><path d="M3 8c5-5 13-5 18 0M6 12c3.5-3.5 8.5-3.5 12 0M9.5 15.5c1.5-1.5 3.5-1.5 5 0M12 19h.01"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6zM9 9h6M9 13h5M9 17h4M3 6v15"/></symbol>
+<symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 21v-6L16 3l5 5L9 20l-5 1zM13 6l5 5M4 15l5 5M4 12h16v9H4"/></symbol>
+<symbol id="i-box" viewBox="0 0 24 24"><path d="M4 8l8-4 8 4v12H4zM4 8l8 4 8-4M12 12v8M9 3h6v7H9z"/></symbol>
+<symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5zM3 12l9 5 9-5M3 16l9 5 9-5"/></symbol>
+<symbol id="i-smile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 10h.01M16 10h.01M8 14c2 4 6 4 8 0"/></symbol>
+<symbol id="i-ppt" viewBox="0 0 24 24"><path d="M5 2h10l4 4v16H5zM15 2v5h4M12 8v6M9 11h6"/><path d="M3 13h12v7H3z"/></symbol>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4M8.6 13.5l6.8 4"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3 8-8 10-5-2-8-5-8-10V6zM8 12l3 3 5-6"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 3v3M21 12h-3M12 21v-3M3 12h3"/></symbol>
+</defs></svg>
+<div class="phone" id="phone">
+  <main class="screen" id="homeScreen">
+    <div class="statusbar"><div class="status-left"><span class="clock">15:18</span><svg class="icon mute"><use href="#i-mute"/></svg></div><div class="status-right"><span class="signal"><i></i><i></i><i></i><i></i></span><svg class="icon wifi"><use href="#i-wifi"/></svg><span class="battery"><span></span><em>72</em></span></div></div>
+    <nav class="topnav" aria-label="批阅导航"><button class="on">作业</button><button data-toast="已切换至考试">考试</button><button data-toast="已切换至错题本">错题本</button><button data-toast="已切换至统计">统计</button><button class="scan" aria-label="扫描" data-toast="请对准作业进行扫描"><svg class="icon"><use href="#i-scan"/></svg></button></nav>
+    <div class="home-scroll" id="homeScroll">
+      <section class="ad-shell" aria-label="产品推荐"><div class="ad-slide" role="button" tabindex="0" data-open-detail><div class="ad-title">新教育智能体「<b>主观题智能批阅</b>」</div><div class="ad-sub">为教师赋能减负　为教学提质增效</div><span class="ad-cta">☝ 了解详情</span></div></section>
+      <div class="filters"><label class="date-wrap"><input id="startDate" type="text" inputmode="numeric" value="2025-06-05" aria-label="开始日期"></label><span class="dash">-</span><label class="date-wrap"><input id="endDate" type="text" inputmode="numeric" value="2026-10-27" aria-label="结束日期"></label><button class="filter-btn" id="filterBtn">筛选</button></div>
+      <section id="assignmentList" aria-label="作业列表">
+        <article class="assignment" data-date="2026-10-14"><h2>高一 3班 第五章　笔记1　第一节　课时1　硫和二氧化硫</h2><div class="stats"><span>已交：<b>10</b></span><span>未交：<b>56</b></span><span>已批阅：<b>100%</b></span></div><div class="card-bottom"><time>10-14 08:11:32</time><button class="grade-btn done" data-toast="正在打开回评">回评</button></div></article>
+        <article class="assignment" data-date="2026-08-17"><h2>高一 7 第五章　作业1　硫和二氧化硫</h2><div class="stats"><span>已交：<b>59</b></span><span>未交：<b>9</b></span><span>已批阅：<b>85.59%</b></span></div><div class="card-bottom"><time>08-17 14:09:28</time><button class="grade-btn" data-toast="正在进入批阅">批阅</button></div></article>
+        <article class="assignment" data-date="2026-07-21"><h2>高一 3班 第八章　作业1　金属矿物、海水资源的开发利用</h2><div class="stats"><span>已交：<b>1</b></span><span>未交：<b>65</b></span><span>已批阅：<b>50%</b></span></div><div class="card-bottom"><time>07-21 16:14:50</time><button class="grade-btn" data-toast="正在进入批阅">批阅</button></div></article>
+        <article class="assignment" data-date="2026-07-10"><h2>高一 3班 第五章　笔记3　第一节　课时3　不同价态含硫物质的转化</h2><div class="stats"><span>已交：<b>1</b></span><span>未交：<b>65</b></span><span>已批阅：<b>100%</b></span></div><div class="card-bottom"><time>07-10 14:31:57</time><button class="grade-btn done" data-toast="正在进入批阅">批阅</button></div></article>
+      </section>
+    </div>
+    <button class="fab" aria-label="下载课件" data-toast="课件已加入下载队列"><svg class="icon"><use href="#i-ppt"/></svg><small>PPT</small></button>
+    <nav class="tabbar" aria-label="底部导航"><button class="tab" data-toast="已切换至备课"><svg class="icon"><use href="#i-file"/></svg><span>备课</span></button><button class="tab on"><svg class="icon"><use href="#i-pencil"/></svg><span>批阅</span></button><button class="tab" data-toast="已切换至题库"><svg class="icon"><use href="#i-box"/></svg><span>题库</span></button><button class="tab" data-toast="已切换至资源"><svg class="icon"><use href="#i-layers"/></svg><span>资源</span></button><button class="tab" data-toast="已切换至我的"><svg class="icon"><use href="#i-smile"/></svg><span>我的</span></button></nav><div class="home-ind"></div>
+  </main>
+  <section class="screen detail" id="detail" aria-hidden="true" aria-label="主观题智能批阅介绍">
+    <div class="statusbar"><div class="status-left"><span class="clock">15:18</span></div><div class="status-right"><span class="signal"><i></i><i></i><i></i><i></i></span><svg class="icon wifi"><use href="#i-wifi"/></svg><span class="battery"><span></span><em>72</em></span></div></div>
+    <div class="detail-bar"><button class="back" id="backBtn" aria-label="返回"><svg class="icon"><use href="#i-back"/></svg></button><h1>主观题智能批阅</h1><button class="share" id="shareBtn" aria-label="分享"><svg class="icon"><use href="#i-share"/></svg></button></div>
+    <div id="detailApp">
+      <header class="hero"><span class="kicker">新教育智能体</span><h2>主观题<span>智能批阅</span></h2><p class="slogan">多维度智能研判，<b>全学科全题型</b>适配</p><div class="contact-card"><h3>咨询电话</h3><div class="contact-grid"><a href="tel:05377361798"><b>0537-7361798</b><span>浙鲁黔闽甘新陕琼津赣京辽</span></a><a href="tel:05377368829"><b>0537-7368829</b><span>苏川桂云晋皖黑吉</span></a><a href="tel:05377361126"><b>0537-7361126</b><span>粤豫鄂湘蒙渝宁冀</span></a><a href="tel:05377360056"><b>0537-7360056</b><span>鲁甘川桂云晋青藏</span></a></div></div></header>
+      <section class="section" id="adv"><div class="sec-head"><span class="tag">CORE</span><h2>核心优势</h2><p>让每一次批改，都有理 · 有维 · 有用</p><div class="gold-bar"></div></div><div class="advantages">
+        <article class="advantage"><div class="adv-icon"><svg class="icon"><use href="#i-shield"/></svg></div><div><h3>评分<b>更严谨</b></h3><p>逐点采分，有理有据，批阅结果专业、公正、规范。</p></div></article>
+        <article class="advantage"><div class="adv-icon"><svg class="icon"><use href="#i-chart"/></svg></div><div><h3>评价<b>更全面</b></h3><p>英语、语文作文实现“内容＋语言＋结构”多维度研判。</p></div></article>
+        <article class="advantage"><div class="adv-icon"><svg class="icon"><use href="#i-target"/></svg></div><div><h3>提升<b>更明确</b></h3><p>错因分析透彻到位，支撑课堂精准施教。</p></div></article>
+      </div></section>
+      <section class="eff"><h2>一键扫描 <b>高效减负</b></h2><p>教师从重复批改中解放出来，把时间还给教学本身。</p><div class="eff-num">↑80%</div><div class="eff-label">批改效率提升</div></section>
+      <section class="section" id="flow"><div class="sec-head"><span class="tag">FLOW</span><h2>智批流程</h2><p>两种模式，覆盖图书作业、定制校本作业与自制作业</p><div class="gold-bar"></div></div>
+        <article class="flow-card"><div class="flow-head"><h3><span>模式一</span>图书/定制校本作业智批流程</h3><small>5 STEPS</small></div><div class="steps"><svg class="flow-curve" viewBox="0 0 70 232" preserveAspectRatio="none" aria-hidden="true"><path d="M35 0 C78 12 78 46 35 58 C-8 70 -8 104 35 116 C78 128 78 162 35 174 C-8 186 -8 220 35 232"/></svg><div class="step"><span class="dot">1</span><p>一键扫描</p></div><div class="step"><span class="dot">2</span><p>智能识别</p></div><div class="step"><span class="dot">3</span><p>逐点批阅</p></div><div class="step"><span class="dot">4</span><p>生成评价</p></div><div class="step"><span class="dot">5</span><p>精准施教</p></div></div></article>
+        <article class="flow-card"><div class="flow-head"><h3><span>模式二</span>自制作业智批流程</h3><small>7 STEPS</small></div><div class="steps"><svg class="flow-curve" viewBox="0 0 70 348" preserveAspectRatio="none" aria-hidden="true"><path d="M35 0 C78 12 78 46 35 58 C-8 70 -8 104 35 116 C78 128 78 162 35 174 C-8 186 -8 220 35 232 C78 244 78 278 35 290 C-8 302 -8 336 35 348"/></svg><div class="step"><span class="dot">1</span><p>上传试卷</p></div><div class="step"><span class="dot">2</span><p>设置评分标准</p></div><div class="step"><span class="dot">3</span><p>一键扫描</p></div><div class="step"><span class="dot">4</span><p>智能识别</p></div><div class="step"><span class="dot">5</span><p>逐点批阅</p></div><div class="step"><span class="dot">6</span><p>生成评价</p></div><div class="step"><span class="dot">7</span><p>精准施教</p></div></div></article>
+      </section>
+      <section class="section scene-section" id="scene"><div class="sec-head"><span class="tag">SCENES</span><h2>应用场景</h2><p>填空题、主观题与作文题，批得深、看得清</p><div class="gold-bar"></div></div>
+        <article class="scene"><div class="scene-label green"><span>填空题</span><small>逐空分析 · 精细批阅</small></div><div class="scene-copy"><h3>按空批改，数据统计更精细</h3><p>语数英填空题<b>按空批改</b>，每空得分与批注清晰可见。</p></div><div class="mock"><div class="mock-top"><i></i><i></i><i></i><span>英语填空 · 智能批阅</span></div><div class="mock-body"><div class="mock-title"><span>第 1 题　完形填空</span><span class="score">得分 8 / 10</span></div><div class="answer">1. <span class="good">because</span>　✓ 2分<br>2. <mark>their</mark>　正确答案：there　0分<br>3. <span class="good">carefully</span>　✓ 2分</div><div class="reason">逐空判定答案与词性，结合上下文给出得分依据和错因提示。</div></div></div></article>
+        <article class="scene"><div class="scene-label"><span>主观题</span><small>逐点采分 · 有据可依</small></div><div class="scene-copy"><h3>紧扣标准，评分理由完整</h3><p>紧扣学科评分标准<b>逐点采分</b>，生成详细评分理由与错因分析，得分有依据，提升有方向。</p></div><div class="mock"><div class="mock-top"><i></i><i></i><i></i><span>化学主观题 · 评分分析</span></div><div class="mock-body"><div class="mock-title"><span>第 18 题　实验探究</span><span class="score">得分 5 / 6</span></div><div class="answer">① 写出反应方程式　<span class="good">2 / 2 分</span><br>② 说明实验现象　<span class="good">2 / 2 分</span><br>③ 分析实验结论　<mark>1 / 2 分</mark></div><div class="reason">结论缺少“在相同条件下”这一限定，扣 1 分；其余采分点完整。</div></div></div></article>
+        <article class="scene"><div class="scene-label orange"><span>作文题</span><small>三大维度 · 精准研判</small></div><div class="scene-copy"><h3>写作短板，一目了然</h3><p>立足「内容」「语言」「结构」三大评价维度，依据<b>高考写作评分标准</b>精准研判，智批结果直观呈现。</p></div><div class="mock"><div class="mock-top"><i></i><i></i><i></i><span>语文作文 · 智批报告</span></div><div class="mock-body"><div class="mock-title"><span>《成长路上的选择》</span><span class="score">得分 52 / 60</span></div><div class="analysis"><div><b>18 / 20</b>内容</div><div><b>17 / 20</b>语言</div><div><b>17 / 20</b>结构</div></div><div class="answer">中心明确，素材真实；<span class="good">首尾照应自然</span>。部分段落句式较单一，可适当增加细节描写。</div><div class="reason">提升建议：第三段补充人物动作与环境细节，增强情感表达的层次。</div></div></div></article>
+      </section>
+      <section class="qr-section" id="consult"><div class="sec-head"><span class="tag">CONTACT</span><h2>微信扫码，咨询智批方案</h2><p>留下联系方式，获取产品咨询与演示</p><div class="gold-bar"></div></div><div class="qr-card"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAbwAAAG8CAIAAAAq0oeIAAAITUlEQVR4nO3d0W0bRxhGUSpwESogdaR415EC2MWmg2AvtB78Mzzn2TBXpHgxL5/m67quFwD3/HXz3wEgmgCNkyZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRCIJkAgmgCBaAIEogkQiCZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRCIJkAgmgCBaAIEogkQiCZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRCIJkAgmgCBaAIEogkQiCZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRCIJkDw6zXM99//vD7V+9/fy96faa+10rT3cOVnsaP3sN8fJ02AQDQBAtEECEQTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QTYeXu+4xZ1x72zXfma93nl7+onfy9WctIECEQTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QQIRBMgEE2A07fn0zat0za/055nx7u/p+3Kn/LJ34unOGkCBKIJEIgmQCCaAIFoAgSiCRCIJkAgmgCBaAIEogkQiCZAcOz2/FTTdtx3Xmvartzd8fyEkyZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRCIJkAgmgCBaAIEtucHWrkrn/Y8017r1Lu/P5mTJkAgmgCBaAIEogkQiCZAIJoAgWgCBKIJEIgmQCCaAIFoAgTHbs9tfn9u2rZ65fOsvId9Jd+Ln3PSBAhEEyAQTYBANAEC0QQIRBMgEE2AQDQBAtEECEQTIBBNgNO356fugp+y8s7uU/+fO6Y9j+/FGk6aAIFoAgSiCRCIJkAgmgCBaAIEogkQiCZAIJoAgWgCBKIJsPP23L3MP/fJG+Sn9uDT+F7M4aQJEIgmQCCaAIFoAgSiCRCIJkAgmgCBaAIEogkQiCZAIJoAwdd1Xa9JVt4TfcfK+7if4j7uvd7DT97Cfw/7vt/hpAkQiCZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRCIJkAgmgCnb88/eYM8bYd76jPf4W8grDHt98dJEyAQTYBANAEC0QQIRBMgEE2AQDQBAtEECEQTIBBNgEA0AYJfrw2tvHN5x336StOeedpO+anP/amfa8f3ZxonTYBANAEC0QQQTYA/w0kTIBBNgEA0AQLRBAhEEyAQTYBANAF2vvf8KTveRT7ttT55wz7NtL9v8F74eU3byztpAgSiCRCIJkAgmgCBaAIEogkQiCZAIJoAgWgCBKIJEIgmwOn3nu+4V125m562HX6Kjf9e7/OO39M7nDQBAtEECEQTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QQIRBNg53vPp93dfMeOrzXtme+YtpdfuZs+9e8J7LhPd9IECEQTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QQIRBMgEE2Ane89n7affeq1ntoOP7XD/eS7radtxk/1HvZdfoqTJkAgmgCBaAIEogkQiCZAIJoAgWgCBKIJEIgmQCCaAIFoAux87/kd0+62nnaH+MrN77Sf66nX2nFTP833oe+zkyZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRCIJkAgmgCBaALsfO/5U57aX6+893yllfv0af/PHTvu3Ffu958y7XnucNIECEQTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QQIRBMgEE2Ane89n3av94772VPvm15p2o572vfiPey1VnLSBAhEEyAQTYBANAEC0QQIRBMgEE2AQDQBAtEECEQTIBBNgJ3vPZ+2M522cz/1TvNpvz8r7z2/81rTtt7fw7bwKzlpAgSiCRCIJkAgmgCBaAIEogkQiCZAIJoAgWgCBKIJEIgmwM7b80/eKX+yp3bKO961vfKO9ZX/z/eGu/I7nDQBAtEECEQTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QQIRBMg+Lqu6zXJqXvVOz55z7vj1vvUz2LHe+FXctIECEQTIBBNgEA0AQLRBAhEE0A0Af4MJ02AQDQBAtEECEQTYOd7z6ftTHc0bce94x585fNM+7x8B/+fkyZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRCIJkAgmgCBaALsvD13l/Sc9/DOBvnUnfK0e89XbsZX/v7syEkTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QQIRBMgEE2AQDQBgq/rul6TnHov847b4TtWPvO098e955/5XXbSBAhEEyAQTYBANAEC0QQIRBMgEE2AQDQBAtEECEQTIBBNgJ3vPX/KjvvrHX+uHe/+nrZhX/ke7vh3AN7D9ulOmgCBaAIEogkQiCZAIJoAgWgCBKIJIJoAf4aTJkAgmgCBaAIEx27PT/XJO/dTN+xP2XHH/R72PHc4aQIEogkQiCZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRCIJkBge36glRvklXejT9tWT9vmT7vPfcfP9A4nTYBANAEC0QQIRBMgEE2AQDQBAtEECEQTIBBNgEA0AQLRBAiO3Z5P26vu6Kld+cp9+qnvzzTvQz/TO5w0AQLRBAhEEyAQTYBANAEC0QQIRBMgEE2AQDQBAtEECEQT4PTt+amb1jtO3XrveGf3U5565h238O8Nd/dOmgCBaAIEogkQiCZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRB8XddV/j3AR3PSBAhEEyAQTYBANAEC0QQIRBMgEE2AQDQBAtEECEQTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QQIRBMgEE2AQDQBAtEECEQTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QQIRBMgEE2AQDQBAtEECEQTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QQIRBMgEE2AQDQBAtEECEQTIBBNgNd9/wFzGUBn9i3ymAAAAABJRU5ErkJggg==" alt="主观题智能批阅咨询二维码"><p>微信扫码 · <b>填写客户信息</b></p></div></section>
+      <footer class="landing-footer"><h2>让每一次批改，都有<b>理</b> · 有<b>维</b> · 有<b>用</b></h2><p>为教师赋能减负，为教学提质增效</p><div class="fine">官网 www.xinjiaoyu.com ｜ © 新教育智能平台</div></footer>
+    </div>
+    <div class="consult-bar"><a class="consult-primary" href="https://qr71.cn/o5iouY/qmkbiXu" target="_blank" rel="noopener">立即咨询</a></div>
+  </section>
+  <div class="toast" id="toast" role="status"></div>
+</div>
+<script>
+const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const phone=$('#phone'),detail=$('#detail'),detailApp=$('#detailApp'),toast=$('#toast');
+let toastTimer;
+function showToast(text){toast.textContent=text;toast.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('on'),2200)}
+function updateClock(){const value=new Date().toTimeString().slice(0,5);$$('.clock').forEach(el=>el.textContent=value)}
+updateClock();setInterval(updateClock,30000);
+$$('[data-toast]').forEach(el=>el.addEventListener('click',()=>showToast(el.dataset.toast)));
+$$('[data-open-detail]').forEach(el=>{el.addEventListener('click',()=>openDetail());el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openDetail()}})});
+function openDetail(fromHash=false){detail.classList.add('on');detail.setAttribute('aria-hidden','false');$('#homeScreen').setAttribute('aria-hidden','true');detailApp.scrollTop=0;if(!fromHash&&location.hash!=='#zhuanti')history.pushState({detail:true},'','#zhuanti');setTimeout(()=>$('#backBtn').focus({preventScroll:true}),RM?0:430)}
+function closeDetail(fromHash=false){detail.classList.remove('on');detail.setAttribute('aria-hidden','true');$('#homeScreen').setAttribute('aria-hidden','false');if(!fromHash&&location.hash==='#zhuanti'){if(history.state?.detail)history.back();else history.replaceState(null,'',location.pathname+location.search)}}
+$('#backBtn').addEventListener('click',()=>closeDetail());
+$('#shareBtn').addEventListener('click',async()=>{const data={title:'主观题智能批阅',text:'新教育智能体 · 主观题智能批阅',url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(location.href);showToast('页面链接已复制')}}catch(e){if(e.name!=='AbortError')showToast('可复制浏览器地址分享')}});
+$('#filterBtn').addEventListener('click',()=>{const start=$('#startDate').value,end=$('#endDate').value;if(start&&end&&start>end){showToast('开始日期不能晚于结束日期');return}let count=0;$$('.assignment').forEach(card=>{const show=(!start||card.dataset.date>=start)&&(!end||card.dataset.date<=end);card.hidden=!show;if(show)count++});showToast(`已筛选出 ${count} 份作业`)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&detail.classList.contains('on'))closeDetail()});
+addEventListener('popstate',()=>{if(location.hash==='#zhuanti')openDetail(true);else closeDetail(true)});
+if(location.hash==='#zhuanti')openDetail(true);
+</script>
+<!-- proto-review-bundle -->
+<script data-proto-review="appearance">
+/* PRD 内容色板与序号外观；编辑、导出和发布共用。 */
+(() => {
+    'use strict';
+    const TEXT_COLORS = [
+        ['#191919', '黑色'], ['#1684fc', '蓝色'], ['#8a38f5', '紫色'], ['#666666', '灰色'],
+        ['#fbfbfb', '白色'], ['#ec4954', '红色'], ['#ff9f29', '橙色']
+    ];
+    const DEFAULT_PIN = '#2563eb', INK = '#191919', STROKE = '#4e5560', ON_BLUE = '#ffffff';
+    const PIN_COLORS = [
+        [DEFAULT_PIN, '默认蓝色'],
+        ['#acbcd1', '灰蓝'], ['#ff9e93', '珊瑚'], ['#ff9e47', '橙色'], ['#fdd143', '黄色'], ['#9dc4ff', '浅蓝'],
+        ['#38cde7', '青色'], ['#54d691', '绿色'], ['#daa3ff', '紫色'], ['#ff94e4', '粉色']
+    ];
+    const LEGACY_PIN_COLORS = ['#e6e6e6'];
+    function pinColor(note) {
+        const color = String(note?.color || '').toLowerCase();
+        return PIN_COLORS.some(([hex]) => hex === color) || LEGACY_PIN_COLORS.includes(color) ? color : DEFAULT_PIN;
+    }
+    function applyPin(element, note) {
+        const color = pinColor(note), custom = color !== DEFAULT_PIN;
+        element.style.setProperty('--pin-fill', color);
+        element.style.setProperty('--pin-ink', custom ? INK : ON_BLUE);
+        element.style.setProperty('--pin-stroke', custom ? STROKE : ON_BLUE);
+    }
+    window.ProtoAppearance = { TEXT_COLORS, PIN_COLORS, DEFAULT_PIN, pinColor, applyPin };
+})();
+
+</script>
+<script data-proto-review="anchors">
+/* 稳定锚点与可见元素选择；不向业务 DOM 注入高亮 class。
+   基线复用自「原型生成全流程」extension/content/anchors.js；标注工作台增补折叠引导、条件显现路径与响应式落点。
+   全流程已于 2026-09-26 归档至 独立项目\_归档\原型生成全流程\。 */
+(() => {
+    'use strict';
+    if (globalThis.ProtoAnchors) return;
+    const owned = (el) => !!el?.closest?.('[data-prototype-owned]');
+    const text = (el) => (el?.innerText || el?.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 400);
+    const loose = (s) => (s || '').replace(/\s+/g, '');
+    const grams = (s) => { const set = new Set(); for (let i = 0; i + 1 < s.length; i++) set.add(s.slice(i, i + 2)); return set; };
+    /* 文本身份校验：短文本（按钮、标签、单元格）必须逐字相同；长文本（面板、表格、整个筛选区）只要求字符二元组包含率 ≥ .75。
+       容器的 innerText 会随条件行显隐、计数、日期等动态内容变化，逐字比对会把整块面板判成「目标变化」，序号全部消失。
+       隐藏子树的 innerText 退化为 textContent 丢掉 span 间空格，故两侧先去掉全部空白再比。 */
+    function sameText(el, expected) {
+        if (!expected) return true;
+        const a = loose(text(el)), b = loose(expected);
+        if (a === b) return true;
+        if (Math.min(a.length, b.length) < 24) return false;
+        const ga = grams(a), gb = grams(b);
+        let hit = 0;
+        for (const g of ga) if (gb.has(g)) hit++;
+        return hit / Math.min(ga.size, gb.size) >= 0.75;
+    }
+    // 选择器就是页面唯一 id：id 本身即身份，文本变化（占位符→已选值、计数刷新）不视为目标变化。
+    const idBound = (anchor) => /^#[^\s>+~]+$/.test(anchor?.selector || '');
+    const visible = (el) =>
+        !!el &&
+        !owned(el) &&
+        el.getClientRects().length > 0 &&
+        getComputedStyle(el).display !== 'none' &&
+        getComputedStyle(el).visibility !== 'hidden';
+    function selector(el) {
+        if (el.id && document.querySelectorAll('#' + CSS.escape(el.id)).length === 1)
+            return '#' + CSS.escape(el.id);
+        const path = [];
+        for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
+            let part = n.tagName.toLowerCase();
+            if (n.id && document.querySelectorAll('#' + CSS.escape(n.id)).length === 1) {
+                path.unshift('#' + CSS.escape(n.id));
+                break;
+            }
+            const same = n.parentElement
+                ? [...n.parentElement.children].filter((x) => x.tagName === n.tagName)
+                : [];
+            if (same.length > 1) part += `:nth-of-type(${same.indexOf(n) + 1})`;
+            path.unshift(part);
+        }
+        return path.join(' > ');
+    }
+    function controlLabel(el) {
+        if (!el) return '';
+        const byFor = el.id ? document.querySelector(`label[for="${CSS.escape(el.id)}"]`) : null;
+        const label = el.labels?.[0] || byFor || el.closest('label') || el.closest('.f-item,.form-item,.form-group,.field')?.querySelector('label');
+        return text(label).replace(/[：:]$/, '').slice(0, 80);
+    }
+    function conditionRow(el, kind, value, option, targetRect, explicit = false, label = '') {
+        if (!el || owned(el) || !visible(el) || el.disabled || el.getAttribute?.('aria-disabled') === 'true') return null;
+        const r = el.getBoundingClientRect();
+        const dx = r.left + r.width / 2 - (targetRect.left + targetRect.width / 2);
+        const dy = r.top + r.height / 2 - (targetRect.top + targetRect.height / 2);
+        return { selector: selector(el), kind, value, option: String(option || '').slice(0, 80),
+            label: String(label || controlLabel(el)).slice(0, 80), explicit, distance: explicit ? -1 : Math.hypot(dx, dy) };
+    }
+    function captureConditions(target, targetRect) {
+        /* 通用“显现路径”：记录创建标注时使目标可见的状态控件，目标日后 display:none 或被动态移出 DOM，
+           仍能把引导挂回条件控件并恢复当时状态。自动覆盖 native select/checkbox/radio 与常见 ARIA 控件；
+           任意自定义 JS 控件用祖先 data-proto-reveal-by/value/label 显式声明，避免靠文案猜业务动作。 */
+        const rows = [], seen = new Set();
+        const add = row => {
+            if (!row) return;
+            const key = `${row.selector}\n${row.kind}\n${row.value}`;
+            if (!seen.has(key)) { seen.add(key); rows.push(row); }
+        };
+        for (let n = target; n && n !== document.documentElement; n = n.parentElement) {
+            const by = n.getAttribute?.('data-proto-reveal-by');
+            if (!by) continue;
+            let control = null;
+            try { control = document.querySelector(by); } catch (_) { /* 声明选择器失效 */ }
+            if (!control) continue;
+            const raw = n.getAttribute('data-proto-reveal-value') ?? '';
+            const kind = control.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control.type) ? control.type : 'click';
+            const value = kind === 'select' ? raw : kind === 'click' ? raw || 'true' : raw === 'true';
+            add(conditionRow(control, kind, value, raw || text(control), targetRect, true, n.getAttribute('data-proto-reveal-label') || ''));
+        }
+        for (const el of document.querySelectorAll('select,input[type="checkbox"],input[type="radio"]')) {
+            if (!visible(el)) continue;
+            let kind, value, initial, option = '';
+            if (el.tagName === 'SELECT') {
+                kind = 'select'; value = el.value;
+                const def = [...el.options].find(o => o.defaultSelected) || el.options[0];
+                initial = def?.value ?? '';
+                option = el.selectedOptions?.[0]?.textContent?.trim() || value;
+                if (value === initial) continue;
+            } else {
+                kind = el.type; value = !!el.checked; initial = !!el.defaultChecked;
+                if (value === initial || (kind === 'radio' && !value)) continue;
+                // checkbox 同时记录「由默认勾选切为未勾选」；radio 只记录当前选中的新项，避免同组旧项制造反向条件。
+                option = el.value || controlLabel(el);
+            }
+            add(conditionRow(el, kind, value, option, targetRect));
+        }
+        const aria = '[role="tab"][aria-selected="true"],[aria-pressed="true"],[aria-expanded="true"][aria-controls],[role="radio"][aria-checked="true"],[role="checkbox"][aria-checked="true"]';
+        for (const el of document.querySelectorAll(aria)) {
+            const kind = el.matches('[role="tab"]') ? 'aria-selected' : el.hasAttribute('aria-pressed') ? 'aria-pressed' :
+                el.hasAttribute('aria-expanded') ? 'aria-expanded' : 'aria-checked';
+            add(conditionRow(el, kind, 'true', text(el) || controlLabel(el), targetRect));
+        }
+        return rows.sort((a, b) => a.distance - b.distance).slice(0, 12).map(({ distance, ...row }) => row);
+    }
+    function serialize(el) {
+        const r = el.getBoundingClientRect();
+        const clean = el.cloneNode(true);
+        clean.querySelectorAll('[data-prototype-owned],script').forEach((n) => n.remove());
+        const conditions = captureConditions(el, r);
+        const anchor = {
+            protoId: el.getAttribute('data-proto-id') || '',
+            selector: selector(el),
+            tag: el.tagName.toLowerCase(),
+            text: text(el),
+            parentText: text(el.parentElement),
+            htmlSnippet: clean.outerHTML.slice(0, 1800),
+            rect: {
+                x: Math.round(r.x + scrollX),
+                y: Math.round(r.y + scrollY),
+                width: Math.round(r.width),
+                height: Math.round(r.height),
+            },
+        };
+        if (conditions.length) anchor.conditions = conditions;
+        return anchor;
+    }
+    function resolve(anchor) {
+        if (!anchor) return { element: null, reason: '尚未绑定元素' };
+        if (anchor.protoId) {
+            const list = [
+                ...document.querySelectorAll(`[data-proto-id="${CSS.escape(anchor.protoId)}"]`),
+            ].filter(visible);
+            if (list.length === 1 && (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag))
+                return { element: list[0] };
+            return {
+                element: null,
+                reason: list.length > 1 ? '稳定 ID 重复，请重新绑定' : '目标已移除或当前状态不可见',
+            };
+        }
+        try {
+            const list = [...document.querySelectorAll(anchor.selector || ':not(*)')].filter(visible);
+            if (
+                list.length === 1 &&
+                (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag) &&
+                (idBound(anchor) || sameText(list[0], anchor.text))
+            )
+                return { element: list[0] };
+        } catch (_) {
+            /* 旧选择器可能失效，继续尝试唯一文本。 */
+        }
+        if (anchor.text && /^[a-z][a-z0-9-]*$/i.test(anchor.tag || '')) {
+            const candidates = [...document.querySelectorAll(anchor.tag)].filter(
+                (el) =>
+                    visible(el) &&
+                    sameText(el, anchor.text) &&
+                    sameText(el.parentElement, anchor.parentText),
+            );
+            if (candidates.length === 1) return { element: candidates[0] };
+            if (candidates.length > 1) return { element: null, reason: '存在多个同名目标，请重新绑定' };
+        }
+        return { element: null, reason: '目标变化，等待重新定位' };
+    }
+    function at(x, y) {
+        // 截图标注始终绑定图片自身；覆盖其上的热区可随时移动、删除。
+        const image = document.querySelector('html[data-proto-screenshot="true"] #screenshot-image');
+        if (image) {
+            const bounds = image.getBoundingClientRect();
+            if (x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom) return image;
+        }
+        return (
+            document
+                .elementsFromPoint(x, y)
+                .find((el) => !owned(el) && !['HTML', 'BODY'].includes(el.tagName)) || null
+        );
+    }
+    /* 元素的可见矩形：被视口与各级 overflow 祖先裁剪后的区域。
+       reach 记录被裁掉的每一侧「用户滚动能否把它露出来」：裁剪者是滚动容器 / 视口且尚未滚到尽头 → 能；
+       overflow:hidden|clip、滚到尽头、或视口比元素窄导致的负向溢出（flex 居中的手机壳左缘在 x<0）→ 不能。 */
+    function rect(el, fullDocument = false) {
+        const r = el.getBoundingClientRect(), doc = document.documentElement;
+        const vp = fullDocument
+            ? { left: -scrollX, top: -scrollY, right: doc.scrollWidth - scrollX, bottom: doc.scrollHeight - scrollY }
+            : { left: 0, top: 0, right: innerWidth, bottom: innerHeight };
+        const clip = { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+        const by = {};   // 每侧由谁裁掉（裁到同一坐标的全部记下）：null = 视口 / 文档边界，否则为滚动容器节点；未被裁为 undefined
+        const cut = (k, v, node, tighter) => {
+            if (tighter(v, clip[k])) { clip[k] = v; by[k] = [node]; }
+            else if (by[k] && Math.abs(v - clip[k]) < 0.5) by[k].push(node);   // 视口与滚动容器边缘重合：任一能滚即算滚得出来
+        };
+        const gt = (a, b) => a > b, lt = (a, b) => a < b;
+        cut('left', vp.left, null, gt); cut('top', vp.top, null, gt);
+        cut('right', vp.right, null, lt); cut('bottom', vp.bottom, null, lt);
+        for (let n = el.parentElement; n; n = n.parentElement) {
+            if (fullDocument && n === document.scrollingElement) continue;
+            const s = getComputedStyle(n), p = n.getBoundingClientRect();
+            if (/(auto|scroll|hidden|clip)/.test(s.overflowX)) {
+                cut('left', p.left + n.clientLeft, n, gt);
+                cut('right', p.left + n.clientLeft + n.clientWidth, n, lt);
+            }
+            if (/(auto|scroll|hidden|clip)/.test(s.overflowY)) {
+                cut('top', p.top + n.clientTop, n, gt);
+                cut('bottom', p.top + n.clientTop + n.clientHeight, n, lt);
+            }
+        }
+        const scrollable = (n, axis) => n === null ? !fullDocument : /(auto|scroll)/.test(getComputedStyle(n)['overflow' + axis]);
+        const canScroll = (n, axis, before) => {
+            if (!scrollable(n, axis)) return false;
+            const pos = n ? (axis === 'X' ? n.scrollLeft : n.scrollTop) : (axis === 'X' ? scrollX : scrollY);
+            if (before) return pos > 0.5;
+            const size = n ? (axis === 'X' ? n.clientWidth : n.clientHeight) : (axis === 'X' ? innerWidth : innerHeight);
+            const total = n ? (axis === 'X' ? n.scrollWidth : n.scrollHeight) : (axis === 'X' ? doc.scrollWidth : doc.scrollHeight);
+            return pos + size < total - 0.5;
+        };
+        const reachable = (k, axis, before) => !by[k] || by[k].some((n) => canScroll(n, axis, before));
+        const reach = { left: reachable('left', 'X', true), right: reachable('right', 'X', false),
+            top: reachable('top', 'Y', true), bottom: reachable('bottom', 'Y', false) };
+        return { x: clip.left, y: clip.top, width: Math.max(0, clip.right - clip.left), height: Math.max(0, clip.bottom - clip.top),
+            visible: clip.right > clip.left && clip.bottom > clip.top, reach };
+    }
+    function placement(el, x, y) {
+        if (!el) return { kind: 'document', x: x + scrollX, y: y + scrollY };
+        const r = el.getBoundingClientRect(), px = x - r.left + el.scrollLeft, py = y - r.top + el.scrollTop;
+        // 同存绝对偏移与比例：绝对值保持旧行为，rx/ry 让响应式控件变窄/变高后仍能落在同一相对位置。
+        return { kind: 'element', x: px, y: py,
+            rx: r.width > 0 ? Math.max(0, Math.min(1, px / r.width)) : 0,
+            ry: r.height > 0 ? Math.max(0, Math.min(1, py / r.height)) : 0 };
+    }
+    function point(note, fullDocument = false) {
+        const p = note.placement;
+        if (p?.kind === 'document') {
+            const x = p.x - scrollX, y = p.y - scrollY;
+            if (p.x > document.documentElement.scrollWidth || p.y > document.documentElement.scrollHeight)
+                return { reason: '页面尺寸已变化，请重新定位', point: null, rect: null };
+            const visible = fullDocument || (x >= 0 && y >= 0 && x < innerWidth && y < innerHeight);
+            return { point: { x, y, visible }, rect: { x, y, width: 0, height: 0, visible } };
+        }
+        const found = resolve(note.anchor);
+        if (!found.element) return { reason: found.reason, point: null, rect: null };
+        const element = found.element, r = element.getBoundingClientRect(), clip = rect(element, fullDocument);
+        if (!p) return { element, rect: clip, point: { x: clip.x, y: clip.y, visible: clip.visible }, legacy: true };
+        const ew = Math.max(r.width, element.scrollWidth), eh = Math.max(r.height, element.scrollHeight);
+        let px = p.x, py = p.y;
+        if (Number.isFinite(p.rx) && Number.isFinite(p.ry)) {
+            // placement 的比例以边框矩形归一化，复原必须使用同一尺寸。
+            // tooltip / 绝对定位子节点可撑大 scrollWidth/Height，却没有改变控件本身。
+            px = p.rx * r.width; py = p.ry * r.height;
+        } else {
+            // 旧锚点无 rx/ry：仅当当前响应式尺寸缩小导致绝对偏移越界、且偏移在创建时 rect 内时，按原尺寸比例回退。
+            const base = note.anchor?.rect;
+            if (px > ew && base?.width > 0 && px <= base.width) px = px / base.width * ew;
+            if (py > eh && base?.height > 0 && py <= base.height) py = py / base.height * eh;
+        }
+        if (px > ew || py > eh)
+            return { element, reason: '落点超出目标范围，请重新定位', rect: clip, point: null };
+        let x = r.left + px - element.scrollLeft, y = r.top + py - element.scrollTop;
+        // 元素本身可见、落点却落在被裁掉的那一侧，且那一侧再怎么滚也露不出来（视口比元素窄、overflow:hidden、已滚到尽头）：
+        // 把落点夹回可见区边缘，否则整宽元素左缘的序号在窄视口里永远不出现。还能滚出来的照旧隐藏，等用户滚过来。
+        if (clip.visible && clip.reach) {
+            const right = clip.x + clip.width, bottom = clip.y + clip.height;
+            if (x < clip.x && !clip.reach.left) x = clip.x;
+            if (x > right && !clip.reach.right) x = right;
+            if (y < clip.y && !clip.reach.top) y = clip.y;
+            if (y > bottom && !clip.reach.bottom) y = bottom;
+        }
+        const visible = clip.visible && x >= clip.x && x <= clip.x + clip.width && y >= clip.y && y <= clip.y + clip.height;
+        return { element, rect: clip, point: { x, y, visible } };
+    }
+    function inBox(box) {
+        const nodes = [
+            ...document.querySelectorAll(
+                'button,input,img,a,p,h1,h2,h3,h4,li,label,select,textarea,[data-proto-id]',
+            ),
+        ].filter((el) => {
+            if (!visible(el)) return false;
+            const r = el.getBoundingClientRect();
+            return (
+                r.width &&
+                r.height &&
+                r.left < box.right &&
+                r.right > box.left &&
+                r.top < box.bottom &&
+                r.bottom > box.top &&
+                [[.5,.5],[.1,.1],[.9,.1],[.1,.9],[.9,.9]].some(([u,v]) => {
+                    const hit = at(r.left + r.width * u, r.top + r.height * v);
+                    return hit === el || (hit && el.contains(hit));
+                })
+            );
+        });
+        return nodes.filter((el) => !nodes.some((other) => other !== el && other.contains(el))).slice(0, 100);
+    }
+    function currentIds() {
+        return {
+            pageId: document.documentElement.dataset.protoPage || 'main',
+            stateId: document.documentElement.dataset.protoState || 'default',
+        };
+    }
+    async function enterState(stateId) {
+        if (typeof window.PrototypeBridge?.enter === 'function') await window.PrototypeBridge.enter(stateId);
+        return currentIds();
+    }
+    // ---------- 折叠区展开 / 引导（标注工作台“点序号联动展开”与“点击引导”复用；全流程已归档，此为标注侧增补） ----------
+    function hidden(el) {
+        if (!el) return true;
+        const cs = getComputedStyle(el);
+        return cs.display === 'none' || cs.visibility === 'hidden' || el.getClientRects().length === 0;
+    }
+    function resolveHidden(anchor) {
+        // 与 resolve 同规则但不过滤可见性：定位被折叠/隐藏的目标元素
+        if (!anchor) return null;
+        const all = (sel) => { try { return [...document.querySelectorAll(sel)].filter((el) => !owned(el)); } catch (_) { return []; } };
+        if (anchor.protoId) {
+            const list = all(`[data-proto-id="${CSS.escape(anchor.protoId)}"]`);
+            return list.length === 1 && (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag) ? list[0] : null;
+        }
+        const list = all(anchor.selector || ':not(*)');
+        if (list.length === 1 && (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag) && (idBound(anchor) || sameText(list[0], anchor.text))) return list[0];
+        if (anchor.text && /^[a-z][a-z0-9-]*$/i.test(anchor.tag || '')) {
+            const c = all(anchor.tag).filter((el) => sameText(el, anchor.text) && sameText(el.parentElement, anchor.parentText));
+            if (c.length === 1) return c[0];
+        }
+        return null;
+    }
+    function conditionValue(el, condition) {
+        if (condition.kind === 'select') return el.value;
+        if (condition.kind === 'checkbox' || condition.kind === 'radio') return !!el.checked;
+        if (condition.kind.startsWith('aria-')) return el.getAttribute(condition.kind);
+        return null;
+    }
+    function conditionGuideLabel(condition) {
+        const value = condition.option || condition.value || condition.label || '条件';
+        if (condition.kind === 'select') return `选择 ${value}`;
+        if (condition.kind === 'aria-selected') return `切换到 ${value}`;
+        if (condition.kind === 'aria-expanded') return `展开 ${condition.label || value}`;
+        return `开启 ${condition.label || value}`;
+    }
+    function conditionTrigger(anchor) {
+        const rows = Array.isArray(anchor?.conditions) ? anchor.conditions : [];
+        let fallback = null;
+        for (const condition of rows) {
+            let el = null;
+            try { el = document.querySelector(condition.selector || ':not(*)'); } catch (_) { /* 旧条件选择器失效 */ }
+            if (!el || owned(el) || !visible(el)) continue;
+            const hit = { element: el, condition, label: conditionGuideLabel(condition) };
+            if (conditionValue(el, condition) !== condition.value) return hit;
+            // 条件已满足却仍不可见：原生 change 与显式声明允许重放同值事件兜底（satisfied 标记，排在折叠触发器之后）；
+            // ARIA 同值点击可能反向关闭，不作为 fallback。
+            if (!fallback && (condition.explicit || ['select', 'checkbox', 'radio'].includes(condition.kind))) fallback = { ...hit, satisfied: true };
+        }
+        return fallback;
+    }
+    function manualCondition(anchor, attempted = new Set()) {
+        const steps = anchor?.revealSteps || [];
+        const controls = steps.map(step => {
+            let matches = [];
+            try { matches = [...document.querySelectorAll(step.protoId ? `[data-proto-id="${CSS.escape(step.protoId)}"]` : step.selector || ':not(*)')]; } catch (_) { /* invalid locator */ }
+            return matches.length === 1 && !owned(matches[0]) && visible(matches[0]) && !matches[0].disabled && matches[0].getAttribute('aria-disabled') !== 'true' ? matches[0] : null;
+        });
+        for (let i = 0; i < steps.length; i++) {
+            const condition = steps[i], element = controls[i];
+            if (!element || attempted.has(element)) continue;
+            if (condition.kind === 'click' && controls.slice(i + 1).some(next => {
+                if (!next) return false;
+                const controlled = (element.getAttribute('aria-controls') || '').split(/\s+/).filter(Boolean);
+                for (let branch = next; branch && branch !== document.body; branch = branch.parentElement) {
+                    if (controlled.includes(branch.id) || branch.getAttribute('data-proto-reveal-by') === condition.selector) return true;
+                }
+                return false;
+            })) continue;
+            if (condition.kind !== 'click' && conditionValue(element, condition) === condition.value) continue;
+            return { element, condition, label: condition.label || conditionGuideLabel(condition) };
+        }
+        return null;
+    }
+    function applyCondition(hit) {
+        if (!hit?.element) return false;
+        const { element, condition } = hit;
+        if (condition.kind === 'select') element.value = condition.value;
+        else if (condition.kind === 'checkbox' || condition.kind === 'radio') element.checked = !!condition.value;
+        else { element.click(); return true; }
+        element.dispatchEvent(new Event('input', { bubbles: true }));
+        element.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+    }
+    const failedRevealTriggers = new WeakMap();
+    const DISCLOSURE_WORDS = /(?:展开|更多|显示|查看|收起|高级|筛选|折叠|expand|more|show|toggle)/i;
+    function revealFailed(el, trigger) {
+        return !!el && !!trigger && !!failedRevealTriggers.get(el)?.has(trigger);
+    }
+    function markRevealFailed(el, trigger) {
+        if (!el || !trigger) return;
+        let failed = failedRevealTriggers.get(el);
+        if (!failed) failedRevealTriggers.set(el, (failed = new WeakSet()));
+        failed.add(trigger);
+    }
+    function neighboringBranch(hiddenNode, trigger) {
+        const parent = hiddenNode?.parentElement;
+        if (!parent || !trigger) return false;
+        let branch = trigger;
+        while (branch && branch.parentElement !== parent) branch = branch.parentElement;
+        return !!branch && (branch === hiddenNode.previousElementSibling || branch === hiddenNode.nextElementSibling);
+    }
+    function weakRevealCandidate(target, hiddenNode, trigger) {
+        if (!trigger || owned(trigger) || hiddenNode.contains(trigger) || !visible(trigger) || revealFailed(target, trigger)) return false;
+        // 旧锚点没有 aria-controls 时，只接受隐藏分支相邻区域中的明确展开语义；不能把同容器内任意“导出/新建”按钮猜成触发器。
+        if (!neighboringBranch(hiddenNode, trigger)) return false;
+        if (trigger.tagName === 'SUMMARY' || trigger.getAttribute?.('aria-expanded') === 'false') return true;
+        const role = trigger.getAttribute?.('role');
+        if (trigger.tagName !== 'BUTTON' && role !== 'button') return false;
+        const label = `${text(trigger)} ${trigger.getAttribute?.('aria-label') || ''} ${trigger.getAttribute?.('title') || ''}`;
+        return DISCLOSURE_WORDS.test(label);
+    }
+    function revealTrigger(el, strongOnly = false) {
+        // 找到能让 el 显现的折叠触发器：原生 details / aria-controls 是强关联；相邻且有展开语义的按钮仅作旧锚点退路
+        for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+            if (n.tagName === 'DETAILS' && !n.open && !revealFailed(el, n)) return n;
+            if (n.id) {
+                const ctrls = [...document.querySelectorAll('[aria-controls]')].filter((c) =>
+                    !owned(c) && !revealFailed(el, c) && (c.getAttribute('aria-controls') || '').split(/\s+/).includes(n.id));
+                const hit = ctrls.find((c) => c.getAttribute('aria-expanded') === 'false') || ctrls.find((c) => visible(c));
+                if (hit && visible(hit)) return hit;
+            }
+        }
+        if (strongOnly) return null;
+        for (let n = el; n && n !== document.body; n = n.parentElement) {
+            if (!hidden(n)) continue;
+            const scope = n.parentElement || document;
+            const cand = [...scope.querySelectorAll('[aria-expanded="false"], summary, button, [role="button"]')]
+                .find((t) => weakRevealCandidate(el, n, t));
+            if (cand) return cand;
+        }
+        return null;
+    }
+    function declaredCondition(el) {
+        // 从外向内找当前可用的入口；导入标注没有 conditions 时也读取页面上的显现声明。
+        const chain = [];
+        for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) chain.unshift(n);
+        for (const node of chain) {
+            const by = node.getAttribute?.('data-proto-reveal-by');
+            if (!by || !hidden(node)) continue;
+            let controls = [];
+            try { controls = [...document.querySelectorAll(by)]; } catch (_) { continue; }
+            if (controls.length !== 1) continue;
+            const control = controls[0];
+            if (owned(control) || !visible(control) || control.disabled || control.getAttribute('aria-disabled') === 'true' || revealFailed(el, control)) continue;
+            const raw = node.getAttribute('data-proto-reveal-value') ?? 'true';
+            const kind = control.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control.type) ? control.type : 'click';
+            const condition = { selector: by, kind, value: kind === 'select' ? raw : kind === 'click' ? raw : raw === 'true', explicit: true,
+                label: node.getAttribute('data-proto-reveal-label') || controlLabel(control), option: raw };
+            return { element: control, condition, label: node.getAttribute('data-proto-reveal-label') || conditionGuideLabel(condition) };
+        }
+        return null;
+    }
+    let revealNotes = [];
+    function setRevealNotes(notes) { revealNotes = Array.isArray(notes) ? notes : []; }
+    const revealPathKey = steps => JSON.stringify(steps.map(s => [s.protoId || s.selector, s.kind, s.value]));
+    function hiddenContainer(el) {
+        for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+            const css = getComputedStyle(n);
+            if (n.hidden || css.display === 'none' || n.tagName === 'DETAILS' && !n.open) return n;
+        }
+        return null;
+    }
+    function sharedReveal(anchor, el = resolveHidden(anchor)) {
+        if (!el || !hidden(el) || anchor?.revealSteps?.length || declaredCondition(el) || revealTrigger(el, true) || conditionTrigger(anchor)) return null;
+        const container = hiddenContainer(el); if (!container) return null;
+        const paths = new Map();
+        for (const note of revealNotes) {
+            const steps = note.anchor?.revealSteps;
+            if (!steps?.length || steps.some(s => s.kind === 'click' && /删除|清空|提交|支付|发布|导出|确定|保存|下单/.test(s.label || ''))) continue;
+            const peer = resolveHidden(note.anchor);
+            if (!peer || peer === el || hiddenContainer(peer) !== container) continue;
+            const key = revealPathKey(steps);
+            if (!paths.has(key)) paths.set(key, { steps, sourceNoteIds: [], container });
+            paths.get(key).sourceNoteIds.push(note.id);
+        }
+        if (paths.size !== 1) return null;
+        const shared = paths.values().next().value;
+        return manualCondition({ revealSteps: shared.steps }) ? shared : null;
+    }
+    // 编辑器只读检查：不点击、不改条件，也能在弹窗已打开时展示识别到的完整路径。
+    function inspectReveal(anchor) {
+        const el = resolveHidden(anchor), shown = !!el && !hidden(el);
+        const result = (state, reason, steps = [], extra = {}) => ({ state, reason, steps, visible: shown, rendered: !!el, ...extra });
+        const find = locator => {
+            try { return [...document.querySelectorAll(locator || ':not(*)')].filter(n => !owned(n)); } catch (_) { return []; }
+        };
+        const inspectStep = step => {
+            const matches = find(step.protoId ? `[data-proto-id="${CSS.escape(step.protoId)}"]` : step.selector);
+            const control = matches.length === 1 ? matches[0] : null;
+            return { ...step, label: step.label || text(control) || controlLabel(control) || '展开',
+                status: matches.length > 1 ? 'duplicate' : !control ? 'missing' : control.disabled || control.getAttribute('aria-disabled') === 'true' ? 'disabled' : visible(control) ? 'ready' : 'hidden' };
+        };
+        if (anchor?.revealSteps?.length) {
+            const rows = anchor.revealSteps.map(inspectStep), broken = rows.some(s => ['missing', 'duplicate', 'disabled'].includes(s.status)) || !shown && rows.every(s => s.status === 'hidden');
+            return result(broken ? 'needed' : 'manual', broken ? '手动路径当前不可用，请检查入口或补充上层步骤' : !el ? '目标当前未渲染，可测试手动路径后检查定位' : '按手动配置的顺序展开', rows, { source: '手动配置' });
+        }
+        if (!el) return result('missing', '标注目标未找到，请先检查页面状态或重新绑定序号');
+        const chain = [];
+        for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) chain.unshift(n);
+        const steps = [], seen = new Set(); let problem = '';
+        const add = step => { const key = JSON.stringify([step.selector, step.kind, step.value]); if (!seen.has(key)) { seen.add(key); steps.push(inspectStep(step)); } };
+        const ariaControls = [...document.querySelectorAll('[aria-controls]')].filter(c => !owned(c));
+        for (const node of chain) {
+            const by = node.getAttribute('data-proto-reveal-by');
+            if (by) {
+                const matches = find(by), control = matches.length === 1 ? matches[0] : null;
+                const raw = node.getAttribute('data-proto-reveal-value') ?? 'true';
+                const kind = control?.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control?.type) ? control.type : 'click';
+                add({ selector: by, kind, value: kind === 'select' || kind === 'click' ? raw : raw === 'true',
+                    label: node.getAttribute('data-proto-reveal-label') || text(control) || controlLabel(control) || '展开' });
+            } else if (node.tagName === 'DETAILS') {
+                const summary = node.querySelector('summary');
+                if (summary) add({ selector: selector(summary), kind: 'click', value: 'true', label: text(summary) || '展开折叠区' });
+                else problem = '折叠区缺少展开入口，请手动补充';
+            } else if (node.id) {
+                const controls = ariaControls.filter(c => (c.getAttribute('aria-controls') || '').split(/\s+/).includes(node.id));
+                if (controls.length === 1) add({ selector: selector(controls[0]), kind: 'click', value: 'true', label: text(controls[0]) || controlLabel(controls[0]) || '展开' });
+                else if (controls.length > 1) problem = '发现多个不同入口，请选择实际使用的展开路径';
+            }
+        }
+        const report = (rows, reason, extra = {}) => {
+            const broken = rows.find(s => ['missing', 'duplicate', 'disabled'].includes(s.status));
+            const message = broken ? `入口“${broken.label}”${{ missing: '未找到', duplicate: '定位不唯一', disabled: '当前禁用' }[broken.status]}，请检查或手动调整` : problem || (!shown && rows.every(s => s.status === 'hidden') ? '所有入口当前均隐藏，请先展开其所在区域或补充上层入口' : '');
+            return result(message ? 'needed' : 'automatic', message || reason, rows, extra);
+        };
+        if (steps.length) return report(steps, '根据页面展开关系识别，无需重复添加', { source: '页面关联' });
+        if (problem) return result('needed', problem);
+        if (!shown) {
+            // 与运行时优先级一致：显式关系和当前记录条件优先于共用推断。
+            const hint = revealHint(anchor, el);
+            if (hint) {
+                const condition = conditionTrigger(anchor);
+                const rows = hint.sourceNoteIds?.length ? hint.target.revealSteps.map(inspectStep) : [inspectStep(condition?.element === hint.trigger ? { ...condition.condition, label: hint.label } : { selector: selector(hint.trigger), kind: 'click', label: hint.label, value: 'true' })];
+                return report(rows, hint.sourceNoteIds?.length ? '自动共用同一区域的展开路径，无需重复添加' : '已找到当前可用入口，可测试展开确认后续步骤', { source: '当前入口', sourceNoteIds: hint.sourceNoteIds });
+            }
+        }
+        const semantic = chain.slice().reverse().find(n => n.tagName === 'DIALOG' || n.tagName === 'DETAILS' || ['dialog', 'tabpanel'].includes(n.getAttribute('role')) || n.getAttribute('aria-modal') === 'true');
+        const boundary = hiddenContainer(el) || semantic;
+        if (boundary) {
+            const paths = new Map();
+            for (const note of revealNotes) {
+                const path = note.anchor?.revealSteps, peer = resolveHidden(note.anchor);
+                if (!peer || peer === el || !boundary.contains(peer) || (hiddenContainer(el) && hiddenContainer(peer) !== boundary) || !path?.length || path.some(s => s.kind === 'click' && /删除|清空|提交|支付|发布|导出|确定|保存|下单/.test(s.label || ''))) continue;
+                const key = revealPathKey(path);
+                if (!paths.has(key)) paths.set(key, { steps: path, sourceNoteIds: [] });
+                paths.get(key).sourceNoteIds.push(note.id);
+            }
+            if (paths.size > 1) return result('needed', '同一区域有不同展开路径，请选择复用或手动添加');
+            if (paths.size === 1) {
+                const shared = paths.values().next().value;
+                return report(shared.steps.map(inspectStep), '自动共用同一区域的展开路径，无需重复添加', { source: '共用路径', sourceNoteIds: shared.sourceNoteIds });
+            }
+        }
+        return shown && !semantic ? result('visible', '目标当前直接可见，无需添加展开入口') : result('needed', shown ? '目标位于可收起区域，尚未识别打开入口' : '目标已隐藏，尚未识别展开入口');
+    }
+    function revealHint(anchor, el = resolveHidden(anchor)) {
+        if (el && !hidden(el)) return null; // 目标已显现；若落点异常应走失锚/响应式回退，不能继续显示条件引导
+        if (anchor?.revealSteps?.length) {
+            const manual = manualCondition(anchor);
+            return manual ? { trigger: manual.element, target: anchor, label: manual.label, kind: 'condition' } : null;
+        }
+        const declared = el ? declaredCondition(el) : null;
+        if (declared) return { trigger: declared.element, target: anchor || el, label: declared.label, kind: 'condition' };
+        // 优先语义明确的 details / aria-controls；其次用创建标注时记录的、当前值确实不同的状态条件；
+        // 再用邻近按钮弱推断；条件值已满足却仍隐藏的同值重放排最后（否则弹层折叠时会误显「选择 智能体」）。
+        const direct = el ? revealTrigger(el, true) : null;
+        if (direct) return { trigger: direct, target: el, label: '展开', kind: 'disclosure' };
+        const condition = conditionTrigger(anchor);
+        const conditionHint = condition ? { trigger: condition.element, target: anchor, label: condition.label, kind: 'condition' } : null;
+        if (conditionHint && !condition.satisfied) return conditionHint;
+        const fallback = el ? revealTrigger(el) : null;
+        if (fallback) return { trigger: fallback, target: el, label: '展开', kind: 'disclosure' };
+        if (conditionHint) return conditionHint;
+        const shared = sharedReveal(anchor, el), manual = shared && manualCondition({ revealSteps: shared.steps });
+        return manual ? { trigger: manual.element, target: { ...anchor, revealSteps: shared.steps }, label: manual.label, kind: 'condition', sourceNoteIds: shared.sourceNoteIds } : null;
+    }
+    function reveal(target, attempted = new Set(), notify = true) {
+        const anchor = target && target.nodeType === 1 ? null : target;
+        let el = target && target.nodeType === 1 ? target : resolveHidden(target);
+        if (anchor?.revealSteps?.length) {
+            if (el && !hidden(el)) return el;
+            for (let i = 0; i < anchor.revealSteps.length; i++) {
+                const hit = manualCondition(anchor, attempted);
+                if (!hit) break;
+                attempted.add(hit.element);
+                applyCondition(hit);
+                el = resolveHidden(anchor);
+                if (el && !hidden(el)) return el;
+            }
+            return null;
+        }
+        const shared = anchor && sharedReveal(anchor, el);
+        if (shared && !revealTrigger(el)) return reveal({ ...anchor, revealSteps: shared.steps }, attempted, notify);
+        // 条件控件先恢复到创建标注时的值；change/click 处理器可同步显现，也可由 MutationObserver 在异步渲染后接力。
+        const condition = (el ? declaredCondition(el) : null) || (anchor ? conditionTrigger(anchor) : null);
+        if (condition && !condition.satisfied && !attempted.has(condition.element)) {
+            attempted.add(condition.element);
+            if (applyCondition(condition)) el = resolveHidden(anchor) || el;
+        }
+        // 同一触发器只点一次：Vue/React 类原型点击后 DOM 在 nextTick 才更新，同步判定仍为隐藏，
+        // 循环里重复点同一个按钮会把刚展开的区域再折回去（偶数次 = 没展开）。多层折叠靠后续重排接力。
+        const clicked = attempted;
+        let lastAttempt = null;
+        for (let g = 0; el && g < 10 && hidden(el); g++) {
+            const declared = declaredCondition(el);
+            const trig = declared?.element || revealTrigger(el);
+            if (!trig || clicked.has(trig)) break;
+            clicked.add(trig);
+            lastAttempt = { element: el, trigger: trig };
+            if (declared) applyCondition(declared);
+            else if (trig.tagName === 'DETAILS') trig.open = true; else trig.click();
+            if (anchor) el = resolveHidden(anchor) || el;
+        }
+        // 折叠触发器都试过仍不可见：最后才重放已满足的同值条件（select 的 change 处理器可能负责重建区域）。
+        if ((!el || hidden(el)) && condition?.satisfied && !attempted.has(condition.element)) {
+            attempted.add(condition.element);
+            if (applyCondition(condition)) el = resolveHidden(anchor) || el;
+        }
+        if ((!el || hidden(el)) && lastAttempt && notify) {
+            // 给 Vue/React 等异步渲染留出时间；仍未显现就记住这组无效关联，并通知两种标注层移除假引导。
+            setTimeout(() => {
+                const current = anchor ? resolveHidden(anchor) : lastAttempt.element;
+                if (current && hidden(current)) {
+                    markRevealFailed(current, lastAttempt.trigger);
+                    document.dispatchEvent(new CustomEvent('proto-anchors:reveal-failed', { detail: { target: current, trigger: lastAttempt.trigger } }));
+                }
+            }, 450);
+        }
+        return !el || hidden(el) ? null : el;
+    }
+    const pendingReveals = new Map();
+    const pendingContainerReveals = new WeakMap();
+    function revealAndWait(target) {
+        const key = target?.nodeType === 1 ? target : `${target?.protoId || ''}\n${target?.selector || ''}`;
+        if (pendingReveals.has(key)) return pendingReveals.get(key);
+        const element = target?.nodeType === 1 ? target : resolveHidden(target);
+        const steps = target?.revealSteps?.length ? target.revealSteps : sharedReveal(target, element)?.steps;
+        const container = steps?.length && hiddenContainer(element), pathKey = steps?.length && revealPathKey(steps);
+        const sharedOperation = container && pendingContainerReveals.get(container)?.get(pathKey);
+        if (sharedOperation) return sharedOperation.then(() => {
+            const current = target?.nodeType === 1 ? target : resolveHidden(target);
+            return current && !hidden(current) ? current : null;
+        });
+        const operation = (async () => {
+            const attempted = new Set(), deadline = Date.now() + 1800;
+            do {
+                const el = reveal(target, attempted, false);
+                if (el) return el;
+                if (!attempted.size) return null;
+                await new Promise(resolve => setTimeout(resolve, 32));
+            } while (Date.now() < deadline);
+            const current = target?.nodeType === 1 ? target : resolveHidden(target);
+            if (current && !hidden(current)) return current;
+            if (current) for (const trigger of attempted) markRevealFailed(current, trigger);
+            document.dispatchEvent(new CustomEvent('proto-anchors:reveal-failed', { detail: { target: current } }));
+            return null;
+        })();
+        pendingReveals.set(key, operation);
+        if (container) {
+            if (!pendingContainerReveals.has(container)) pendingContainerReveals.set(container, new Map());
+            pendingContainerReveals.get(container).set(pathKey, operation);
+        }
+        operation.finally(() => {
+            if (pendingReveals.get(key) === operation) pendingReveals.delete(key);
+            const paths = container && pendingContainerReveals.get(container);
+            if (paths?.get(pathKey) === operation) paths.delete(pathKey);
+            if (paths && !paths.size) pendingContainerReveals.delete(container);
+        }).catch(() => {});
+        return operation;
+    }
+    globalThis.ProtoAnchors = {
+        owned,
+        text,
+        visible,
+        hidden,
+        selector,
+        serialize,
+        resolve,
+        resolveHidden,
+        revealTrigger,
+        setRevealNotes,
+        sharedReveal,
+        inspectReveal,
+        revealHint,
+        reveal,
+        revealAndWait,
+        rect,
+        placement,
+        point,
+        at,
+        inBox,
+        currentIds,
+        enterState,
+    };
+})();
+
+</script>
+<script data-proto-review="order">
+/* 展示编号投影：不改元数据 number，所有定位与编辑始终使用稳定 id。
+   排序键是页面逻辑坐标（视口坐标加回各级滚动偏移），从上到下、从左到右。
+   目标当前不可见、但能在主页面流里靠「展开 / 选中 / 点击」显现的标注（折叠区、条件行、页签），
+   用它的显现触发器位置代位参与主序，编号在展开前后保持一致，而不是被甩到末尾；
+   落在弹窗 / 抽屉 / 提示等分支容器里的目标整体排在主页序号之后再自然排序；彻底失锚的排最后。 */
+(() => {
+    'use strict';
+    const stable = (a, b) => String(a.id).localeCompare(String(b.id), 'en');
+    function logicalPoint(found, win) {
+        if (!found?.point) return null;
+        const { element, legacy } = found;
+        const point = legacy && element ? element.getBoundingClientRect() : found.point;
+        let x = point.x + win.scrollX, y = point.y + win.scrollY;
+        for (let node = legacy ? element?.parentElement : element; node && node !== win.document.scrollingElement; node = node.parentElement) {
+            x += node.scrollLeft || 0;
+            y += node.scrollTop || 0;
+        }
+        return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;
+    }
+    /* 分支容器判定：目标所在的祖先链里有对话框 / 抽屉 / 提示 / 下拉等「离开主页面流」的容器。
+       语义属性（<dialog>、role、aria-modal、popover）直接判定；类名只作弱线索，且要求容器本身是 fixed / absolute 定位，
+       否则页面主流里的 notification-list、message-item 之类命名会被误判。
+       原型可用 data-proto-branch="true|false" 在任意祖先上显式声明，覆盖自动推断。 */
+    const BRANCH_ROLE = /^(dialog|alertdialog|tooltip|menu)$/;
+    const BRANCH_CLASS = /(^|[^a-z])(modal|dialog|drawer|popover|popup|toast|tooltip|dropdown|sheet|snackbar|notification|message)(?![a-z])/i;
+    function inBranch(el, win) {
+        const doc = win.document;
+        for (let n = el; n && n !== doc.body && n !== doc.documentElement; n = n.parentElement) {
+            if (n.hasAttribute('data-proto-branch')) return n.getAttribute('data-proto-branch') !== 'false';
+            if (n.tagName === 'DIALOG' || n.hasAttribute('popover') || n.getAttribute('aria-modal') === 'true' || BRANCH_ROLE.test(n.getAttribute('role') || '')) return true;
+            if (BRANCH_CLASS.test(n.getAttribute('class') || '') && /^(fixed|absolute)$/.test(win.getComputedStyle(n).position)) return true;
+        }
+        return false;
+    }
+    /* 目标不可见时的代位坐标：优先目标自身仍有的几何（visibility:hidden 一类），否则取显现触发器的下缘——
+       紧跟触发器所在行之后，在其下方显现的内容也就落在正确的行序里。无触发器（真失锚）返回 null。 */
+    function proxyPoint(note, el, win) {
+        const PA = win.ProtoAnchors;
+        if (el && !PA.hidden?.(el)) return null;                         // 元素可见却定不到落点：落点失效，按失锚置底
+        if (el && el.getClientRects().length) return logicalPoint({ element: el, point: el.getBoundingClientRect(), legacy: true }, win);
+        let hint = null;
+        try {
+            hint = PA.revealHint?.(note.anchor, el) ||
+                (el && PA.revealTrigger?.(el) ? { trigger: PA.revealTrigger(el) } : null);
+        } catch (_) { /* 条件选择器失效等同无触发器 */ }
+        const trigger = hint?.trigger;
+        if (!trigger || !trigger.getClientRects?.().length) return null;
+        const p = logicalPoint({ element: trigger, point: {}, legacy: true }, win);
+        return p && { x: p.x, y: p.y + trigger.getBoundingClientRect().height };
+    }
+    function rows(list) {
+        const sorted = list.slice().sort((a, b) => a.point.y - b.point.y || a.point.x - b.point.x || stable(a.note, b.note));
+        const result = [];
+        for (let i = 0; i < sorted.length;) {
+            const top = sorted[i].point.y, row = [];
+            while (i < sorted.length && sorted[i].point.y - top <= 12) row.push(sorted[i++]);
+            row.sort((a, b) => a.point.x - b.point.x || a.point.y - b.point.y || stable(a.note, b.note));
+            result.push(...row);
+        }
+        return result;
+    }
+    /* records: { note, point, group }。group 0 = 主页面流，1 = 分支容器；同组内按行序，组间主页面流在前；无 point 的失锚置底。 */
+    function arrange(records) {
+        const placed = records.filter(r => r.point);
+        const result = [
+            ...rows(placed.filter(r => !r.group)),
+            ...rows(placed.filter(r => r.group)),
+            ...records.filter(r => !r.point).sort((a, b) => stable(a.note, b.note)),
+        ];
+        return result.map((r, i) => ({ ...r.note, displayNumber: i + 1 }));
+    }
+    function classify(note, win) {
+        const PA = win.ProtoAnchors;
+        let found = null;
+        try { found = PA.point(note); } catch (_) { /* 未就绪或失效锚点 */ }
+        let point = logicalPoint(found, win), el = found?.element || null;
+        if (!el && note.anchor) { try { el = PA.resolveHidden?.(note.anchor) || null; } catch (_) { /* 旧选择器失效 */ } }
+        if (!point && note.anchor) { try { point = proxyPoint(note, el, win); } catch (_) { /* 代位失败按失锚处理 */ } }
+        const group = el && inBranch(el, win) ? 1 : 0;
+        return { note, point, group };
+    }
+    function project(notes, win, pending = null) {
+        const records = notes.map(note => classify(note, win));
+        if (pending?.point) records.push({ note: { id: '~pending' }, point: pending.point, group: pending.group || 0 });
+        return arrange(records);
+    }
+    function previewNumber(notes, win, x, y) {
+        const element = win.ProtoAnchors.at(x, y);
+        const point = logicalPoint({ element, point: { x, y } }, win);
+        const group = element && inBranch(element, win) ? 1 : 0;
+        return project(notes, win, { point, group }).find(n => n.id === '~pending')?.displayNumber || notes.length + 1;
+    }
+    globalThis.ProtoOrder = { arrange, project, previewNumber, logicalPoint, inBranch };
+})();
+
+</script>
+<script data-proto-review="bridge">
+/* 评审壳 ↔ 原型页桥：随导出内嵌进每个原型 HTML，跑在 iframe 内。
+   壳与原型改用 postMessage 通信，不再由壳跨文档注入脚本——ZIP 解压后 file:// 直接打开时
+   每个 file 都是独立源，壳拿不到 iframe 的 document，旧注入方式静默失效（无序号、无引导、右栏乱序）。
+   加载顺序：proto-hotspots.js（先于业务脚本）→ proto-appearance.js → proto-anchors.js → proto-order.js → 本文件 → review-pins.js。
+   独立打开原型（不在壳内）时本文件不做任何事。 */
+(() => {
+    'use strict';
+    if (window.__reviewBridgeBoot) return;
+    window.__reviewBridgeBoot = true;
+    if (window.parent === window || !window.ProtoAnchors) return;
+
+    const post = (msg) => { try { window.parent.postMessage(Object.assign({ __review: 1 }, msg), '*'); } catch (_) { /* 壳未就绪 */ } };
+    const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    let asideOpen = true;
+    let hintScopes = [];
+
+    // review-pins.js 启动时读取的宿主对象：标注在 init 消息到达后填充，正文 HTML 由壳预渲染（气泡层无 Markdown 渲染器）。
+    window.__REVIEW__ = {
+        notes: [],
+        selectedNoteId: null,
+        asideOpen: () => asideOpen,
+        onSync: (map, state, stale) => post({ type: 'sync', map, state, stale }),
+        onFocus: (noteId) => post({ type: 'focus', noteId }),
+        onSelect: (noteId) => post({ type: 'selection', noteId }),
+        renderBody: (note) => note.bodyHtml || '<p>' + esc(note.body || '') + '</p>',
+    };
+    window.ProtoHotspots?.init({ scope: () => {
+        const state = window.ProtoAnchors.currentIds?.().stateId || 'default';
+        return hintScopes.find(item => item.id === state)?.interactionHints;
+    } });
+
+    // 气泡层在本文件之后加载；init 早到时等它就位再重排（最多等 5s）。
+    function relayout(tries) {
+        if (window.__reviewRelayout) { window.__reviewRelayout(); return; }
+        if ((tries || 0) < 50) setTimeout(() => relayout((tries || 0) + 1), 100);
+    }
+
+    async function reveal(note) {
+        const A = window.ProtoAnchors;
+        let found = null;
+        try { found = A.point(note); } catch (_) { /* 锚定异常 */ }
+        if (!found?.element && !found?.point) {
+            // 目标被折叠/隐藏：先联动展开对应折叠区，再重新定位与重排气泡
+            try { await (A.revealAndWait?.(note.anchor) ?? A.reveal?.(note.anchor)); } catch (_) { /* ignore */ }
+            try { window.__reviewRelayout?.(); } catch (_) { /* ignore */ }
+            try { found = A.point(note); } catch (_) { /* ignore */ }
+        }
+        if (found?.element?.id === 'screenshot-image' && found.point && document.documentElement.dataset.protoScreenshot === 'true')
+            window.scrollTo({ top: Math.max(0, found.point.y + window.scrollY - window.innerHeight / 2), behavior: 'smooth' });
+        else if (found?.element) found.element.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        else if (found?.point) window.scrollTo({ top: Math.max(0, found.point.y + window.scrollY - window.innerHeight / 2), behavior: 'smooth' });
+    }
+
+    window.addEventListener('message', (e) => {
+        if (e.source !== window.parent || !e.data || e.data.__review !== 1) return;
+        const m = e.data;
+        switch (m.type) {
+            case 'init':
+                hintScopes = Array.isArray(m.hintScopes) ? m.hintScopes : [];
+                window.ProtoHotspots?.hide();
+                document.documentElement.dataset.protoHost = 'review';
+                window.__REVIEW__.notes = Array.isArray(m.notes) ? m.notes : [];
+                window.__REVIEW__.selectedNoteId = m.selectedNoteId || null;
+                window.__reviewSelectNote?.(window.__REVIEW__.selectedNoteId);
+                asideOpen = m.asideOpen !== false;
+                if (m.enterState) { try { window.ProtoAnchors.enterState?.(m.enterState)?.catch?.(() => {}); } catch (_) { /* ignore */ } }
+                relayout();
+                break;
+            case 'aside':
+                asideOpen = !!m.open;
+                try { window.__reviewHidePop?.(); } catch (_) { /* ignore */ }
+                break;
+            case 'enterState':
+                try { window.ProtoAnchors.enterState?.(m.stateId)?.catch?.(() => {}); } catch (_) { /* ignore */ }
+                break;
+            case 'reveal':
+                if (m.note) { window.__REVIEW__.selectedNoteId = m.note.id; window.__reviewSelectNote?.(m.note.id); reveal(m.note); }
+                break;
+            case 'select':
+                window.__REVIEW__.selectedNoteId = m.noteId || null;
+                window.__reviewSelectNote?.(window.__REVIEW__.selectedNoteId);
+                break;
+            case 'hidePop':
+                try { window.__reviewHidePop?.(); } catch (_) { /* ignore */ }
+                break;
+            case 'showHotspots':
+                window.ProtoHotspots?.show();
+                break;
+            default:
+                break;
+        }
+    });
+
+    let ids = {};
+    try { ids = window.ProtoAnchors.currentIds?.() || {}; } catch (_) { /* ignore */ }
+    post({ type: 'ready', ids });
+})();
+
+</script>
+<script data-proto-review="pins">
+/* 评审壳只读气泡层：随导出内嵌进每个原型 HTML（review_export.inject_bundle），跑在被评审原型页面内。
+   依赖同页先加载的 proto-anchors.js / proto-order.js / review-bridge.js；通过 window.__REVIEW__（由 bridge 建立，内部走 postMessage）与壳父页通信。
+   只读：无编辑、无删除；正文浮窗支持移动与调整宽度。 */
+(() => {
+    'use strict';
+    if (window.__reviewPinsBoot) return;
+    window.__reviewPinsBoot = true;
+    const R = window.__REVIEW__;
+    if (!R || !window.ProtoAnchors || !window.ProtoOrder) return;
+
+    const style = document.createElement('style');
+    style.setAttribute('data-prototype-owned', '');
+    style.textContent = `
+.__review_pin{position:absolute;display:grid;place-items:center;min-width:36px;height:36px;padding:0 8px;border:3px solid #fff;border-radius:50% 50% 50% 2px;background:#2563eb;color:#fff;font:600 13px/1 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;box-shadow:0 8px 24px rgba(16,24,40,.24);transform:translateY(-100%);cursor:pointer;pointer-events:auto;}
+.__review_pin:hover{background:#1d4ed8;}
+.__review_pin:not(.__stale){background:var(--pin-fill);color:var(--pin-ink);border-color:var(--pin-stroke);}
+.__review_pin:not(.__stale):hover{background:var(--pin-fill);filter:brightness(.96);}
+.__review_pin.__stale{background:#626b78;cursor:default;}
+.__review_pin.__review_selected{outline:3px solid #2563eb;outline-offset:3px;z-index:2;}
+@media(prefers-color-scheme:dark){.__review_pin{border-color:#121519;}}
+.__review_pop{position:fixed;box-sizing:border-box;z-index:2147482001;width:min(360px,calc(100vw - 16px));max-width:calc(100vw - 16px);overflow:visible;border:1px solid #d8dee3;border-radius:10px;background:#fff;color:#1a1d23;font:14px/1.7 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;letter-spacing:.02em;box-shadow:0 8px 24px rgba(16,24,40,.24);display:none;}
+.__review_pop_body{box-sizing:border-box;max-height:calc(100vh - 36px);overflow:auto;overscroll-behavior:contain;padding:4px 14px 12px;border-radius:inherit;}
+.__review_pop_grip{box-sizing:border-box;display:grid;place-items:center;width:100%;height:18px;margin:0;padding:0;border:0;border-radius:9px 9px 0 0;background:transparent;color:inherit;cursor:grab;touch-action:none;user-select:none;}
+.__review_pop_grip::before{content:"";width:32px;height:4px;border-radius:2px;background:currentColor;opacity:.3;}
+.__review_pop_grip:focus-visible{outline:2px solid #2563eb;outline-offset:-3px;}
+.__review_pop.pop-moving{user-select:none;}
+.__review_pop.pop-moving,.__review_pop.pop-moving *{cursor:grabbing!important;}
+.__review_pop_resize{position:absolute;top:0;bottom:0;width:12px;cursor:ew-resize;touch-action:none;z-index:3;background:transparent;}
+/* 热区以浮窗真实边框为中心，不画独立蓝细条；视觉仍是浮窗自身边缘，命中区向内外各扩 6px。 */
+.__review_pop_resize_w{left:0;transform:translateX(-50%);}.__review_pop_resize_e{right:0;transform:translateX(50%);}
+.__review_pop.pop-resizing{user-select:none;}
+.__review_pop.pop-resizing,.__review_pop.pop-resizing *{cursor:ew-resize!important;}
+@media(prefers-color-scheme:dark){.__review_pop{background:#121519;color:#f2f4f7;border-color:#363c44;}}
+.__review_pop_body>:first-child{margin-top:0;}.__review_pop_body>:last-child{margin-bottom:0;}
+.__review_pop p{margin:0 0 10px;overflow-wrap:anywhere;}
+.__review_pop img{display:block;max-width:100%;height:auto;margin:8px 0;border-radius:6px;}
+.__review_pop h1{font-size:18px;}.__review_pop h2{font-size:16px;}.__review_pop h3,.__review_pop h4{font-size:14px;}
+.__review_pop ul,.__review_pop ol{padding-left:20px;margin:6px 0 10px;}.__review_pop li.task{list-style:none;margin-left:-18px;}
+.__review_pop code{font-family:ui-monospace,Consolas,monospace;font-size:13px;background:rgba(127,127,127,.16);padding:1px 5px;border-radius:4px;}
+.__review_pop pre{background:rgba(127,127,127,.14);padding:10px;border-radius:6px;white-space:pre-wrap;overflow-wrap:anywhere;}.__review_pop pre code{background:none;padding:0;}
+.__review_pop table{border-collapse:collapse;width:100%;}.__review_pop th,.__review_pop td{border:1px solid #d8dee3;padding:6px;text-align:left;}
+@media(prefers-color-scheme:dark){.__review_pop th,.__review_pop td{border-color:#363c44;}}
+.__review_pop blockquote{border-left:3px solid #d8dee3;margin:8px 0;padding:2px 12px;color:#4e5560;}.__review_pop a{color:#2563eb;}.__review_pop hr{border:0;border-top:1px solid #d8dee3;}
+/* 点击引导：与操作界面 .pa-guide 同式——亮黄色系，与蓝色水滴序号在 色相 / 形状 / 动效 三方面区分。
+   框 = 透明可点区：虚线、静态不呼吸；悬停转实线 + 加深底色 + 外环。标签 = 与框左上角拼成一体的选区式标签，只有标签呼吸。
+   偏离 DESIGN_MASTER --accent-amber #b45309（实看发褐）：框线 #d97706（白底 3.19:1），标签 #fbbf24 配深棕字 #5c3300（6.52:1）。
+   固定浅色、不随 prefers-color-scheme 切换：引导叠在原型页面上，颜色跟随页面而非系统。 */
+.__review_guide{--g-line:#d97706;--g-fill:#fbbf24;--g-ink:#5c3300;position:absolute;box-sizing:border-box;margin:0;padding:0;border:2px dashed var(--g-line);border-radius:0 8px 8px 8px;background:rgba(251,191,36,.10);cursor:pointer;pointer-events:auto;transition:background-color 150ms ease-out,box-shadow 150ms ease-out;}
+.__review_guide:hover{border-style:solid;background:rgba(251,191,36,.30);box-shadow:0 0 0 3px rgba(251,191,36,.38);}
+.__review_guide:active{background:rgba(251,191,36,.45);}
+.__review_guide:focus-visible{outline:2px solid var(--g-line);outline-offset:2px;}
+.__review_guide_tag{position:absolute;box-sizing:border-box;left:-2px;top:-2px;transform:translateY(-100%);display:inline-flex;align-items:center;gap:3px;height:18px;padding:0 7px 0 5px;border:1px solid var(--g-line);border-radius:6px 6px 6px 0;background:var(--g-fill);color:var(--g-ink);font:600 11px/1 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;white-space:nowrap;pointer-events:none;animation:__rvGuideTag 1.8s ease-in-out infinite;animation-delay:var(--g-delay,0s);}
+.__review_guide_tag svg{width:10px;height:10px;animation:__rvGuideBob 1.8s ease-in-out infinite;animation-delay:var(--g-delay,0s);}
+.__review_guide:hover .__review_guide_tag{animation:none;box-shadow:0 0 0 3px rgba(251,191,36,.38);}
+.__review_guide.__review_guide_below{border-radius:8px 8px 8px 0;}
+.__review_guide.__review_guide_below .__review_guide_tag{top:auto;bottom:-2px;transform:translateY(100%);border-radius:0 6px 6px 6px;}
+.__review_guide.__review_guide_end{border-radius:8px 0 8px 8px;}
+.__review_guide.__review_guide_end .__review_guide_tag{left:auto;right:-2px;border-radius:6px 6px 0 6px;}
+.__review_guide.__review_guide_below.__review_guide_end{border-radius:8px 8px 0 8px;}
+.__review_guide.__review_guide_below.__review_guide_end .__review_guide_tag{border-radius:6px 0 6px 6px;}
+@keyframes __rvGuideTag{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0),0 1px 2px rgba(92,51,0,.18);}50%{box-shadow:0 0 0 4px rgba(251,191,36,.42),0 1px 2px rgba(92,51,0,.18);}}
+@keyframes __rvGuideBob{0%,100%{transform:translateY(-1px);}50%{transform:translateY(1px);}}
+@media(prefers-reduced-motion:reduce){.__review_guide_tag,.__review_guide_tag svg{animation:none;}}
+`;
+    (document.head || document.documentElement).appendChild(style);
+
+    const layer = document.createElement('div');
+    layer.setAttribute('data-prototype-owned', '');
+    layer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147482000;';
+    document.documentElement.appendChild(layer);
+    // 引导框独立图层，按触发器复用；序号按标注 ID 复用，保住悬停、聚焦与按下到松开的点击目标。
+    const glayer = document.createElement('div');
+    glayer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147481999;';
+    glayer.setAttribute('data-prototype-owned', '');   // 引导框是 <button>，标记自有以免 revealTrigger 兜底搜索把它当成原型触发器
+    document.documentElement.appendChild(glayer);
+
+    // 收起态气泡：PRD 侧栏收起时，点序号在序号旁展示正文；正文独立滚动，左右边缘可拖宽。
+    let pop = null, popBody = null, popResizing = null, popNoteId = null;
+    let popMoving = null, popMoveCleanup = null;
+    const owned = el => !!(el?.closest?.('[data-prototype-owned]') || el?.parentElement?.closest?.('[data-prototype-owned]'));
+    let selectedNoteId = R.selectedNoteId || null;
+    function selectNote(noteId) {
+        selectedNoteId = (R.notes || []).some(n => n.id === noteId && n.stateId === stateOf()) ? noteId : null;
+        R.selectedNoteId = selectedNoteId;
+        for (const pin of layer.querySelectorAll('.__review_pin')) {
+            const selected = pin.dataset.noteId === selectedNoteId;
+            pin.classList.toggle('__review_selected', selected);
+            pin.setAttribute('aria-current', String(selected));
+        }
+    }
+    window.__reviewSelectNote = selectNote;
+    function setPinExpanded(noteId, expanded) {
+        if (!noteId) return;
+        layer.querySelector(`.__review_pin[data-note-id="${CSS.escape(noteId)}"]`)?.setAttribute('aria-expanded', String(expanded));
+    }
+    function hidePop() {
+        popMoveCleanup?.(true);
+        if (pop) pop.style.display = 'none';
+        setPinExpanded(popNoteId, false);
+        popNoteId = null;
+    }
+    function placePop(left, top) {
+        const r = pop.getBoundingClientRect();
+        pop.style.left = Math.max(8, Math.min(left, innerWidth - r.width - 8)) + 'px';
+        pop.style.top = Math.max(8, Math.min(top, innerHeight - r.height - 8)) + 'px';
+    }
+    function startPopMove(e, grip) {
+        if (!pop || pop.style.display !== 'block' || popResizing || popMoving || e.button !== 0) return;
+        e.preventDefault(); e.stopPropagation();
+        const r = pop.getBoundingClientRect(), root = document.documentElement;
+        const previous = { cursor: root.style.cursor, userSelect: root.style.userSelect };
+        const start = { x: e.clientX, y: e.clientY, left: r.left, top: r.top };
+        popMoving = { pointerId: e.pointerId, moved: false };
+        const move = ev => {
+            if (!popMoving || ev.pointerId !== e.pointerId) return;
+            const dx = ev.clientX - start.x, dy = ev.clientY - start.y;
+            if (!popMoving.moved && Math.hypot(dx, dy) < 5) return;
+            popMoving.moved = true;
+            ev.preventDefault();
+            pop.classList.add('pop-moving');
+            root.style.cursor = 'grabbing'; root.style.userSelect = 'none';
+            placePop(start.left + dx, start.top + dy);
+        };
+        const finish = (cancel = false) => {
+            if (!popMoving) return;
+            popMoving = null; popMoveCleanup = null;
+            if (cancel) { pop.style.left = start.left + 'px'; pop.style.top = start.top + 'px'; }
+            pop.classList.remove('pop-moving');
+            root.style.cursor = previous.cursor; root.style.userSelect = previous.userSelect;
+            window.removeEventListener('pointermove', move, true);
+            window.removeEventListener('pointerup', up, true);
+            window.removeEventListener('pointercancel', cancelPointer, true);
+            window.removeEventListener('blur', cancelMove, true);
+            window.removeEventListener('keydown', key, true);
+            try { if (grip.hasPointerCapture(e.pointerId)) grip.releasePointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+        };
+        const up = ev => { if (ev.pointerId === e.pointerId) finish(); };
+        const cancelPointer = ev => { if (ev.pointerId === e.pointerId) finish(true); };
+        const cancelMove = () => finish(true);
+        const key = ev => { if (ev.key === 'Escape') { ev.preventDefault(); ev.stopImmediatePropagation(); finish(true); } };
+        popMoveCleanup = finish;
+        try { grip.setPointerCapture(e.pointerId); } catch (_) { /* window 监听兜底 */ }
+        window.addEventListener('pointermove', move, { capture: true, passive: false });
+        window.addEventListener('pointerup', up, true);
+        window.addEventListener('pointercancel', cancelPointer, true);
+        window.addEventListener('blur', cancelMove, true);
+        window.addEventListener('keydown', key, true);
+    }
+    function startPopResize(e, handle, side) {
+        if (!pop || popMoving || e.button !== 0) return;
+        e.preventDefault(); e.stopPropagation();
+        const rect = pop.getBoundingClientRect(), startX = e.clientX, startW = rect.width, fixedRight = rect.right;
+        popResizing = { handle, side, pointerId: e.pointerId };
+        pop.classList.add('pop-resizing');
+        document.documentElement.style.cursor = 'ew-resize';
+        document.documentElement.style.userSelect = 'none';
+        // 指针按下后由 window 兜住整段拖动；不依赖鼠标始终停留在 12px 边缘热区，也不依赖 pointer capture 是否成功。
+        try { handle.setPointerCapture(e.pointerId); } catch (_) { /* 浏览器不支持时 window 监听仍可工作 */ }
+        const move = ev => {
+            if (!popResizing || ev.pointerId !== e.pointerId) return;
+            ev.preventDefault();
+            const raw = side === 'e' ? startW + (ev.clientX - startX) : startW - (ev.clientX - startX);
+            const minW = Math.min(280, innerWidth - 16), maxW = Math.max(minW, Math.min(720, innerWidth - 16));
+            const edgeMax = side === 'e' ? innerWidth - rect.left - 8 : fixedRight - 8;
+            const width = Math.max(minW, Math.min(Math.round(raw), maxW, edgeMax));
+            pop.style.width = width + 'px';
+            if (side === 'w') pop.style.left = Math.max(8, fixedRight - width) + 'px';
+        };
+        const up = ev => {
+            if (!popResizing || ev.pointerId !== e.pointerId) return;
+            popResizing = null; pop.classList.remove('pop-resizing');
+            document.documentElement.style.cursor = '';
+            document.documentElement.style.userSelect = '';
+            window.removeEventListener('pointermove', move, true); window.removeEventListener('pointerup', up, true); window.removeEventListener('pointercancel', up, true);
+            try { if (handle.hasPointerCapture(e.pointerId)) handle.releasePointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+        };
+        window.addEventListener('pointermove', move, { capture: true, passive: false });
+        window.addEventListener('pointerup', up, true);
+        window.addEventListener('pointercancel', up, true);
+    }
+    function ensurePop() {
+        if (pop) return;
+        pop = document.createElement('div');
+        pop.id = '__review_popover'; pop.className = '__review_pop';
+        pop.setAttribute('role', 'dialog');
+        pop.setAttribute('data-prototype-owned', '');
+        pop.addEventListener('click', e => e.stopPropagation());
+        const grip = document.createElement('button');
+        grip.type = 'button'; grip.className = '__review_pop_grip';
+        grip.setAttribute('aria-label', '移动标注浮窗');
+        grip.title = '拖动移动；方向键微调，Shift 加速';
+        grip.onpointerdown = e => startPopMove(e, grip);
+        grip.addEventListener('keydown', e => {
+            if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); hidePop(); return; }
+            const direction = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+            if (!direction || e.ctrlKey || e.altKey || e.metaKey) return;
+            e.preventDefault(); e.stopPropagation();
+            const r = pop.getBoundingClientRect(), step = e.shiftKey ? 40 : 10;
+            placePop(r.left + direction[0] * step, r.top + direction[1] * step);
+        });
+        pop.appendChild(grip);
+        popBody = document.createElement('div'); popBody.className = '__review_pop_body';
+        pop.appendChild(popBody);
+        for (const side of ['w', 'e']) {
+            const handle = document.createElement('span');
+            handle.className = `__review_pop_resize __review_pop_resize_${side}`;
+            handle.setAttribute('aria-hidden', 'true'); handle.title = '拖动调节宽度';
+            handle.onpointerdown = e => startPopResize(e, handle, side);
+            pop.appendChild(handle);
+        }
+        document.documentElement.appendChild(pop);
+    }
+    function showPop(note, pin) {
+        ensurePop();
+        popMoveCleanup?.();
+        setPinExpanded(popNoteId, false);
+        popNoteId = note.id;
+        pin.setAttribute('aria-expanded', 'true');
+        popBody.innerHTML = R.renderBody ? R.renderBody(note) : (note.body || '');
+        popBody.scrollTop = 0;
+        pop.style.display = 'block';
+        pop.style.visibility = 'hidden';
+        pop.style.left = '0px'; pop.style.top = '0px';
+        const pw = pop.offsetWidth, ph = pop.offsetHeight;
+        const px = parseFloat(pin.style.left) || 0, py = parseFloat(pin.style.top) || 0;
+        const W = innerWidth, H = innerHeight;
+        let left = px + 16, top = py - ph - 8;
+        if (left + pw > W - 8) left = px - pw - 16;
+        left = Math.max(8, Math.min(left, W - pw - 8));
+        if (top < 8) top = py + 8;
+        top = Math.max(8, Math.min(top, H - ph - 8));
+        pop.style.left = left + 'px'; pop.style.top = top + 'px';
+        pop.style.visibility = 'visible';
+    }
+    function togglePop(note, pin) {
+        if (pop && pop.style.display === 'block' && popNoteId === note.id) { hidePop(); return; }
+        showPop(note, pin);
+    }
+    window.__reviewHidePop = hidePop;
+    window.__reviewPopNoteId = () => (pop && pop.style.display === 'block' ? popNoteId : null);
+    window.__reviewRelayout = () => { try { layout(); } catch (_) { /* ignore */ } };
+    document.addEventListener('click', e => {
+        if (pop && pop.style.display === 'block' && !pop.contains(e.target) && !e.target.closest?.('.__review_pin')) hidePop();
+    }, true);
+    // scroll 监听用了 capture，气泡自身 overflow:auto 的滚动也会冒到 window；旧逻辑因此鼠标一滚正文就关气泡。
+    // 只在气泡外部（原型页面 / 其他滚动容器）发生滚动时关闭；气泡内部滚动保持打开。
+    window.addEventListener('scroll', e => {
+        if (pop && pop.style.display === 'block' && pop.contains(e.target)) return;
+        hidePop();
+        scheduleLayout();
+    }, { passive: true, capture: true });
+    window.addEventListener('resize', () => { hidePop(); scheduleLayout(); }, { passive: true });
+
+    let layoutFrame = 0;
+    function scheduleLayout() {
+        if (layoutFrame) return;
+        layoutFrame = requestAnimationFrame(() => { layoutFrame = 0; layout(); });
+    }
+
+    const stateOf = () => document.documentElement.dataset.protoState || 'default';
+    let lastState = '', lastX = -1, lastY = -1, lastW = 0, lastH = 0;
+    let lastOrder = '', lastStale = '';
+    const pinsById = new Map();
+
+    function layout() {
+        const state = stateOf();
+        if (state !== lastState) hidePop(); // 只在原型状态切换时关气泡；纯几何重排不关（避免侧栏收起引发的 reflow 误关刚弹出的气泡）
+        const notes = (R.notes || []).filter(n => n.stateId === state);
+        window.ProtoAnchors.setRevealNotes?.(notes);
+        if (selectedNoteId && !notes.some(n => n.id === selectedNoteId)) selectNote(null);
+        const arranged = window.ProtoOrder.project(notes, window);
+        const stale = [], noPoint = [];
+        const visibleIds = new Set();
+        for (const n of arranged) {
+            let found = null;
+            try { found = window.ProtoAnchors.point(n); } catch (_) { /* 锚定异常按失效处理 */ }
+            if (!found?.point) { noPoint.push(n); continue; }
+            if (found.point.visible === false) continue; // 滚出嵌套容器的序号随锚点隐藏，不算失锚。
+            let pin = pinsById.get(n.id);
+            if (!pin) {
+                pin = document.createElement('button');
+                pin.type = 'button';
+                pin.className = '__review_pin';
+                pin.dataset.noteId = n.id;
+                pinsById.set(n.id, pin);
+                layer.appendChild(pin);
+            }
+            window.ProtoAppearance?.applyPin(pin, n);
+            pin.classList.toggle('__review_selected', n.id === selectedNoteId);
+            pin.setAttribute('aria-current', String(n.id === selectedNoteId));
+            if (pin.textContent !== String(n.displayNumber)) pin.textContent = n.displayNumber;
+            pin.setAttribute('aria-label', `标注 ${n.displayNumber}`);
+            pin.setAttribute('aria-haspopup', 'dialog');
+            pin.setAttribute('aria-controls', '__review_popover');
+            pin.setAttribute('aria-expanded', String(popNoteId === n.id && pop?.style.display === 'block'));
+            pin.style.left = found.point.x + 'px';
+            pin.style.top = found.point.y + 'px';
+            pin.onclick = e => {
+                e.preventDefault(); e.stopPropagation();
+                selectNote(n.id);
+                R.onSelect?.(n.id);
+                // PRD 侧栏展开：定位到右栏对应内容；收起：就地弹气泡展示内容。
+                if (R.asideOpen && R.asideOpen()) { hidePop(); R.onFocus?.(n.id); }
+                else togglePop(n, pin);
+            };
+            visibleIds.add(n.id);
+        }
+        for (const [id, pin] of pinsById) {
+            if (!visibleIds.has(id)) { pin.remove(); pinsById.delete(id); }
+        }
+        if (popNoteId && !visibleIds.has(popNoteId)) hidePop();
+        // 无落点分流（Feature 1 引导 + 失锚判定）：元素还在且被折叠/隐藏 → 正常颜色，可展开的盖透明脉冲描边框引导；
+        // 元素真找不到、或可见但落点失效（目标变化）才算失锚（右栏灰显、置底、不可点）。
+        const groups = new Map();
+        for (const n of noPoint) {
+            let el = null; try { el = window.ProtoAnchors.resolveHidden(n.anchor); } catch (_) { /* ignore */ }
+            let hint = null;
+            try { hint = window.ProtoAnchors.revealHint?.(n.anchor, el); } catch (_) { /* ignore */ }
+            if (!hint && el && window.ProtoAnchors.hidden(el)) {
+                let trigger = null; try { trigger = window.ProtoAnchors.revealTrigger(el); } catch (_) { /* ignore */ }
+                if (trigger) hint = { trigger, target: el, label: '展开', kind: 'disclosure' };
+            }
+            if (!hint?.trigger) {
+                if (!el || !window.ProtoAnchors.hidden(el)) stale.push(n.id); // 元素仍在但隐藏、只是暂无可操作引导时也不算失锚
+                continue;
+            }
+            let g = groups.get(hint.trigger);
+            const actionKey = `${hint.kind}\n${hint.label}`;
+            if (!g) groups.set(hint.trigger, (g = { target: hint.target, label: hint.label, actionKey, notes: [] }));
+            if (g.actionKey === actionKey) g.notes.push(n);
+        }
+        const GICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+        const existing = [...glayer.querySelectorAll('.__review_guide')];
+        const alive = new Set();
+        let gi = existing.length;   // 新建引导错峰呼吸（与 proto-annotate.js 一致）：负 delay 立处不同相位
+        groups.forEach((g, trig) => {
+            const r = trig.getBoundingClientRect();
+            if (r.width === 0 && r.height === 0) return;
+            // 描边框套在触发器外 4px，小图标至少 22px 保证可点；裁到视口内，完全出视口就不画（与 proto-annotate.js layoutGuides 同算法）
+            const pad = 4, w = Math.max(r.width + pad * 2, 22), h = Math.max(r.height + pad * 2, 22);
+            let left = r.left + r.width / 2 - w / 2, top = r.top + r.height / 2 - h / 2;
+            const right = Math.min(innerWidth - 2, left + w), bottom = Math.min(innerHeight - 2, top + h);
+            left = Math.max(2, left); top = Math.max(2, top);
+            if (right - left < 8 || bottom - top < 8) return;
+            let guide = existing.find(x => x.__rvTrig === trig);
+            if (!guide) {
+                guide = document.createElement('button');
+                guide.type = 'button'; guide.className = '__review_guide';
+                guide.__rvTrig = trig;
+                guide.style.setProperty('--g-delay', (-(gi++ % 4) * 0.45) + 's');
+                guide.onclick = async e => { e.preventDefault(); e.stopPropagation(); try { await window.ProtoAnchors.revealAndWait(guide.__rvTarget); } catch (_) { /* ignore */ } layout(); };
+                glayer.appendChild(guide);
+            }
+            guide.__rvTarget = g.target;
+            const safeLabel = String(g.label).replace(/[&<>"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[char]);
+            const html = '<span class="__review_guide_tag">' + GICON + '<span>' + safeLabel + ' · ' + g.notes.length + '</span></span>';
+            if (guide.__rvHtml !== html) { guide.innerHTML = html; guide.__rvHtml = html; }
+            guide.title = '点击“' + g.label + '”以显示 ' + g.notes.length + ' 处标注（' + g.notes.map(n => n.displayNumber).join(' ') + '）';
+            guide.setAttribute('aria-label', guide.title);
+            guide.style.left = left + 'px'; guide.style.top = top + 'px';
+            guide.style.width = (right - left) + 'px'; guide.style.height = (bottom - top) + 'px';
+            guide.classList.toggle('__review_guide_below', top < 24);            // 贴顶时标签改挂底边，不被视口切掉
+            guide.classList.toggle('__review_guide_end', left + 84 > innerWidth); // 贴右时标签改挂右角
+            alive.add(guide);
+        });
+        existing.forEach(x => { if (!alive.has(x)) x.remove(); });
+        const orderKey = JSON.stringify(arranged.map(n => [n.id, n.displayNumber]));
+        const staleKey = JSON.stringify(stale);
+        if (orderKey !== lastOrder || staleKey !== lastStale || state !== lastState) {
+            lastOrder = orderKey; lastStale = staleKey; lastState = state;
+            R.onSync?.(Object.fromEntries(arranged.map(n => [n.id, n.displayNumber])), state, stale);
+        }
+    }
+
+    document.addEventListener('proto-anchors:reveal-failed', layout);
+
+    // 关闭弹窗和显示入口可能保持 HTML 字符数不变；监听真实 DOM 变化。
+    // 过滤自有层，避免重建序号 / 拖动浮窗时反过来触发无限重排。
+    if (typeof MutationObserver !== 'undefined') {
+        new MutationObserver(records => { if (records.some(record => !owned(record.target))) scheduleLayout(); })
+            .observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true,
+                attributeFilter: ['class', 'style', 'hidden', 'open', 'aria-expanded', 'aria-hidden', 'data-proto-state'] });
+    }
+    for (const event of ['transitionend', 'animationend', 'load'])
+        document.addEventListener(event, e => { if (!owned(e.target)) scheduleLayout(); }, true);
+    document.fonts?.ready.then(scheduleLayout);
+
+    setInterval(() => {
+        if (stateOf() !== lastState || scrollX !== lastX || scrollY !== lastY ||
+            innerWidth !== lastW || innerHeight !== lastH) {
+            lastX = scrollX; lastY = scrollY; lastW = innerWidth; lastH = innerHeight;
+            layout();
+        }
+    }, 350);
+
+    layout();
+})();
+
+</script>
+</body>
+</html>
