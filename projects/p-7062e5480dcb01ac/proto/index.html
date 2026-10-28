@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-proto-page="home" data-proto-state="default" data-proto-preview="mobile">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
@@ -14,7 +14,7 @@ body{display:flex;align-items:center;justify-content:center;font-family:"PingFan
 button,input,a{font:inherit}button{border:0;background:none;color:inherit;cursor:pointer}a{color:inherit;text-decoration:none}
 button:active,a:active,[role="button"]:active{filter:brightness(.94)}
 button:focus-visible,a:focus-visible,input:focus-visible,[role="button"]:focus-visible{outline:2px solid var(--gold-deep);outline-offset:2px}
-.back:focus-visible,.share:focus-visible{outline:2px solid var(--blue);outline-offset:-4px;border-radius:8px}
+.back:focus-visible{outline:2px solid var(--blue);outline-offset:-4px;border-radius:8px}
 svg{display:block}.icon{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .phone{position:relative;width:100%;height:100%;overflow:hidden;background:var(--page);display:flex;flex-direction:column}
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--page)}
@@ -26,11 +26,11 @@ svg{display:block}.icon{width:24px;height:24px;fill:none;stroke:currentColor;str
 .home-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:clip;padding-bottom:calc(env(safe-area-inset-bottom) + 100px);scrollbar-width:none}.home-scroll::-webkit-scrollbar,#detailApp::-webkit-scrollbar{display:none}
 .filters{height:64px;padding:11px 12px;display:grid;grid-template-columns:1fr 12px 1fr 48px;gap:6px;align-items:center;background:#fafafd;border-bottom:1px solid var(--line)}
 .date-wrap{height:36px;border:1px solid rgba(40,50,70,.13);border-radius:20px;background:#f7f7f9;overflow:hidden}.date-wrap input{width:100%;height:100%;border:0;outline:0;background:transparent;text-align:center;color:#85878e;font-size:13px;appearance:none;-webkit-appearance:none}.date-wrap input::-webkit-calendar-picker-indicator{display:none}.dash{text-align:center;color:#555}.filter-btn{height:44px;color:var(--blue);font-size:16px}
-.ad-shell{position:relative;margin:10px 12px 8px;height:126px;border-radius:10px;overflow:hidden;background:#2863df;box-shadow:0 5px 16px rgba(32,77,183,.14)}
-.ad-slide{position:relative;height:100%;padding:18px 14px 23px;text-align:center;color:#fdfdfe;overflow:hidden;cursor:pointer;background:radial-gradient(circle at 86% 20%,rgba(130,190,255,.55),transparent 40%),linear-gradient(110deg,#1749cf,#2f68eb 65%,#4a82ef)}
+.ad-shell{position:relative;margin:10px 12px 8px;height:82px;border-radius:10px;overflow:hidden;background:#2863df;box-shadow:0 5px 16px rgba(32,77,183,.14)}
+.ad-slide{position:relative;height:100%;padding:12px 14px;text-align:center;color:#fdfdfe;overflow:hidden;cursor:pointer;background:radial-gradient(circle at 86% 20%,rgba(130,190,255,.55),transparent 40%),linear-gradient(110deg,#1749cf,#2f68eb 65%,#4a82ef)}
 .ad-slide:before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.25) 1px,transparent 1px);background-size:12px 12px;mask-image:linear-gradient(90deg,#000,transparent 25%,transparent 75%,#000);opacity:.6}
-.ad-slide:after{content:"✦";position:absolute;left:18px;top:43px;color:#fdfdfe;font-size:20px;text-shadow:330px 36px 0 rgba(255,255,255,.8)}
-.ad-title{position:relative;font-size:19px;line-height:1.35;font-weight:900;letter-spacing:.2px;white-space:nowrap}.ad-title b{color:var(--gold);font-weight:900}.ad-sub{position:relative;margin-top:5px;font-size:11px;letter-spacing:1px;color:#e8efff}.ad-cta{position:relative;display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:4px 14px;border-radius:20px;background:linear-gradient(#ffe876,#ffc64b);color:#684700;font-size:11px;font-weight:800;box-shadow:0 3px 7px rgba(80,50,0,.18)}
+.ad-slide:after{content:"✦";position:absolute;left:18px;top:29px;color:#fdfdfe;font-size:20px;text-shadow:330px 36px 0 rgba(255,255,255,.8)}
+.ad-title{position:relative;font-size:18px;line-height:1.35;font-weight:900;letter-spacing:.2px;white-space:nowrap}.ad-title b{color:var(--gold);font-weight:900}.ad-bottom{position:relative;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:10px}.ad-sub{font-size:11px;letter-spacing:1px;color:#e8efff;white-space:nowrap}.ad-cta{display:inline-flex;align-items:center;gap:4px;flex:none;padding:4px 14px;border-radius:20px;background:linear-gradient(#ffe876,#ffc64b);color:#684700;font-size:11px;font-weight:800;box-shadow:0 3px 7px rgba(80,50,0,.18)}
 .assignment{background:var(--surface);padding:16px 13px 13px;margin-bottom:8px;border-top:1px solid rgba(30,45,80,.025);border-bottom:1px solid rgba(30,45,80,.035)}
 .assignment[hidden]{display:none}.assignment h2{font-size:16.5px;line-height:1.55;font-weight:700;letter-spacing:.1px}.stats{display:flex;gap:18px;margin-top:9px;color:#9698a0;font-size:13px;white-space:nowrap}.stats b{font-weight:400;color:#6f727b}.card-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:18px;min-height:32px}.card-bottom time{font-size:13px;color:#858791}.grade-btn{position:relative;min-width:68px;height:32px;padding:0 14px;border:1px solid var(--blue);border-radius:18px;color:var(--blue);font-size:14px;background:#f8faff}.grade-btn:after{content:"";position:absolute;inset:-6px -3px}.grade-btn.done{background:#f5f8ff}
 .tabbar{position:absolute;z-index:20;left:0;right:0;bottom:0;height:calc(env(safe-area-inset-bottom) + 77px);padding:5px 9px calc(env(safe-area-inset-bottom) + 12px);display:grid;grid-template-columns:repeat(5,1fr);background:rgba(253,253,254,.97);border-top:1px solid var(--line)}
@@ -38,20 +38,20 @@ svg{display:block}.icon{width:24px;height:24px;fill:none;stroke:currentColor;str
 .fab{position:absolute;z-index:19;right:18px;bottom:calc(env(safe-area-inset-bottom) + 88px);width:57px;height:57px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#3976f4,#1554e5);color:#fdfdfe;border:2px solid rgba(255,255,255,.65);box-shadow:0 5px 13px rgba(26,80,214,.3)}.fab .icon{width:31px;height:31px;stroke-width:1.6}.fab small{position:absolute;font-size:8px;font-weight:800;bottom:12px;background:var(--blue);padding:0 2px}
 .toast{position:absolute;z-index:100;left:50%;bottom:calc(env(safe-area-inset-bottom) + 94px);transform:translate(-50%,12px);max-width:84%;padding:10px 16px;border-radius:22px;background:rgba(28,32,45,.9);color:#fdfdfe;font-size:13px;white-space:nowrap;opacity:0;pointer-events:none;transition:.25s}.toast.on{opacity:1;transform:translate(-50%,0)}
 .detail{z-index:60;transform:translateX(100%);visibility:hidden;transition:transform .42s var(--ease),visibility 0s .42s;background:#f5f8ff}.detail.on{transform:none;visibility:visible;transition:transform .42s var(--ease)}
-.detail-bar{flex:none;height:52px;display:grid;grid-template-columns:52px 1fr 52px;align-items:center;background:#fdfdfe;border-bottom:1px solid var(--line);z-index:5}.detail-bar h1{text-align:center;font-size:17px}.back{height:48px;display:grid;place-items:center;color:#343a49}.back .icon{width:25px;height:25px}.share{height:48px;display:grid;place-items:center;color:#4b5568}.share .icon{width:21px;height:21px}
+.detail-bar{flex:none;height:52px;display:grid;grid-template-columns:52px 1fr 52px;align-items:center;background:#fdfdfe;border-bottom:1px solid var(--line);z-index:5}.detail-bar h1{text-align:center;font-size:17px}.back{height:48px;display:grid;place-items:center;color:#343a49}.back .icon{width:25px;height:25px}
 #detailApp{flex:1;min-height:0;overflow-y:auto;overflow-x:clip;scrollbar-width:none;padding-bottom:20px}.hero{position:relative;padding:28px 20px 24px;color:#fdfdfe;overflow:hidden;background:radial-gradient(circle at 85% 5%,rgba(132,187,255,.55),transparent 42%),linear-gradient(135deg,#1546c8,#2e64e8 62%,#447cef)}.hero:after{content:"";position:absolute;width:170px;height:170px;border:1px solid rgba(255,255,255,.16);border-radius:50%;right:-85px;top:80px;box-shadow:0 0 0 26px rgba(255,255,255,.025)}
 .kicker{position:relative;z-index:1;display:inline-block;padding:4px 12px;border:1px solid rgba(255,255,255,.42);border-radius:20px;color:#dce8ff;font-size:11px;letter-spacing:2px}.hero h2{position:relative;z-index:1;margin-top:15px;font-size:34px;line-height:1.2;letter-spacing:1px}.hero h2 span{color:var(--gold)}.hero .slogan{position:relative;z-index:1;margin-top:10px;font-size:16px;color:#eaf1ff}.hero .slogan b{color:var(--gold)}
-.contact-card{position:relative;z-index:1;margin-top:20px;padding:12px 14px;border:1px solid rgba(255,255,255,.22);border-radius:15px;background:rgba(255,255,255,.1)}.contact-card h3{font-size:13px;color:#eaf1ff}.contact-grid{display:grid;gap:8px;margin-top:9px}.contact-grid a{display:block;font-size:12px;line-height:1.5}.contact-grid b{display:inline-block;min-width:103px;color:var(--gold);font-size:14px}.contact-grid span{color:#e0eaff}
+.hero-phone{position:relative;z-index:1;margin-top:18px;font-size:16px;font-weight:700;color:#eaf2ff}
 .section{padding:30px 16px}.sec-head{text-align:center;margin-bottom:22px}.sec-head .tag{display:inline-block;padding:3px 12px;border-radius:16px;background:#e7efff;color:var(--blue-deep);font-size:11px;font-weight:800;letter-spacing:2px}.sec-head h2{margin-top:9px;font-size:25px}.sec-head p{margin-top:6px;color:#68758e;font-size:13px}.gold-bar{width:44px;height:4px;margin:11px auto 0;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--gold-deep))}
-.advantages{display:grid;gap:11px}.advantage{display:flex;gap:14px;align-items:center;padding:17px 16px;border:1px solid #e1eaff;border-radius:17px;background:#fdfdfe;box-shadow:0 6px 18px rgba(31,79,216,.05)}.adv-icon{flex:none;width:48px;height:48px;display:grid;place-items:center;border-radius:15px;background:#eaf1ff;color:var(--blue)}.adv-icon .icon{width:29px;height:29px}.advantage h3{font-size:17px;color:var(--blue-deep)}.advantage h3 b{color:var(--gold-deep)}.advantage p{margin-top:4px;font-size:13px;line-height:1.65;color:#4c586f}
-.eff{margin:0 16px;padding:22px 18px;border-radius:20px;text-align:center;background:linear-gradient(125deg,#1746c8,#3974ed);color:#fdfdfe}.eff h2{font-size:23px}.eff h2 b{color:var(--gold)}.eff p{margin-top:7px;font-size:13px;color:#e0eaff}.eff-num{margin-top:15px;font-size:43px;font-weight:900;color:var(--gold)}.eff-label{font-size:12px;color:#e0eaff}
-.flow-card{position:relative;padding:18px 14px 16px;border:1px solid #dce7fb;border-radius:20px;background:linear-gradient(180deg,#fdfdfe,#f5f8ff);margin-bottom:14px;overflow:hidden;box-shadow:0 8px 24px rgba(31,79,216,.06)}.flow-card:before{content:"";position:absolute;right:-35px;top:-45px;width:120px;height:120px;border-radius:50%;background:rgba(76,126,237,.06)}.flow-head{position:relative;display:flex;align-items:flex-start;gap:8px}.flow-card h3{flex:1;font-size:15px;line-height:1.5;color:var(--blue-deep)}.flow-card h3 span{display:inline-block;margin-right:6px;padding:2px 7px;border-radius:9px;background:#fff2c9;color:#7b5200;font-size:10px;vertical-align:2px}.flow-head small{flex:none;padding:4px 7px;border-radius:8px;background:#e9f0ff;color:#5c73a1;font-size:9px;font-weight:800;letter-spacing:.5px}.steps{position:relative;margin-top:16px}.step{position:relative;display:flex;align-items:center;min-height:58px}.step p{position:relative;z-index:1;width:auto;max-width:calc(50% - 34px);padding:5px 9px;border:1px solid #e0e9f9;border-radius:9px;background:#fdfdfe;box-shadow:0 3px 9px rgba(31,79,216,.04);font-size:12.5px;font-weight:650;line-height:1.35;text-align:right;white-space:nowrap;color:#3d4960}.step:nth-of-type(even) p{margin-left:auto;text-align:left}.dot{position:absolute;z-index:2;left:50%;transform:translateX(-50%);width:30px;height:30px;display:grid;place-items:center;border:3px solid #fdfdfe;border-radius:50%;background:linear-gradient(#3670ee,#1f4fd8);color:#fdfdfe;font-size:12px;font-weight:800;box-shadow:0 3px 8px rgba(31,79,216,.2)}.step:last-child .dot{background:linear-gradient(#ffe574,#f7ad28);color:#674500}.flow-curve{position:absolute;z-index:0;top:29px;left:50%;width:70px;height:calc(100% - 58px);transform:translateX(-50%);overflow:visible;pointer-events:none}.flow-curve path{fill:none;stroke:#8faef0;stroke-width:2;stroke-linecap:round;stroke-dasharray:3 4;vector-effect:non-scaling-stroke}
+.advantages{display:grid;gap:11px}.advantage{display:flex;gap:14px;align-items:center;padding:17px 16px;border:1px solid #e1eaff;border-radius:17px;background:#fdfdfe;box-shadow:0 6px 18px rgba(31,79,216,.05)}.adv-icon{flex:none;width:52px;height:52px;display:grid;place-items:center;border:1px solid #e2ebfb;border-radius:14px;background:#f0f5ff}.adv-original{display:block;width:42px;height:42px}.advantage h3{font-size:17px;color:var(--blue-deep)}.advantage h3 b{color:var(--gold-deep)}.advantage p{margin-top:4px;font-size:13px;line-height:1.65;color:#4c586f}
+.eff{padding:14px 16px}.eff .band{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:22px 16px;border-radius:18px;text-align:left;color:#fdfdfe;background:radial-gradient(420px 220px at 85% 0%,rgba(120,180,255,.5),transparent 60%),radial-gradient(360px 220px at 0% 100%,rgba(60,120,255,.35),transparent 60%),linear-gradient(135deg,#1546c8 0%,#2a60e8 50%,#3e75f0 100%)}.eff .band-text{flex:1;min-width:0}.eff h2{font-size:23px;font-weight:900;white-space:nowrap}.eff h2 b{color:var(--gold)}.eff p{margin-top:10px;font-size:14.5px;color:#e3edff;white-space:nowrap}.num-box{flex:none;display:inline-block;padding:12px 14px;border:1px solid rgba(255,255,255,.3);border-radius:14px;background:rgba(255,255,255,.14)}.num-box .n{font-size:32px;font-weight:900;color:var(--gold)}.num-box .c{margin-top:2px;font-size:13px;color:#e3edff}
+.flow-card{position:relative;padding:18px 14px 16px;border:1px solid #dce7fb;border-radius:20px;background:linear-gradient(180deg,#fdfdfe,#f5f8ff);margin-bottom:14px;overflow:hidden;box-shadow:0 8px 24px rgba(31,79,216,.06)}.flow-head{position:relative;display:flex;align-items:flex-start;gap:8px}.flow-card h3{flex:1;font-size:15px;line-height:1.5;color:var(--blue-deep)}.flow-card h3 span{display:inline-block;margin-right:6px;padding:2px 7px;border-radius:9px;background:#fff2c9;color:#7b5200;font-size:10px;vertical-align:2px}.flow-head small{flex:none;padding:0;border-radius:0;background:transparent;color:#5c73a1;font-size:10px;font-weight:800;letter-spacing:.5px}.steps{position:relative;margin-top:12px}.steps:before{content:"";position:absolute;z-index:0;top:28px;bottom:28px;left:50%;border-left:2px dashed #8faef0;transform:translateX(-50%)}.step{position:relative;display:flex;align-items:center;min-height:56px}.step p{position:absolute;z-index:1;right:calc(50% + 28px);width:auto;max-width:calc(50% - 28px);margin:0;padding:7px 12px;border:1px solid #e0e9f9;border-radius:9px;background:#fdfdfe;box-shadow:0 3px 9px rgba(31,79,216,.04);font-size:16px;font-weight:650;line-height:1.35;text-align:right;white-space:nowrap;color:#3d4960}.step:nth-of-type(even) p{right:auto;left:calc(50% + 28px);margin-left:0;text-align:left}.dot{position:absolute;z-index:2;left:50%;transform:translateX(-50%);width:36px;height:36px;display:grid;place-items:center;border:3px solid #fdfdfe;border-radius:50%;background:linear-gradient(#3670ee,#1f4fd8);color:#fdfdfe;font-size:14px;font-weight:800;box-shadow:0 3px 8px rgba(31,79,216,.2)}.step:last-child .dot{background:linear-gradient(#ffe574,#f7ad28);color:#674500}
 .scene-section{background:#eef4ff}.scene{margin-bottom:16px;border:1px solid #e0e9fb;border-radius:18px;background:#fdfdfe;overflow:hidden}.scene-label{display:flex;align-items:center;gap:8px;padding:13px 16px;background:linear-gradient(120deg,#1f55d7,#4d82ed);color:#fdfdfe}.scene-label.green{background:linear-gradient(120deg,#168c71,#38b894)}.scene-label.orange{background:linear-gradient(120deg,#d77c19,#f4ac32)}.scene-label span{font-size:18px;font-weight:850}.scene-label small{font-size:12px;opacity:.9}.scene-copy{padding:15px 16px 5px}.scene-copy h3{font-size:17px;color:var(--blue-deep)}.scene-copy p{margin-top:6px;font-size:13px;line-height:1.75;color:#4d596f}.scene-copy b{color:#d98a18}
 .scene-images{display:grid;gap:10px;margin:14px 12px 15px}.scene-images img{display:block;width:100%;height:auto;border:1px solid #dbe4f5;border-radius:11px;background:#fdfdfe;box-shadow:0 4px 12px rgba(31,79,216,.07)}
-.qr-section{position:relative;padding:30px 20px 34px;text-align:center;overflow:hidden;background:linear-gradient(145deg,#eaf1ff,#f8faff)}.qr-section:before{content:"";position:absolute;left:-60px;bottom:-75px;width:180px;height:180px;border:1px solid rgba(40,85,231,.09);border-radius:50%;box-shadow:0 0 0 24px rgba(40,85,231,.025)}.qr-card{position:relative;width:218px;margin:18px auto 0;padding:14px 14px 12px;border:1px solid #dce6f8;border-radius:22px;background:#fdfdfe;box-shadow:0 12px 30px rgba(31,79,216,.1)}.qr-card img{display:block;width:188px;height:188px;object-fit:contain}.qr-card p{margin-top:9px;font-size:12px;color:#59677f}.qr-card b{color:var(--blue-deep)}.landing-footer{padding:30px 20px 25px;text-align:center;background:#142c66;color:#fdfdfe}.landing-footer h2{font-size:21px;line-height:1.55}.landing-footer h2 b{color:var(--gold)}.landing-footer p{margin-top:9px;color:#b9c8ee;font-size:12px}.landing-footer .fine{margin-top:19px;color:#8497c3;font-size:10px}
+.landing-footer{padding:30px 20px 25px;text-align:center;background:#142c66;color:#fdfdfe}.landing-footer h2{font-size:21px;line-height:1.55}.landing-footer h2 b{color:var(--gold)}.landing-footer p{margin-top:9px;color:#b9c8ee;font-size:12px}.landing-footer .fine{margin-top:19px;color:#8497c3;font-size:10px}
 .consult-bar{flex:none;display:block;padding:10px 16px calc(env(safe-area-inset-bottom) + 12px);border-top:1px solid var(--line);background:rgba(253,253,254,.98)}.consult-bar a{width:100%;height:46px;display:flex;align-items:center;justify-content:center;border-radius:23px;font-size:15px;font-weight:750}.consult-primary{background:linear-gradient(#ffe574,#ffc140);color:#674500;box-shadow:0 4px 10px rgba(150,100,0,.16)}
 @media (min-width:560px){body{background:radial-gradient(circle at 50% 0,#293b68,#11182b 70%)}.phone{width:406px;height:min(880px,94vh);border-radius:42px;border:1px solid rgba(255,255,255,.12);box-shadow:0 40px 100px -25px rgba(5,13,35,.8),0 0 0 9px #172036}}
-@media (max-width:370px){.ad-title{font-size:17px}.topnav{padding:0 8px}.topnav button{font-size:15px}.topnav button.on{font-size:18px}.stats{gap:11px;font-size:12px}.assignment h2{font-size:15.5px}}
+@media (max-width:370px){.ad-title{font-size:17px}.topnav{padding:0 8px}.topnav button{font-size:15px}.topnav button.on{font-size:18px}.stats{gap:11px;font-size:12px}.assignment h2{font-size:15.5px}.step p{padding:6px 8px;font-size:14px}.eff .band{gap:10px;padding:18px 12px}.eff h2{font-size:18px}.eff p{font-size:12px}.num-box{padding:10px}.num-box .n{font-size:26px}.num-box .c{font-size:11px}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.ad-slide:after{display:none}}
 </style>
 <script data-prototype-owned data-proto-hotspot-bootstrap data-proto-review="hotspots">
@@ -374,17 +374,16 @@ svg{display:block}.icon{width:24px;height:24px;fill:none;stroke:currentColor;str
 <symbol id="i-smile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 10h.01M16 10h.01M8 14c2 4 6 4 8 0"/></symbol>
 <symbol id="i-ppt" viewBox="0 0 24 24"><path d="M5 2h10l4 4v16H5zM15 2v5h4M12 8v6M9 11h6"/><path d="M3 13h12v7H3z"/></symbol>
 <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></symbol>
-<symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4M8.6 13.5l6.8 4"/></symbol>
 <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3 8-8 10-5-2-8-5-8-10V6zM8 12l3 3 5-6"/></symbol>
 <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
 <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 3v3M21 12h-3M12 21v-3M3 12h3"/></symbol>
 </defs></svg>
-<div class="phone" id="phone">
+<div class="phone" id="phone" data-proto-id="page-analytics">
   <main class="screen" id="homeScreen">
     <div class="statusbar"><div class="status-left"><span class="clock">15:18</span><svg class="icon mute"><use href="#i-mute"/></svg></div><div class="status-right"><span class="signal"><i></i><i></i><i></i><i></i></span><svg class="icon wifi"><use href="#i-wifi"/></svg><span class="battery"><span></span><em>72</em></span></div></div>
-    <nav class="topnav" aria-label="批阅导航"><button class="on">作业</button><button data-toast="已切换至考试">考试</button><button data-toast="已切换至错题本">错题本</button><button data-toast="已切换至统计">统计</button><button class="scan" aria-label="扫描" data-toast="请对准作业进行扫描"><svg class="icon"><use href="#i-scan"/></svg></button></nav>
+    <nav class="topnav" aria-label="批阅导航"><button class="on" data-proto-id="nav-grading-active">作业</button><button data-toast="已切换至考试">考试</button><button data-toast="已切换至错题本">错题本</button><button data-toast="已切换至统计">统计</button><button class="scan" aria-label="扫描" data-toast="请对准作业进行扫描"><svg class="icon"><use href="#i-scan"/></svg></button></nav>
     <div class="home-scroll" id="homeScroll">
-      <section class="ad-shell" aria-label="产品推荐"><div class="ad-slide" role="button" tabindex="0" data-open-detail><div class="ad-title">新教育智能体「<b>主观题智能批阅</b>」</div><div class="ad-sub">为教师赋能减负　为教学提质增效</div><span class="ad-cta">☝ 了解详情</span></div></section>
+      <section class="ad-shell" aria-label="产品推荐"><div class="ad-slide" role="button" tabindex="0" data-open-detail data-proto-id="ad-detail-entry"><div class="ad-title">新教育智能体「<b>主观题智能批阅</b>」</div><div class="ad-bottom"><div class="ad-sub">为教师赋能减负　为教学提质增效</div><span class="ad-cta" data-proto-id="ad-detail-cta" data-proto-hotspot="true">☝ 了解详情</span></div></div></section>
       <div class="filters"><label class="date-wrap"><input id="startDate" type="text" inputmode="numeric" value="2025-06-05" aria-label="开始日期"></label><span class="dash">-</span><label class="date-wrap"><input id="endDate" type="text" inputmode="numeric" value="2026-10-27" aria-label="结束日期"></label><button class="filter-btn" id="filterBtn">筛选</button></div>
       <section id="assignmentList" aria-label="作业列表">
         <article class="assignment" data-date="2026-10-14"><h2>高一 3班 第五章　笔记1　第一节　课时1　硫和二氧化硫</h2><div class="stats"><span>已交：<b>10</b></span><span>未交：<b>56</b></span><span>已批阅：<b>100%</b></span></div><div class="card-bottom"><time>10-14 08:11:32</time><button class="grade-btn done" data-toast="正在打开回评">回评</button></div></article>
@@ -398,28 +397,27 @@ svg{display:block}.icon{width:24px;height:24px;fill:none;stroke:currentColor;str
   </main>
   <section class="screen detail" id="detail" aria-hidden="true" aria-label="主观题智能批阅介绍">
     <div class="statusbar"><div class="status-left"><span class="clock">15:18</span></div><div class="status-right"><span class="signal"><i></i><i></i><i></i><i></i></span><svg class="icon wifi"><use href="#i-wifi"/></svg><span class="battery"><span></span><em>72</em></span></div></div>
-    <div class="detail-bar"><button class="back" id="backBtn" aria-label="返回"><svg class="icon"><use href="#i-back"/></svg></button><h1>主观题智能批阅</h1><button class="share" id="shareBtn" aria-label="分享"><svg class="icon"><use href="#i-share"/></svg></button></div>
-    <div id="detailApp">
-      <header class="hero"><span class="kicker">新教育智能体</span><h2>主观题<span>智能批阅</span></h2><p class="slogan">多维度智能研判，<b>全学科全题型</b>适配</p><div class="contact-card"><h3>咨询电话</h3><div class="contact-grid"><a href="tel:05377361798"><b>0537-7361798</b><span>浙鲁黔闽甘新陕琼津赣京辽</span></a><a href="tel:05377368829"><b>0537-7368829</b><span>苏川桂云晋皖黑吉</span></a><a href="tel:05377361126"><b>0537-7361126</b><span>粤豫鄂湘蒙渝宁冀</span></a><a href="tel:05377360056"><b>0537-7360056</b><span>鲁甘川桂云晋青藏</span></a></div></div></header>
-      <section class="section" id="adv"><div class="sec-head"><span class="tag">CORE</span><h2>核心优势</h2><p>让每一次批改，都有理 · 有维 · 有用</p><div class="gold-bar"></div></div><div class="advantages">
-        <article class="advantage"><div class="adv-icon"><svg class="icon"><use href="#i-shield"/></svg></div><div><h3>评分<b>更严谨</b></h3><p>逐点采分，有理有据，批阅结果专业、公正、规范。</p></div></article>
-        <article class="advantage"><div class="adv-icon"><svg class="icon"><use href="#i-chart"/></svg></div><div><h3>评价<b>更全面</b></h3><p>英语、语文作文实现“内容＋语言＋结构”多维度研判。</p></div></article>
-        <article class="advantage"><div class="adv-icon"><svg class="icon"><use href="#i-target"/></svg></div><div><h3>提升<b>更明确</b></h3><p>错因分析透彻到位，支撑课堂精准施教。</p></div></article>
+    <div class="detail-bar"><button class="back" id="backBtn" aria-label="返回"><svg class="icon"><use href="#i-back"/></svg></button><h1>主观题智能批阅</h1></div>
+    <div id="detailApp" data-proto-id="promo-static-content" data-proto-reveal-by='[data-proto-id="ad-detail-entry"]' data-proto-reveal-label="打开主观题智能批阅宣传内页">
+      <header class="hero"><span class="kicker">新教育智能体</span><h2>主观题<span>智能批阅</span></h2><p class="slogan">多维度智能研判，<b>全学科全题型</b>适配</p><div class="hero-phone"><a href="tel:05377361798">咨询电话：0537-7361798</a></div></header>
+      <section class="section" id="adv"><div class="sec-head"><h2>核心优势</h2><p>让每一次批改，都有理 · 有维 · 有用</p><div class="gold-bar"></div></div><div class="advantages">
+        <article class="advantage"><div class="adv-icon"><svg class="adv-original" viewBox="0 0 58 58" aria-hidden="true"><path d="M29 6 L50 15 V29 C50 42 41 49 29 54 C17 49 8 42 8 29 V15 Z" fill="#E7EFFF" stroke="#1F4FD8" stroke-linejoin="round" stroke-width="3.5"/><path d="M19 29 l7 8 l13 -16" fill="none" stroke="#2E9E5B" stroke-linecap="round" stroke-linejoin="round" stroke-width="5.5"/></svg></div><div><h3>评分<b>更严谨</b></h3><p>逐点采分，有理有据，批阅结果专业、公正、规范。</p></div></article>
+        <article class="advantage"><div class="adv-icon"><svg class="adv-original" viewBox="0 0 58 58" aria-hidden="true"><g fill="none" stroke="#1F4FD8" stroke-linejoin="round" stroke-width="4" transform="translate(0 4.5)"><path d="M29 7 L49 16 L29 25 L9 16 Z" fill="#E7EFFF"/><path d="M9 25 L29 34 L49 25"/><path d="M9 33 L29 42 L49 33" stroke="#FF9D2E"/></g></svg></div><div><h3>评价<b>更全面</b></h3><p>英语、语文作文实现“内容＋语言＋结构”多维度研判。</p></div></article>
+        <article class="advantage"><div class="adv-icon"><svg class="adv-original" viewBox="0 0 58 58" aria-hidden="true"><circle cx="29" cy="29" r="22" fill="#E7EFFF" stroke="#1F4FD8" stroke-width="3.5"/><path d="M19 30 l7 8 l14 -17" fill="none" stroke="#FF9D2E" stroke-linecap="round" stroke-linejoin="round" stroke-width="5.5"/></svg></div><div><h3>提升<b>更明确</b></h3><p>错因分析透彻到位，支撑课堂精准施教。</p></div></article>
       </div></section>
-      <section class="eff"><h2>一键扫描 <b>高效减负</b></h2><p>教师从重复批改中解放出来，把时间还给教学本身。</p><div class="eff-num">↑80%</div><div class="eff-label">批改效率提升</div></section>
-      <section class="section" id="flow"><div class="sec-head"><span class="tag">FLOW</span><h2>智批流程</h2><p>两种模式，覆盖图书作业、定制校本作业与自制作业</p><div class="gold-bar"></div></div>
-        <article class="flow-card"><div class="flow-head"><h3><span>模式一</span>图书/定制校本作业智批流程</h3><small>5 STEPS</small></div><div class="steps"><svg class="flow-curve" viewBox="0 0 70 232" preserveAspectRatio="none" aria-hidden="true"><path d="M35 0 C78 12 78 46 35 58 C-8 70 -8 104 35 116 C78 128 78 162 35 174 C-8 186 -8 220 35 232"/></svg><div class="step"><span class="dot">1</span><p>一键扫描</p></div><div class="step"><span class="dot">2</span><p>智能识别</p></div><div class="step"><span class="dot">3</span><p>逐点批阅</p></div><div class="step"><span class="dot">4</span><p>生成评价</p></div><div class="step"><span class="dot">5</span><p>精准施教</p></div></div></article>
-        <article class="flow-card"><div class="flow-head"><h3><span>模式二</span>自制作业智批流程</h3><small>7 STEPS</small></div><div class="steps"><svg class="flow-curve" viewBox="0 0 70 348" preserveAspectRatio="none" aria-hidden="true"><path d="M35 0 C78 12 78 46 35 58 C-8 70 -8 104 35 116 C78 128 78 162 35 174 C-8 186 -8 220 35 232 C78 244 78 278 35 290 C-8 302 -8 336 35 348"/></svg><div class="step"><span class="dot">1</span><p>上传试卷</p></div><div class="step"><span class="dot">2</span><p>设置评分标准</p></div><div class="step"><span class="dot">3</span><p>一键扫描</p></div><div class="step"><span class="dot">4</span><p>智能识别</p></div><div class="step"><span class="dot">5</span><p>逐点批阅</p></div><div class="step"><span class="dot">6</span><p>生成评价</p></div><div class="step"><span class="dot">7</span><p>精准施教</p></div></div></article>
+      <section class="eff" id="eff"><div class="band"><div class="band-text"><h2>一键扫描 <b>高效减负</b></h2><p>教师从重复批改中解放出来，<br>把时间还给教学本身。</p></div><div class="num-box"><div class="n">↑80%</div><div class="c">批改效率提升</div></div></div></section>
+      <section class="section" id="flow"><div class="sec-head"><h2>智批流程</h2><p>两种模式，覆盖图书作业、定制校本作业与自制作业</p><div class="gold-bar"></div></div>
+        <article class="flow-card"><div class="flow-head"><h3><span>模式一</span>图书/定制校本作业智批流程</h3><small>5 STEPS</small></div><div class="steps"><div class="step"><span class="dot">1</span><p>一键扫描</p></div><div class="step"><span class="dot">2</span><p>智能识别</p></div><div class="step"><span class="dot">3</span><p>逐点批阅</p></div><div class="step"><span class="dot">4</span><p>生成评价</p></div><div class="step"><span class="dot">5</span><p>精准施教</p></div></div></article>
+        <article class="flow-card"><div class="flow-head"><h3><span>模式二</span>自制作业智批流程</h3><small>7 STEPS</small></div><div class="steps"><div class="step"><span class="dot">1</span><p>上传试卷</p></div><div class="step"><span class="dot">2</span><p>设置评分标准</p></div><div class="step"><span class="dot">3</span><p>一键扫描</p></div><div class="step"><span class="dot">4</span><p>智能识别</p></div><div class="step"><span class="dot">5</span><p>逐点批阅</p></div><div class="step"><span class="dot">6</span><p>生成评价</p></div><div class="step"><span class="dot">7</span><p>精准施教</p></div></div></article>
       </section>
-      <section class="section scene-section" id="scene"><div class="sec-head"><span class="tag">SCENES</span><h2>应用场景</h2><p>填空题、主观题与作文题，批得深、看得清</p><div class="gold-bar"></div></div>
-        <article class="scene"><div class="scene-label green"><span>填空题</span><small>逐空分析 · 精细批阅</small></div><div class="scene-copy"><h3>按空批改，数据统计更精细</h3><p>语数英填空题<b>按空批改</b>，每空得分与批注清晰可见。</p></div><div class="scene-images"><img src="images/fill-grading.png" alt="填空题学生原卷按空批改" decoding="async"><img src="images/fill-stats.png" alt="填空题各空得分率与平均分统计" decoding="async"></div></article>
-        <article class="scene"><div class="scene-label"><span>主观题</span><small>逐点采分 · 有据可依</small></div><div class="scene-copy"><h3>紧扣标准，评分理由完整</h3><p>紧扣学科评分标准<b>逐点采分</b>，生成详细评分理由与错因分析，得分有依据，提升有方向。</p></div><div class="scene-images"><img src="images/subjective-grading.png" alt="主观题智能批阅的逐点采分与评分理由" decoding="async"></div></article>
-        <article class="scene"><div class="scene-label orange"><span>作文题</span><small>三大维度 · 精准研判</small></div><div class="scene-copy"><h3>写作短板，一目了然</h3><p>立足「内容」「语言」「结构」三大评价维度，依据<b>高考写作评分标准</b>精准研判，智批结果直观呈现。</p></div><div class="scene-images"><img src="images/essay-english.png" alt="英语作文智批报告与多维度评价" decoding="async"><img src="images/essay-chinese.png" alt="语文作文智批报告与评分维度详情" decoding="async"></div></article>
+      <section class="section scene-section" id="scene"><div class="sec-head"><h2>应用场景</h2><p>填空题、主观题与作文题，批得深、看得清</p><div class="gold-bar"></div></div>
+        <article class="scene"><div class="scene-label green"><span>填空题</span></div><div class="scene-copy"><h3>逐空分析 · 精细批阅</h3><p>语数英填空题<b>按空批改</b>，每空得分与批注清晰可见。</p></div><div class="scene-images"><img src="images/fill-grading.png" alt="填空题学生原卷按空批改" decoding="async"><img src="images/fill-stats.png" alt="填空题各空得分率与平均分统计" decoding="async"></div></article>
+        <article class="scene"><div class="scene-label"><span>主观题</span></div><div class="scene-copy"><h3>逐点采分 · 有据可依</h3><p>紧扣学科评分标准<b>逐点采分</b>，生成详细评分理由与错因分析，得分有依据，提升有方向。</p></div><div class="scene-images"><img src="images/subjective-grading.png" alt="主观题智能批阅的逐点采分与评分理由" decoding="async"></div></article>
+        <article class="scene"><div class="scene-label orange"><span>作文题</span></div><div class="scene-copy"><h3>三大维度 · 精准研判</h3><p>立足「内容」「语言」「结构」三大评价维度，依据<b>高考写作评分标准</b>精准研判，智批结果直观呈现。</p></div><div class="scene-images"><img src="images/essay-english.png" alt="英语作文智批报告与多维度评价" decoding="async"><img src="images/essay-chinese.png" alt="语文作文智批报告与评分维度详情" decoding="async"></div></article>
       </section>
-      <section class="qr-section" id="consult"><div class="sec-head"><span class="tag">CONTACT</span><h2>微信扫码，咨询智批方案</h2><p>留下联系方式，获取产品咨询与演示</p><div class="gold-bar"></div></div><div class="qr-card"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAbwAAAG8CAIAAAAq0oeIAAAITUlEQVR4nO3d0W0bRxhGUSpwESogdaR415EC2MWmg2AvtB78Mzzn2TBXpHgxL5/m67quFwD3/HXz3wEgmgCNkyZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRCIJkAgmgCBaAIEogkQiCZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRCIJkAgmgCBaAIEogkQiCZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRCIJkAgmgCBaAIEogkQiCZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRCIJkDw6zXM99//vD7V+9/fy96faa+10rT3cOVnsaP3sN8fJ02AQDQBAtEECEQTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QTYeXu+4xZ1x72zXfma93nl7+onfy9WctIECEQTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QQIRBMgEE2A07fn0zat0za/055nx7u/p+3Kn/LJ34unOGkCBKIJEIgmQCCaAIFoAgSiCRCIJkAgmgCBaAIEogkQiCZAcOz2/FTTdtx3Xmvartzd8fyEkyZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRCIJkAgmgCBaAIEtucHWrkrn/Y8017r1Lu/P5mTJkAgmgCBaAIEogkQiCZAIJoAgWgCBKIJEIgmQCCaAIFoAgTHbs9tfn9u2rZ65fOsvId9Jd+Ln3PSBAhEEyAQTYBANAEC0QQIRBMgEE2AQDQBAtEECEQTIBBNgNO356fugp+y8s7uU/+fO6Y9j+/FGk6aAIFoAgSiCRCIJkAgmgCBaAIEogkQiCZAIJoAgWgCBKIJsPP23L3MP/fJG+Sn9uDT+F7M4aQJEIgmQCCaAIFoAgSiCRCIJkAgmgCBaAIEogkQiCZAIJoAwdd1Xa9JVt4TfcfK+7if4j7uvd7DT97Cfw/7vt/hpAkQiCZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRCIJkAgmgCnb88/eYM8bYd76jPf4W8grDHt98dJEyAQTYBANAEC0QQIRBMgEE2AQDQBAtEECEQTIBBNgEA0AYJfrw2tvHN5x336StOeedpO+anP/amfa8f3ZxonTYBANAEC0QQQTYA/w0kTIBBNgEA0AQLRBAhEEyAQTYBANAF2vvf8KTveRT7ttT55wz7NtL9v8F74eU3byztpAgSiCRCIJkAgmgCBaAIEogkQiCZAIJoAgWgCBKIJEIgmwOn3nu+4V125m562HX6Kjf9e7/OO39M7nDQBAtEECEQTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QQIRBNg53vPp93dfMeOrzXtme+YtpdfuZs+9e8J7LhPd9IECEQTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QQIRBMgEE2Ane89n7affeq1ntoOP7XD/eS7radtxk/1HvZdfoqTJkAgmgCBaAIEogkQiCZAIJoAgWgCBKIJEIgmQCCaAIFoAux87/kd0+62nnaH+MrN77Sf66nX2nFTP833oe+zkyZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRCIJkAgmgCBaALsfO/5U57aX6+893yllfv0af/PHTvu3Ffu958y7XnucNIECEQTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QQIRBMgEE2Ane89n3av94772VPvm15p2o572vfiPey1VnLSBAhEEyAQTYBANAEC0QQIRBMgEE2AQDQBAtEECEQTIBBNgJ3vPZ+2M522cz/1TvNpvz8r7z2/81rTtt7fw7bwKzlpAgSiCRCIJkAgmgCBaAIEogkQiCZAIJoAgWgCBKIJEIgmwM7b80/eKX+yp3bKO961vfKO9ZX/z/eGu/I7nDQBAtEECEQTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QQIRBMg+Lqu6zXJqXvVOz55z7vj1vvUz2LHe+FXctIECEQTIBBNgEA0AQLRBAhEE0A0Af4MJ02AQDQBAtEECEQTYOd7z6ftTHc0bce94x585fNM+7x8B/+fkyZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRCIJkAgmgCBaALsvD13l/Sc9/DOBvnUnfK0e89XbsZX/v7syEkTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QQIRBMgEE2AQDQBgq/rul6TnHov847b4TtWPvO098e955/5XXbSBAhEEyAQTYBANAEC0QQIRBMgEE2AQDQBAtEECEQTIBBNgJ3vPX/KjvvrHX+uHe/+nrZhX/ke7vh3AN7D9ulOmgCBaAIEogkQiCZAIJoAgWgCBKIJIJoAf4aTJkAgmgCBaAIEx27PT/XJO/dTN+xP2XHH/R72PHc4aQIEogkQiCZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRCIJkBge36glRvklXejT9tWT9vmT7vPfcfP9A4nTYBANAEC0QQIRBMgEE2AQDQBAtEECEQTIBBNgEA0AQLRBAiO3Z5P26vu6Kld+cp9+qnvzzTvQz/TO5w0AQLRBAhEEyAQTYBANAEC0QQIRBMgEE2AQDQBAtEECEQT4PTt+amb1jtO3XrveGf3U5565h238O8Nd/dOmgCBaAIEogkQiCZAIJoAgWgCBKIJEIgmQCCaAIFoAgSiCRB8XddV/j3AR3PSBAhEEyAQTYBANAEC0QQIRBMgEE2AQDQBAtEECEQTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QQIRBMgEE2AQDQBAtEECEQTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QQIRBMgEE2AQDQBAtEECEQTIBBNgEA0AQLRBAhEEyAQTYBANAEC0QQIRBMgEE2AQDQBAtEECEQTIBBNgNd9/wFzGUBn9i3ymAAAAABJRU5ErkJggg==" alt="主观题智能批阅咨询二维码"><p>微信扫码 · <b>填写客户信息</b></p></div></section>
       <footer class="landing-footer"><h2>让每一次批改，都有<b>理</b> · 有<b>维</b> · 有<b>用</b></h2><p>为教师赋能减负，为教学提质增效</p><div class="fine">官网 www.xinjiaoyu.com ｜ © 新教育智能平台</div></footer>
     </div>
-    <div class="consult-bar"><a class="consult-primary" href="https://qr71.cn/o5iouY/qmkbiXu" target="_blank" rel="noopener">立即咨询</a></div>
+    <div class="consult-bar"><a class="consult-primary" href="https://qr71.cn/o5iouY/qmkbiXu" target="_blank" rel="noopener" data-proto-id="consult-action" data-proto-reveal-by='[data-proto-id="ad-detail-entry"]' data-proto-reveal-label="打开宣传内页咨询">如有需求，请留下您的联系方式</a></div>
   </section>
   <div class="toast" id="toast" role="status"></div>
 </div>
@@ -436,7 +434,6 @@ $$('[data-open-detail]').forEach(el=>{el.addEventListener('click',()=>openDetail
 function openDetail(fromHash=false){detail.classList.add('on');detail.setAttribute('aria-hidden','false');$('#homeScreen').setAttribute('aria-hidden','true');detailApp.scrollTop=0;if(!fromHash&&location.hash!=='#zhuanti')history.pushState({detail:true},'','#zhuanti');setTimeout(()=>$('#backBtn').focus({preventScroll:true}),RM?0:430)}
 function closeDetail(fromHash=false){detail.classList.remove('on');detail.setAttribute('aria-hidden','true');$('#homeScreen').setAttribute('aria-hidden','false');if(!fromHash&&location.hash==='#zhuanti'){if(history.state?.detail)history.back();else history.replaceState(null,'',location.pathname+location.search)}}
 $('#backBtn').addEventListener('click',()=>closeDetail());
-$('#shareBtn').addEventListener('click',async()=>{const data={title:'主观题智能批阅',text:'新教育智能体 · 主观题智能批阅',url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(location.href);showToast('页面链接已复制')}}catch(e){if(e.name!=='AbortError')showToast('可复制浏览器地址分享')}});
 $('#filterBtn').addEventListener('click',()=>{const start=$('#startDate').value,end=$('#endDate').value;if(start&&end&&start>end){showToast('开始日期不能晚于结束日期');return}let count=0;$$('.assignment').forEach(card=>{const show=(!start||card.dataset.date>=start)&&(!end||card.dataset.date<=end);card.hidden=!show;if(show)count++});showToast(`已筛选出 ${count} 份作业`)});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&detail.classList.contains('on'))closeDetail()});
 addEventListener('popstate',()=>{if(location.hash==='#zhuanti')openDetail(true);else closeDetail(true)});
@@ -498,12 +495,32 @@ if(location.hash==='#zhuanti')openDetail(true);
     }
     // 选择器就是页面唯一 id：id 本身即身份，文本变化（占位符→已选值、计数刷新）不视为目标变化。
     const idBound = (anchor) => /^#[^\s>+~]+$/.test(anchor?.selector || '');
-    const visible = (el) =>
-        !!el &&
-        !owned(el) &&
-        el.getClientRects().length > 0 &&
-        getComputedStyle(el).display !== 'none' &&
-        getComputedStyle(el).visibility !== 'hidden';
+    function hiddenRoot(el) {
+        if (!el) return null;
+        // 只依据标准 DOM / 渲染状态，不猜项目、路由名或框架的 active/on 类名。
+        for (let node = el; node; node = node.parentElement) {
+            const css = getComputedStyle(node);
+            if (node.hidden || node.inert || node.hasAttribute?.('hidden') || node.hasAttribute?.('inert') ||
+                node.getAttribute?.('aria-hidden')?.toLowerCase() === 'true' || node.tagName === 'DIALOG' && !node.open ||
+                css.display === 'none' || css.contentVisibility === 'hidden' || css.opacity !== undefined && css.opacity !== '' && Number(css.opacity) === 0) return node;
+        }
+        // visibility 可以被子节点显式覆盖，其他祖先隐藏条件则不可反向覆盖。
+        const state = getComputedStyle(el).visibility;
+        if (state === 'hidden' || state === 'collapse') {
+            let root = el;
+            while (root.parentElement && getComputedStyle(root.parentElement).visibility === state) root = root.parentElement;
+            return root;
+        }
+        return null;
+    }
+    const visible = el => !!el && !owned(el) && !hiddenRoot(el) && el.getClientRects().length > 0;
+    function paintedAt(el, x, y) {
+        if (typeof document.elementsFromPoint !== 'function') return true;
+        try {
+            const top = document.elementsFromPoint(x, y).find(node => visible(node));
+            return !top || top === el || !!el.contains?.(top) || !!top.contains?.(el);
+        } catch (_) { return true; }
+    }
     function selector(el) {
         if (el.id && document.querySelectorAll('#' + CSS.escape(el.id)).length === 1)
             return '#' + CSS.escape(el.id);
@@ -714,10 +731,16 @@ if(location.hash==='#zhuanti')openDetail(true);
             const visible = fullDocument || (x >= 0 && y >= 0 && x < innerWidth && y < innerHeight);
             return { point: { x, y, visible }, rect: { x, y, width: 0, height: 0, visible } };
         }
-        const found = resolve(note.anchor);
+        let found = resolve(note.anchor);
+        // 排序使用逻辑坐标：隐藏但仍保留布局时按原落点测量，不能退回容器左上角。
+        // display:none 等无布局目标继续由 ProtoOrder 使用展开入口代位。
+        if (fullDocument && !found.element) {
+            const element = resolveHidden(note.anchor);
+            if (element?.getClientRects().length) found = { element };
+        }
         if (!found.element) return { reason: found.reason, point: null, rect: null };
         const element = found.element, r = element.getBoundingClientRect(), clip = rect(element, fullDocument);
-        if (!p) return { element, rect: clip, point: { x: clip.x, y: clip.y, visible: clip.visible }, legacy: true };
+        if (!p) return { element, rect: clip, point: { x: clip.x, y: clip.y, visible: clip.visible && (fullDocument || paintedAt(element, clip.x, clip.y)) }, legacy: true };
         const ew = Math.max(r.width, element.scrollWidth), eh = Math.max(r.height, element.scrollHeight);
         let px = p.x, py = p.y;
         if (Number.isFinite(p.rx) && Number.isFinite(p.ry)) {
@@ -742,8 +765,23 @@ if(location.hash==='#zhuanti')openDetail(true);
             if (y < clip.y && !clip.reach.top) y = clip.y;
             if (y > bottom && !clip.reach.bottom) y = bottom;
         }
-        const visible = clip.visible && x >= clip.x && x <= clip.x + clip.width && y >= clip.y && y <= clip.y + clip.height;
+        const visible = clip.visible && x >= clip.x && x <= clip.x + clip.width && y >= clip.y && y <= clip.y + clip.height && (fullDocument || paintedAt(element, x, y));
         return { element, rect: clip, point: { x, y, visible } };
+    }
+    function pinPosition(x, y, width, height, occupied, viewportWidth = innerWidth, viewportHeight = innerHeight) {
+        const gap = 4, clamp = (value, min, max) => Math.max(min, Math.min(value, Math.max(min, max)));
+        const position = (left, bottom) => ({ x: clamp(left, gap, viewportWidth - width - gap), y: clamp(bottom, height + gap, viewportHeight - gap) });
+        const base = position(x, y);
+        const available = p => occupied.every(r => p.x + width + gap <= r.left || p.x >= r.right + gap || p.y + gap <= r.top || p.y - height >= r.bottom + gap);
+        let placed = base;
+        const limit = Math.min(occupied.length + 1, Math.ceil(viewportWidth / (width + gap)) + Math.ceil(viewportHeight / (height + gap)));
+        search: for (let distance = 0; distance <= limit; distance++) {
+            const candidates = distance ? [position(base.x + distance * (width + gap), base.y), position(base.x - distance * (width + gap), base.y),
+                position(base.x, base.y + distance * (height + gap)), position(base.x, base.y - distance * (height + gap))] : [base];
+            for (const candidate of candidates) if (available(candidate)) { placed = candidate; break search; }
+        }
+        occupied.push({ left: placed.x, right: placed.x + width, top: placed.y - height, bottom: placed.y });
+        return placed;
     }
     function inBox(box) {
         const nodes = [
@@ -780,9 +818,7 @@ if(location.hash==='#zhuanti')openDetail(true);
     }
     // ---------- 折叠区展开 / 引导（标注工作台“点序号联动展开”与“点击引导”复用；全流程已归档，此为标注侧增补） ----------
     function hidden(el) {
-        if (!el) return true;
-        const cs = getComputedStyle(el);
-        return cs.display === 'none' || cs.visibility === 'hidden' || el.getClientRects().length === 0;
+        return !el || !!hiddenRoot(el) || el.getClientRects().length === 0;
     }
     function resolveHidden(anchor) {
         // 与 resolve 同规则但不过滤可见性：定位被折叠/隐藏的目标元素
@@ -934,9 +970,10 @@ if(location.hash==='#zhuanti')openDetail(true);
     function setRevealNotes(notes) { revealNotes = Array.isArray(notes) ? notes : []; }
     const revealPathKey = steps => JSON.stringify(steps.map(s => [s.protoId || s.selector, s.kind, s.value]));
     function hiddenContainer(el) {
+        const root = hiddenRoot(el);
+        if (root) return root === document.body || root === document.documentElement ? null : root;
         for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
-            const css = getComputedStyle(n);
-            if (n.hidden || css.display === 'none' || n.tagName === 'DETAILS' && !n.open) return n;
+            if (n.tagName === 'DETAILS' && !n.open) return n;
         }
         return null;
     }
@@ -1167,6 +1204,7 @@ if(location.hash==='#zhuanti')openDetail(true);
         rect,
         placement,
         point,
+        pinPosition,
         at,
         inBox,
         currentIds,
@@ -1250,7 +1288,7 @@ if(location.hash==='#zhuanti')openDetail(true);
     function classify(note, win) {
         const PA = win.ProtoAnchors;
         let found = null;
-        try { found = PA.point(note); } catch (_) { /* 未就绪或失效锚点 */ }
+        try { found = PA.point(note, true); } catch (_) { /* 未就绪或失效锚点 */ }
         let point = logicalPoint(found, win), el = found?.element || null;
         if (!el && note.anchor) { try { el = PA.resolveHidden?.(note.anchor) || null; } catch (_) { /* 旧选择器失效 */ } }
         if (!point && note.anchor) { try { point = proxyPoint(note, el, win); } catch (_) { /* 代位失败按失锚处理 */ } }
@@ -1645,7 +1683,7 @@ if(location.hash==='#zhuanti')openDetail(true);
         if (selectedNoteId && !notes.some(n => n.id === selectedNoteId)) selectNote(null);
         const arranged = window.ProtoOrder.project(notes, window);
         const stale = [], noPoint = [];
-        const visibleIds = new Set();
+        const visibleIds = new Set(), occupied = [];
         for (const n of arranged) {
             let found = null;
             try { found = window.ProtoAnchors.point(n); } catch (_) { /* 锚定异常按失效处理 */ }
@@ -1668,8 +1706,11 @@ if(location.hash==='#zhuanti')openDetail(true);
             pin.setAttribute('aria-haspopup', 'dialog');
             pin.setAttribute('aria-controls', '__review_popover');
             pin.setAttribute('aria-expanded', String(popNoteId === n.id && pop?.style.display === 'block'));
-            pin.style.left = found.point.x + 'px';
-            pin.style.top = found.point.y + 'px';
+            const placed = window.ProtoAnchors.pinPosition
+                ? window.ProtoAnchors.pinPosition(found.point.x, found.point.y, pin.offsetWidth || 36, pin.offsetHeight || 36, occupied)
+                : found.point;
+            pin.style.left = placed.x + 'px';
+            pin.style.top = placed.y + 'px';
             pin.onclick = e => {
                 e.preventDefault(); e.stopPropagation();
                 selectNote(n.id);
@@ -1754,7 +1795,7 @@ if(location.hash==='#zhuanti')openDetail(true);
     if (typeof MutationObserver !== 'undefined') {
         new MutationObserver(records => { if (records.some(record => !owned(record.target))) scheduleLayout(); })
             .observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true,
-                attributeFilter: ['class', 'style', 'hidden', 'open', 'aria-expanded', 'aria-hidden', 'data-proto-state'] });
+                attributeFilter: ['class', 'style', 'hidden', 'open', 'aria-expanded', 'aria-hidden', 'inert', 'data-proto-state'] });
     }
     for (const event of ['transitionend', 'animationend', 'load'])
         document.addEventListener(event, e => { if (!owned(e.target)) scheduleLayout(); }, true);
