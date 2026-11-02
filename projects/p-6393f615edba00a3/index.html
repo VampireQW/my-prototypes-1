@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>作业批阅与班级对比 · 原型评审</title>
+        <title>智批提示优化 · 原型评审</title>
         <style>
             :root {
                 --bg: #f7f8f8;
@@ -98,13 +98,8 @@
                 border-left: 1px solid var(--border);
                 padding: 12px 16px 16px;
             }
-            /* PRD 区左缘拖拽条：拖动放大/缩小右栏（与编辑态一致）。中部常显一枚短握把，让“可拖”可被发现；悬停/拖动时整条亮主色。 */
+            /* PRD 区左缘保留透明拖动区域。 */
             #prd-resizer { position: absolute; left: 0; top: 0; bottom: 0; width: 10px; margin-left: -5px; cursor: ew-resize; touch-action: none; z-index: 6; }
-            #prd-resizer::before { content: ""; position: absolute; left: 4px; top: 0; bottom: 0; width: 2px; background: transparent; transition: background .12s ease-out; }
-            #prd-resizer::after { content: ""; position: absolute; left: 3px; top: 50%; width: 4px; height: 40px; margin-top: -20px; border-radius: 2px; background: var(--control); opacity: .55; transition: background .12s ease-out, opacity .12s ease-out; }
-            @media (hover: hover) { #prd-resizer:hover::before { background: var(--accent); } #prd-resizer:hover::after { background: var(--accent); opacity: 1; } }
-            #prd-resizer.resizing::before { background: var(--accent); }
-            #prd-resizer.resizing::after { background: var(--accent); opacity: 1; }
             .right-closed #prd-resizer, .prd-empty #prd-resizer { display: none; }
             aside h2 { font-size: 17px; margin: 0 0 4px; }
             details { border-bottom: 1px solid var(--border); padding: 7px 0; }
@@ -145,6 +140,8 @@
             .note .markdown > :last-child { margin-bottom: 0; }
             .note.stale { opacity: .55; cursor: default; }
             .note.flash { animation: note-flash 1.2s ease; }
+            .note.selected .note-head { background: var(--soft); border-radius: 6px; box-shadow: 0 0 0 4px var(--soft); }
+            .note.selected .note-no { outline: 2px solid var(--accent); outline-offset: 3px; }
             @keyframes note-flash { 0%, 45% { background: var(--soft); } 100% { background: transparent; } }
             .empty { margin: 40px; padding: 24px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
             [hidden] { display: none !important; }
@@ -226,14 +223,21 @@ dialog.ppn-trash-dialog{position:fixed;top:12px;bottom:auto;margin:0;padding:0;w
 @media(pointer:coarse){.ppn .ppn-expand{width:28px;height:40px;left:0;top:7px}.ppn .ppn-item-wrap>.ppn-page{padding-left:30px}}
 @media(prefers-reduced-motion:reduce){.ppn .ppn-expand svg{transition:none}}
 
-        :root{--left:256px}
-        .layout nav{display:flex;flex-direction:column;overflow:hidden}
+        .layout:not(.left-closed){--left:var(--page-nav-width,256px)}
+        .layout nav{position:relative;display:flex;flex-direction:column;overflow:hidden}
         .review-nav-header{display:flex;align-items:center;gap:8px;height:56px;flex:none;border-bottom:1px solid var(--border);padding:0 8px 0 16px}
         .review-project-name{flex:1;min-width:0;margin:0;font-size:14px;line-height:24px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .review-nav-header button{display:grid;place-items:center;flex:none;width:32px;height:32px;padding:7px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--muted)}
         #tree{flex:1;min-height:0;overflow:auto}.layout.left-closed .review-nav-header{padding:0 4px}
         .layout.left-closed .review-project-name{display:none}
         </style>
+        <style>.page-nav-resizer{position:absolute;right:0;top:0;bottom:0;width:8px;z-index:40;cursor:col-resize;touch-action:none;outline:none}
+.page-nav-resizer[hidden]{display:none!important}
+.page-nav-resizer:focus-visible{outline:2px solid var(--wb-control,var(--control,#888));outline-offset:-2px}
+.page-nav-resize-overlay{position:fixed;inset:0;z-index:2147483647;cursor:col-resize;touch-action:none;user-select:none}
+body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing iframe{pointer-events:none}
+@media(pointer:coarse){.page-nav-resizer{width:16px}}
+</style>
         <script>(function () {
     'use strict';
     const svg = (path) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">' + path + '</svg>';
@@ -710,16 +714,88 @@ dialog.ppn-trash-dialog{position:fixed;top:12px;bottom:auto;margin:0;padding:0;w
     window.ProtoProjectNavigation = {mount, defaultPage, applyPreview, fitDevice, createSelect, positionPopup, reorderProject, reorderError, pageTree, subtreePages, updatePageNavigation, createPageTracking};
 })();
 </script>
+        <script>/* 工作台和独立评审壳共用页面列表宽度交互。 */
+(() => {
+    'use strict';
+    function attach(handle, options) {
+        const min = 200, defaultWidth = 256;
+        let preferred = defaultWidth, width, drag = null;
+        const max = () => Math.max(min, Math.min(480, options.getMax()));
+        try {
+            const saved = Number(localStorage.getItem(options.storageKey));
+            if (Number.isFinite(saved) && saved >= min) preferred = Math.min(480, saved);
+        } catch (_) { /* 存储不可用时仍可调整 */ }
+        function render(value) {
+            width = Math.round(Math.max(min, Math.min(max(), value)));
+            options.setWidth(width);
+            handle.setAttribute('aria-valuemin', min);
+            handle.setAttribute('aria-valuemax', Math.floor(max()));
+            handle.setAttribute('aria-valuenow', width);
+            handle.setAttribute('aria-valuetext', `${width} 像素`);
+        }
+        function save() {
+            preferred = width;
+            try { localStorage.setItem(options.storageKey, String(width)); } catch (_) { /* 本次页面保留宽度 */ }
+        }
+        function finish(commit) {
+            if (!drag) return;
+            const previous = drag; drag = null;
+            previous.overlay.remove();
+            handle.classList.remove('resizing'); document.body.classList.remove('page-nav-resizing');
+            if (handle.hasPointerCapture(previous.pointerId)) handle.releasePointerCapture(previous.pointerId);
+            if (commit) save(); else render(preferred);
+        }
+        function refresh() {
+            if (drag) finish(false);
+            handle.hidden = !options.isOpen();
+            render(preferred);
+        }
+        handle.addEventListener('pointerdown', event => {
+            if (drag || event.button !== 0 || event.isPrimary === false || !options.isOpen()) return;
+            event.preventDefault();
+            const overlay = document.createElement('div'); overlay.className = 'page-nav-resize-overlay';
+            overlay.setAttribute('aria-hidden', 'true'); document.body.append(overlay);
+            drag = {pointerId: event.pointerId, x: event.clientX, width, overlay};
+            handle.classList.add('resizing'); document.body.classList.add('page-nav-resizing');
+            handle.focus({preventScroll: true});
+            handle.setPointerCapture(event.pointerId);
+        });
+        handle.addEventListener('pointermove', event => {
+            if (drag && drag.pointerId === event.pointerId) render(drag.width + event.clientX - drag.x);
+        });
+        handle.addEventListener('pointerup', event => { if (drag?.pointerId === event.pointerId) finish(true); });
+        handle.addEventListener('pointercancel', () => finish(false));
+        handle.addEventListener('lostpointercapture', () => finish(false));
+        handle.addEventListener('dblclick', () => { if (options.isOpen()) { render(defaultWidth); save(); } });
+        handle.addEventListener('keydown', event => {
+            if (drag || !options.isOpen()) return;
+            const step = event.shiftKey ? 40 : 10;
+            const next = {ArrowLeft: width - step, ArrowRight: width + step, Home: min, End: max()}[event.key];
+            if (next == null) return;
+            event.preventDefault(); render(next); save();
+        });
+        window.addEventListener('keydown', event => {
+            if (drag && event.key === 'Escape') { event.preventDefault(); event.stopImmediatePropagation(); finish(false); }
+        }, true);
+        window.addEventListener('blur', () => finish(false));
+        window.addEventListener('resize', refresh);
+        refresh();
+        return {refresh};
+    }
+    window.ProtoSidebarResize = {attach};
+})();
+</script>
     </head>
     <body>
         <header class="topbar">
             <span class="brand" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="m12 3 10 5-10 5L2 8Z M2 12l10 5 10-5 M2 16l10 5 10-5"/></svg></span>
-            <strong id="project">作业批阅与班级对比</strong><span id="scope" class="muted">请选择页面</span><span class="muted" id="generated"></span>
+            <strong id="project">智批提示优化</strong><span id="scope" class="muted">请选择页面</span><span class="muted" id="generated"></span>
             <a id="source" target="_blank" rel="noopener">交互原型 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M14 3h7v7 M21 3 10 14 M10 3H3v18h18v-7"/></svg></a><span class="muted">只读评审</span><button id="toggle-prd">收起 PRD</button>
         </header>
         <main class="layout" id="layout">
             <nav class="ppn-nav-panel" aria-label="页面列表">
-                <div class="review-nav-header"><h2 class="review-project-name" title="作业批阅与班级对比">作业批阅与班级对比</h2><button id="toggle-pages" aria-label="展开或收起页面列表"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button></div><div id="tree"></div>
+                <div class="review-nav-header"><h2 class="review-project-name" title="智批提示优化">智批提示优化</h2><button id="toggle-pages" aria-label="展开或收起页面列表"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button></div><div id="tree"></div>
+                <div id="page-nav-resizer" class="page-nav-resizer" role="separator" aria-label="页面列表宽度" aria-orientation="vertical" aria-controls="tree" tabindex="0" title="拖动调整页面列表宽度，双击恢复默认"></div>
             </nav>
             <section class="canvas">
                 <iframe id="frame" title="交互原型" sandbox="allow-same-origin allow-scripts" hidden></iframe>
@@ -739,7 +815,7 @@ dialog.ppn-trash-dialog{position:fixed;top:12px;bottom:auto;margin:0;padding:0;w
             </aside>
         </main>
         <noscript>请开启 JavaScript 查看评审内容（页面树、PRD 与标注气泡均依赖脚本渲染）。</noscript>
-        <script type="application/json" id="review-data">{"name": "作业批阅与班级对比", "projectId": "p-6393f615edba00a3", "revision": 50, "publishedAt": "2026-10-20T02:11:39.531734+00:00", "pages": [{"id": "home", "title": "作业批阅与班级对比原型", "file": "index.html", "states": [{"id": "default", "title": "默认页面", "kind": "default"}], "role": "launcher"}, {"id": "class-compare", "title": "班级对比 - 作业", "file": "class-compare.html", "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": [], "manualTargets": [], "excludedTargets": [{"id": "c7908b1e-4536-4432-a90f-b1793e08d102", "anchor": {"protoId": "", "selector": "#clsChecks > label:nth-of-type(1) > input", "tag": "input", "text": "", "parentText": "6"}}, {"id": "72ebfaf7-225f-4415-b61e-40872d69a027", "anchor": {"protoId": "", "selector": "body > main > section > div:nth-of-type(3) > div > span:nth-of-type(2)", "tag": "span", "text": "柱状图", "parentText": "表格 柱状图"}}, {"id": "589a59c5-ae18-4032-b58c-2d363966875b", "anchor": {"protoId": "", "selector": "#cmpTable > thead > tr:nth-of-type(1) > th:nth-of-type(9)", "tag": "th", "text": "良好", "parentText": "班级 任课教师 已交人数 未交人数 最高分 最低分 平均分 优秀 良好 及格 低分"}}, {"id": "c20fd07b-9980-43f0-824c-f4c3fc890e78", "anchor": {"protoId": "", "selector": "#cmpTable > thead > tr:nth-of-type(1) > th:nth-of-type(10)", "tag": "th", "text": "及格", "parentText": "班级 任课教师 已交人数 未交人数 最高分 最低分 平均分 优秀 良好 及格 低分"}}, {"id": "b17e61ff-fe2c-4e73-9c68-88eb930be85c", "anchor": {"protoId": "btn-export", "selector": "body > main > section > div:nth-of-type(2) > div > button:nth-of-type(2)", "tag": "button", "text": "导 出", "parentText": "设置等级 导 出"}}]}}], "role": "page", "clientId": "", "previewType": "web"}], "clients": [], "defaultPage": "class-compare", "documents": [{"id": "4700230f-e7cb-4e65-8c38-ac2bcf3a196a", "pageId": "home", "stateId": "default", "markdown": "## 一、需求描述\n「作业批阅与班级对比」原型项目的整合壳页：左侧为原型页面导航，右侧 iframe 加载被选中页面，供评审者在同一入口内切换查看（作业批阅、班级对比两页同属本项目，自「新教育后台」项目拆出）。默认打开导航第一项，当前选中页以蓝左条+浅蓝底高亮。\n\n## 二、研发实现\n页面清单由壳内 PAGES 数组静态注册（id/名称/文件路径），新增页面只需放入页面文件并追加一行注册项；URL hash（#页面id）与选中页双向同步，刷新或直达链接保持当前页；iframe 内各页面交互相互独立。", "confirmed": false, "updatedAt": "2026-10-14T01:38:28.101212+00:00"}, {"id": "370584f9-5ba5-4125-96c6-7736099d4212", "pageId": "class-compare", "stateId": "default", "markdown": "## 需求背景\n\n- 有的学校班级有分层，按教学组划分，不同教学组成绩对比没有太大意义，顾因此优化。\n\n## 需求目标\n\n- 班级范围按教学组归属自动圈定。\n- 教师有所属教学组时默认按组内教师（多组取并集）所带班级显示，无所属教学组时正常显示全量班级。\n- 过滤口径沿用：组内教师所带且当前作业已有学生作答的班级，不含只交空白卡或异常卡的班级。\n", "confirmed": false, "updatedAt": "2026-10-20T01:56:32.978Z"}], "annotations": [{"id": "a20028c7-ad55-4e72-b41a-ffaa44a4b8eb", "pageId": "class-compare", "stateId": "default", "number": 5, "body": "### 业务规则\n\n- 已加入教学组：默认显示您所在教学组内教师任教、且已有学生提交当前作业的班级；\n- 未加入教学组：显示本年级已有学生提交当前作业的全部班级。\n- 班级后增加问号，提示文案如上。\n\n### 交互说明\n\n- 悬停或点击问号展示口径说明；\n", "anchor": {"protoId": "", "selector": "body > main > section > div:nth-of-type(1) > span", "tag": "span", "text": "班级?：", "parentText": "班级?： 全选 6 7 8 9", "htmlSnippet": "<span class=\"lb\">班级<span class=\"qtip\" data-proto-id=\"class-scope-tip\" tabindex=\"0\" onclick=\"toggleTip(this,event)\">?\n        <span class=\"qtip-bubble\" style=\"left: 8px; top: 128.6px; --ax: 69px;\">已加入教学组：默认显示您所在教学组内教师任教、且已有学生提交当前作业的班级；未加入教学组：显示本年级已有学生提交当前作业的全部班级<\/span>\n      <\/span>：<\/span>", "rect": {"x": 42, "y": 231, "width": 55, "height": 20}, "revealSteps": [{"protoId": "", "selector": "body > main > section > div:nth-of-type(3) > div > span:nth-of-type(2)", "tag": "span", "text": "柱状图", "parentText": "表格 柱状图", "kind": "click", "value": "true", "label": "柱状图"}]}, "placement": {"kind": "element", "x": 52.034000000000006, "y": 18.77799694824219, "rx": 0.9460727272727274, "ry": 0.9388998474121095}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-20T01:57:42.487Z"}]}</script>
+        <script type="application/json" id="review-data">{"name": "智批提示优化", "projectId": "p-6393f615edba00a3", "revision": 65, "publishedAt": "2026-11-02T09:50:33.766690+00:00", "pages": [{"id": "home", "title": "作业批阅与班级对比原型", "file": "index.html", "states": [{"id": "default", "title": "默认页面", "kind": "default"}], "role": "launcher"}, {"id": "grading", "title": "作业批阅 - 作业", "file": "grading.html", "states": [{"id": "default", "title": "默认页面", "kind": "default"}, {"id": "ai-partial", "title": "智批未全部完成", "kind": "adapter"}, {"id": "ai-running", "title": "智批进行中", "kind": "adapter"}]}, {"id": "class-compare", "title": "班级对比 - 作业", "file": "class-compare.html", "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": [], "manualTargets": [], "excludedTargets": [{"id": "c7908b1e-4536-4432-a90f-b1793e08d102", "anchor": {"protoId": "", "selector": "#clsChecks > label:nth-of-type(1) > input", "tag": "input", "text": "", "parentText": "6"}}, {"id": "72ebfaf7-225f-4415-b61e-40872d69a027", "anchor": {"protoId": "", "selector": "body > main > section > div:nth-of-type(3) > div > span:nth-of-type(2)", "tag": "span", "text": "柱状图", "parentText": "表格 柱状图"}}, {"id": "589a59c5-ae18-4032-b58c-2d363966875b", "anchor": {"protoId": "", "selector": "#cmpTable > thead > tr:nth-of-type(1) > th:nth-of-type(9)", "tag": "th", "text": "良好", "parentText": "班级 任课教师 已交人数 未交人数 最高分 最低分 平均分 优秀 良好 及格 低分"}}, {"id": "c20fd07b-9980-43f0-824c-f4c3fc890e78", "anchor": {"protoId": "", "selector": "#cmpTable > thead > tr:nth-of-type(1) > th:nth-of-type(10)", "tag": "th", "text": "及格", "parentText": "班级 任课教师 已交人数 未交人数 最高分 最低分 平均分 优秀 良好 及格 低分"}}, {"id": "b17e61ff-fe2c-4e73-9c68-88eb930be85c", "anchor": {"protoId": "btn-export", "selector": "body > main > section > div:nth-of-type(2) > div > button:nth-of-type(2)", "tag": "button", "text": "导 出", "parentText": "设置等级 导 出"}}]}}], "role": "page", "clientId": "", "previewType": "web", "progress": 100}], "clients": [], "defaultPage": "class-compare", "documents": [{"id": "4700230f-e7cb-4e65-8c38-ac2bcf3a196a", "pageId": "home", "stateId": "default", "markdown": "## 一、需求描述\n「作业批阅与班级对比」原型项目的整合壳页：左侧为原型页面导航，右侧 iframe 加载被选中页面，供评审者在同一入口内切换查看（作业批阅、班级对比两页同属本项目，自「新教育后台」项目拆出）。默认打开导航第一项，当前选中页以蓝左条+浅蓝底高亮。\n\n## 二、研发实现\n页面清单由壳内 PAGES 数组静态注册（id/名称/文件路径），新增页面只需放入页面文件并追加一行注册项；URL hash（#页面id）与选中页双向同步，刷新或直达链接保持当前页；iframe 内各页面交互相互独立。", "confirmed": false, "updatedAt": "2026-10-14T01:38:28.101212+00:00"}, {"id": "e89687a6-79d1-4dee-8ab8-e4da1e883d18", "pageId": "grading", "stateId": "default", "markdown": "## 需求背景\n\n- 智批可能出现部分题目失败或因异常未执行的情况，此前页面缺少对应状态提示与补救入口，教师只能逐题人工处理。\n\n## 需求目标\n\n- 批阅状态在三态间流转：智批进行中 / 智批未全部完成 / 智批已完成，本状态为智批已完成。\n- 智批异常时给出明确状态提示，并提供人工批阅与重批两条处理路径。\n- 重批可按题目范围与批改范围定向发起。\n- 重批机会每位老师仅一次，用完后不再提供重批入口。", "confirmed": false, "updatedAt": "2026-10-30T09:56:10.760225+00:00"}, {"id": "370584f9-5ba5-4125-96c6-7736099d4212", "pageId": "class-compare", "stateId": "default", "markdown": "## 需求背景\n\n- 有的学校班级有分层，按教学组划分，不同教学组成绩对比没有太大意义，顾因此优化。\n\n## 需求目标\n\n- 班级范围按教学组归属自动圈定。\n- 教师有所属教学组时默认按组内教师（多组取并集）所带班级显示，无所属教学组时正常显示全量班级。\n- 过滤口径沿用：组内教师所带且当前作业已有学生作答的班级，不含只交空白卡或异常卡的班级。\n", "confirmed": false, "updatedAt": "2026-10-20T01:56:32.978Z"}, {"id": "ae3aeebd-02e0-4efc-9133-061c918d8df3", "pageId": "grading", "stateId": "ai-partial", "markdown": "## 需求背景\n\n- 智批未全部完成时已有部分题目产出 AI 批改结果，教师同样需要复核提示。\n\n## 需求目标\n\n- 本状态与智批已完成一样展示 AI 复核提示条；仅智批进行中不展示。", "confirmed": false, "updatedAt": "2026-10-30T10:22:12.180255+00:00"}, {"id": "29b70c09-a882-4d32-af90-519c39e9c2e3", "pageId": "grading", "stateId": "ai-running", "markdown": "## 需求目标\n\n- 本状态为智批进行中：蓝色旋转徽章，重批按钮与 AI 复核提示条均不显示，可点「刷新」查看进度；智批初次执行与重批执行中均为本状态。", "confirmed": false, "updatedAt": "2026-10-30T09:56:10.760225+00:00"}], "annotations": [{"id": "031bf5bf-82ea-4fa9-b5f9-14dfd8f371f0", "pageId": "grading", "stateId": "default", "number": 8, "body": "### 数据流转\n\n1. 三态经 PrototypeBridge.enter(stateId) 切换并回写 data-proto-state；AI 复核提示条仅 default 显示，【重批】按钮仅 ai-partial 且未消耗机会时显示。\n\n### 业务规则\n\n1. 批阅状态机为三态：智批已完成（绿色 ✓，default）/ 智批未全部完成（橙色 !，ai-partial）/ 智批进行中（蓝色旋转环，ai-running），由 setAiState 统一驱动徽章样式与文案。", "anchor": {"protoId": "status-bar", "selector": "body > main > div:nth-of-type(1)", "tag": "div", "text": "共2题，1题未完成批阅 智批已完成 ? AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。 合并批阅 刷 新", "parentText": "共2题，1题未完成批阅 智批已完成 ? AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。 合并批阅 刷 新 题目 批阅进度 平均得分 本题满分 批改完成时间 操作 12 12/62（19.4%） 10.42 11 - 批改更多 13 62/62（100.0%） 9.54 12 2026-10-10 10:12:13 回评更多", "htmlSnippet": "<div class=\"gdbar\" data-proto-id=\"status-bar\">\n    <span class=\"gd-sum\">共2题，<b class=\"n-red\">1<\/b>题未完成批阅<\/span>\n    <span class=\"gd-badge\" data-proto-id=\"ai-badge\" id=\"aiBadge\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 15 15\"><circle cx=\"7.5\" cy=\"7.5\" r=\"6.7\" fill=\"#52c41a\"><\/circle><path d=\"M4.4 7.7l2.1 2.1 4-4.2\" stroke=\"#fff\" stroke-width=\"1.6\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path><\/svg><span>智批已完成<\/span><span class=\"gd-q\" title=\"智能批改由 AI 完成\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><circle cx=\"6.5\" cy=\"6.5\" r=\"5.7\" stroke=\"#9fb3c8\" stroke-width=\"1\"><\/circle><text x=\"6.5\" y=\"9.6\" font-size=\"8\" text-anchor=\"middle\" fill=\"#9fb3c8\" font-family=\"sans-serif\">?<\/text><\/svg><\/span><\/span>\n    <span class=\"gd-notice\" data-proto-id=\"ai-notice\" style=\"\">\n      <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\" style=\"flex-shrink:0\"><path d=\"M6.5 1.7L11.9 11H1.1z\" stroke=\"#faad14\" stroke-width=\"1.2\" stroke-linejoin=\"round\"><\/path><path d=\"M6.5 5v2.7\" stroke=\"#faad14\" stroke-width=\"1.3\" stroke-linecap=\"round\"><\/path><circle cx=\"6.5\" cy=\"9.3\" r=\".75\" fill=\"#faad14\"><\/circle><\/svg>\n      AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。\n    <\/span>\n    <div class=\"gd-acts\">\n      <button class=\"btn-primary\" data-proto-id=\"btn-regrade\" id=\"btnRegrade\" onclick=\"openRegrade()\" style=\"display: none;\">\n        <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><path d=\"M11.2 6.5a4.7 4.7 0 11-1.4-3.4M11.3 1.6v2.7H8.6\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path><\/svg>\n        重批\n      <\/button>\n      <button class=\"btn-pale\" data-proto-id=\"btn-merge\" onclick=\"toast('第12题未完成批阅，暂不能合并批阅')\">合并批阅<\/button>\n      <button class=\"btn-line\" data-proto-id=\"btn-refresh\" onclick=\"toast('批阅进", "rect": {"x": 22, "y": 213, "width": 1128, "height": 64}}, "placement": {"kind": "element", "x": 257.525, "y": 13.999996948242199, "rx": 0.228302304964539, "ry": 0.22012573025808782}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-30T10:12:53.050Z"}, {"id": "a20028c7-ad55-4e72-b41a-ffaa44a4b8eb", "pageId": "class-compare", "stateId": "default", "number": 5, "body": "### 业务规则\n\n- 已加入教学组：默认显示您所在教学组内教师任教、且已有学生提交当前作业的班级；\n- 未加入教学组：显示本年级已有学生提交当前作业的全部班级。\n- 班级后增加问号，提示文案如上。\n\n### 交互说明\n\n- 悬停或点击问号展示口径说明；\n", "anchor": {"protoId": "", "selector": "body > main > section > div:nth-of-type(1) > span", "tag": "span", "text": "班级?：", "parentText": "班级?： 全选 6 7 8 9", "htmlSnippet": "<span class=\"lb\">班级<span class=\"qtip\" data-proto-id=\"class-scope-tip\" tabindex=\"0\" onclick=\"toggleTip(this,event)\">?\n        <span class=\"qtip-bubble\" style=\"left: 8px; top: 128.6px; --ax: 69px;\">已加入教学组：默认显示您所在教学组内教师任教、且已有学生提交当前作业的班级；未加入教学组：显示本年级已有学生提交当前作业的全部班级<\/span>\n      <\/span>：<\/span>", "rect": {"x": 42, "y": 231, "width": 55, "height": 20}, "revealSteps": [{"protoId": "", "selector": "body > main > section > div:nth-of-type(3) > div > span:nth-of-type(2)", "tag": "span", "text": "柱状图", "parentText": "表格 柱状图", "kind": "click", "value": "true", "label": "柱状图"}]}, "placement": {"kind": "element", "x": 52.034000000000006, "y": 18.77799694824219, "rx": 0.9460727272727274, "ry": 0.9388998474121095}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-20T01:57:42.487Z"}, {"id": "57f6da34-cb2c-4114-9df9-c3de44906ee2", "pageId": "grading", "stateId": "ai-partial", "number": 1, "body": "### 页面显示\n\n1. 橙色 ! 徽章「智批未全部完成」，问号说明「存在智批失败或因异常未智批的题目，可人工批阅，或点击重批重新发起智能批改」。\n\n### 业务规则\n\n1. 触发条件：有题目智批失败，或有题目因异常原因未智批；此状态下可人工批阅（表格操作列「批改」）或重批。", "anchor": {"protoId": "status-bar", "selector": "body > main > div:nth-of-type(1)", "tag": "div", "text": "共2题，1题未完成批阅 智批未全部完成 ? 重批 合并批阅 刷 新", "parentText": "共2题，1题未完成批阅 智批未全部完成 ? 重批 合并批阅 刷 新 题目 批阅进度 平均得分 本题满分 批改完成时间 操作 12 12/62（19.4%） 10.42 11 - 批改更多 13 62/62（100.0%） 9.54 12 2026-10-10 10:12:13 回评更多", "htmlSnippet": "<div class=\"gdbar\" data-proto-id=\"status-bar\">\n    <span class=\"gd-sum\">共2题，<b class=\"n-red\">1<\/b>题未完成批阅<\/span>\n    <span class=\"gd-badge partial\" data-proto-id=\"ai-badge\" id=\"aiBadge\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 15 15\"><circle cx=\"7.5\" cy=\"7.5\" r=\"6.7\" fill=\"#fa8c16\"><\/circle><path d=\"M7.5 4v4.4\" stroke=\"#fff\" stroke-width=\"1.7\" stroke-linecap=\"round\"><\/path><circle cx=\"7.5\" cy=\"10.8\" r=\".95\" fill=\"#fff\"><\/circle><\/svg><span>智批未全部完成<\/span><span class=\"gd-q\" title=\"存在智批失败或因异常未智批的题目，可人工批阅，或点击重批重新发起智能批改\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><circle cx=\"6.5\" cy=\"6.5\" r=\"5.7\" stroke=\"#9fb3c8\" stroke-width=\"1\"><\/circle><text x=\"6.5\" y=\"9.6\" font-size=\"8\" text-anchor=\"middle\" fill=\"#9fb3c8\" font-family=\"sans-serif\">?<\/text><\/svg><\/span><\/span>\n    <span class=\"gd-notice\" data-proto-id=\"ai-notice\" style=\"display: none;\">\n      <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\" style=\"flex-shrink:0\"><path d=\"M6.5 1.7L11.9 11H1.1z\" stroke=\"#faad14\" stroke-width=\"1.2\" stroke-linejoin=\"round\"><\/path><path d=\"M6.5 5v2.7\" stroke=\"#faad14\" stroke-width=\"1.3\" stroke-linecap=\"round\"><\/path><circle cx=\"6.5\" cy=\"9.3\" r=\".75\" fill=\"#faad14\"><\/circle><\/svg>\n      AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。\n    <\/span>\n    <div class=\"gd-acts\">\n      <button class=\"btn-primary\" data-proto-id=\"btn-regrade\" id=\"btnRegrade\" onclick=\"openRegrade()\" style=\"\">\n        <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><path d=\"M11.2 6.5a4.7 4.7 0 11-1.4-3.4M11.3 1.6v2.7H8.6\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path><\/svg>\n        重批\n      <\/button>\n      <button class=\"btn-pale\" data-proto-id=\"btn-merge\" onclick=\"toast('第12题未完成批阅，暂不能合并批阅')\">合并批阅<\/button>\n      <button class=\"btn-line\" data", "rect": {"x": 22, "y": 213, "width": 1243, "height": 28}}, "placement": {"kind": "element", "x": 134.325, "y": 2.799996948242182, "rx": 0.10804777355722707, "ry": 0.09999989100864935}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-30T10:15:11.017Z"}, {"id": "19ec1c50-77e1-4fe6-87f7-56912672cabf", "pageId": "grading", "stateId": "ai-partial", "number": 2, "body": "### 页面显示\n\n1. 蓝色主按钮，仅「智批未全部完成」且未消耗重批机会时显示；确定重批即消耗机会，此后不再显示（每位老师仅 1 次）。\n\n### 业务规则\n\n1. 弹窗底部常驻警示「每位老师仅有 1 次重批机会，重批完成后不可再次重批」；机会需按老师持久化（原型为页面内变量，刷新复位）。\n\n### 交互说明\n\n1. 点击弹出重批弹窗：「题目范围」列出支持智批的题号（原型为第 12、13 题，默认全选，至少选 1）；「批改范围」含「未批及批改异常题目」（默认勾选）与「批改为0分的题目」（默认不勾），至少选 1 项，未选足时 toast 拦截。\n1. 取消、× 或点遮罩关闭不消耗机会；确定后进入「智批进行中」，原型模拟 1.6 秒后全部成功转「智批已完成」并 toast 提示。", "anchor": {"protoId": "btn-regrade", "selector": "#btnRegrade", "tag": "button", "text": "重批", "parentText": "重批 合并批阅 刷 新", "htmlSnippet": "<button class=\"btn-primary\" data-proto-id=\"btn-regrade\" id=\"btnRegrade\" onclick=\"openRegrade()\" style=\"\">\n        <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><path d=\"M11.2 6.5a4.7 4.7 0 11-1.4-3.4M11.3 1.6v2.7H8.6\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path><\/svg>\n        重批\n      <\/button>", "rect": {"x": 1007, "y": 213, "width": 76, "height": 28}}, "placement": {"kind": "element", "x": 9.602487792968759, "y": 2.799996948242182, "rx": 0.1263485235916942, "ry": 0.09999989100864935}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-30T10:16:23.693Z"}, {"id": "a589a543-43cd-4ce3-8550-a558e4718a4a", "pageId": "grading", "stateId": "ai-running", "number": 1, "body": "### 页面显示\n\n1. 蓝色旋转环徽章「智批进行中」，问号提示可刷新查看进度；结束后按结果转入「智批已完成」或「智批未全部完成」。", "anchor": {"protoId": "ai-badge", "selector": "[data-proto-id=\"ai-badge\"]", "tag": "span", "text": "智批未全部完成?"}, "placement": {"kind": "element", "x": 0, "y": 0, "rx": 0, "ry": 0.5}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-30T09:56:10.760225+00:00"}, {"id": "1ba97751-b24d-4d88-bdb8-b2a4c8edae69", "pageId": "grading", "stateId": "ai-partial", "number": 3, "body": "### 数据流转\n\n1. 本状态同样展示 AI 复核提示条（2026-10-30 用户拍板：未全部完成时已有 AI 批改结果，仍需复核提示）；仅智批进行中不展示。", "anchor": {"protoId": "ai-notice", "selector": "[data-proto-id=\"ai-notice\"]", "tag": "span", "text": "AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。"}, "placement": {"kind": "element", "x": 0, "y": 0, "rx": 0, "ry": 0.5}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-30T10:22:12.180255+00:00"}], "prototypeVersions": {"class-compare.html": "f3360d41c2b0aa5ddc48", "grading.html": "3b09f61edb605fc834cf", "index.html": "4587334f49e7cfe9253a"}}</script>
         <script>
             'use strict';
             const $ = (id) => document.getElementById(id);
@@ -844,12 +920,19 @@ dialog.ppn-trash-dialog{position:fixed;top:12px;bottom:auto;margin:0;padding:0;w
             let loadedFile = null;
             let frameReady = false;     // 当前 iframe 页已握手（收到 ready 且已下发 init）
             let projectNavigation = null;
+            let selectedNoteId = null;
 
             const safePath = (path) => {
                 const parts = String(path || '').replace(/\\/g, '/').split('/');
                 if (parts.some((p) => !p || p.startsWith('.') || p.includes(':'))) throw new Error('原型文件路径无效');
                 return parts.map(encodeURIComponent).join('/');
             };
+            function prototypeUrl(page) {
+                const file = String(page.file || '').replace(/\\/g, '/');
+                const path = 'proto/' + safePath(file);
+                const version = data.prototypeVersions?.[file];
+                return typeof version === 'string' && /^[a-f0-9]{20}$/.test(version) ? path + '?v=' + version : path;
+            }
 
             /* file:// 下 iframe 源为 opaque（'null'），targetOrigin 只能用 '*'；接收侧以 e.source === frame.contentWindow 校验。 */
             function post(msg) {
@@ -887,6 +970,7 @@ dialog.ppn-trash-dialog{position:fixed;top:12px;bottom:auto;margin:0;padding:0;w
             // ---------- 页面 / 状态切换 ----------
             function selectPage(page, stateId) {
                 const samePage = current.page?.id === page.id && loadedFile === page.file;
+                if (current.page?.id !== page.id || current.stateId !== stateId) selectedNoteId = null;
                 current = { page, stateId };
                 buildTree();
                 ProtoProjectNavigation.applyPreview(frame,page.states?.find(s=>s.id===stateId)?.previewType || page.previewType || data.clients?.find(c=>c.id===page.clientId)?.previewType || data.previewType || 'web');
@@ -901,14 +985,14 @@ dialog.ppn-trash-dialog{position:fixed;top:12px;bottom:auto;margin:0;padding:0;w
                     frameReady = false;
                     frame.hidden = false;
                     $('empty').hidden = true;
-                    frame.src = 'proto/' + safePath(page.file);
+                    frame.src = prototypeUrl(page);
                 }
             }
             function syncChrome() {
                 const { page, stateId } = current;
                 const st = page.states?.find((s) => s.id === stateId);
                 $('scope').textContent = (page.states?.length || 0) > 1 ? `${page.title} / ${st?.title || stateId}` : page.title;
-                try { $('source').href = 'proto/' + safePath(page.file); } catch (_) { $('source').removeAttribute('href'); }
+                try { $('source').href = prototypeUrl(page); } catch (_) { $('source').removeAttribute('href'); }
                 for (const b of $('tree').querySelectorAll('button'))
                     b.setAttribute('aria-current', String(b.dataset.scope === page.id + '\n' + stateId));
                 history.replaceState(null, '', '#' + new URLSearchParams({ p: page.id, s: stateId }).toString());
@@ -924,11 +1008,13 @@ dialog.ppn-trash-dialog{position:fixed;top:12px;bottom:auto;margin:0;padding:0;w
                 if (actual && actual.id !== current.page.id) {
                     /* 原型内部导航到了另一个已登记页面：跟随。 */
                     current = { page: actual, stateId: actual.states.some((s) => s.id === ids.stateId) ? ids.stateId : actual.states[0].id };
+                    selectedNoteId = null;
                     orders = {};
                     pendingState = null;
                     syncChrome();
                 } else if (ids.stateId && ids.stateId !== current.stateId && current.page.states?.some((s) => s.id === ids.stateId)) {
                     current.stateId = ids.stateId;
+                    selectedNoteId = null;
                     syncChrome();
                 }
                 let enterState = null;
@@ -939,16 +1025,22 @@ dialog.ppn-trash-dialog{position:fixed;top:12px;bottom:auto;margin:0;padding:0;w
                 frameReady = true;
                 // 先按当前页/状态判定 PRD 是否为空，再把真实侧栏开合态下发给 iframe；避免切页瞬间沿用上一页状态。
                 renderAside();
-                post({ type: 'init', notes: pageNotes(), asideOpen: prdAsideOpen(), enterState,
+                post({ type: 'init', notes: pageNotes(), asideOpen: prdAsideOpen(), enterState, selectedNoteId,
                     hintScopes: (current.page?.states || []).map(state => ({id: state.id, interactionHints: state.interactionHints})) });
             }
             window.addEventListener('message', (e) => {
+                if (e.source === frame.contentWindow && e.data?.__protoScreenshot === 1 && e.data.type === 'navigate' && current.page?.kind === 'screenshot') {
+                    const target = data.pages.find(p => p.id === e.data.pageId);
+                    if(target) selectPage(target, target.states[0]?.id || 'default');
+                    return;
+                }
                 if (e.source !== frame.contentWindow || !e.data || e.data.__review !== 1) return;
                 const m = e.data;
                 if (m.type === 'ready') { onFrameReady(m.ids || {}); return; }
                 if (!frameReady) return;   // 握手前的空 sync 丢掉，免右栏闪一下“–”
                 if (m.type === 'sync') onPinSync(m.map || {}, m.state || 'default', m.stale || []);
                 else if (m.type === 'focus') onPinFocus(m.noteId);
+                else if (m.type === 'selection') selectReviewNote(m.noteId);
             });
 
             // ---------- 气泡层回调 ----------
@@ -957,11 +1049,13 @@ dialog.ppn-trash-dialog{position:fixed;top:12px;bottom:auto;margin:0;padding:0;w
                 if (current.page && state !== current.stateId && current.page.states?.some((s) => s.id === state)) {
                     /* 原型自身切换了状态（页内交互）：右栏与页面树跟随。 */
                     current.stateId = state;
+                    selectedNoteId = null;
                     syncChrome();
                 }
                 if (state === current.stateId) renderAside();
             }
             function onPinFocus(noteId) {
+                selectReviewNote(noteId);
                 const row = $('notes').querySelector(`[data-note-id="${CSS.escape(noteId)}"]`);
                 if (!row) return;
                 // 与 viewer extScrollNoteIntoView 同语义（单套同源）：定位行首（序号）进视口，行首已可见则不滚。
@@ -975,7 +1069,17 @@ dialog.ppn-trash-dialog{position:fixed;top:12px;bottom:auto;margin:0;padding:0;w
             }
             function reveal(note) {
                 // 定位在原型页内完成（review-bridge.js：目标被折叠隐藏时先联动展开再滚到位）
+                selectReviewNote(note.id);
                 post({ type: 'reveal', note });
+            }
+            function selectReviewNote(noteId) {
+                selectedNoteId = data.annotations.some(n => n.id === noteId && n.pageId === current.page?.id && n.stateId === current.stateId) ? noteId : null;
+                for (const row of $('notes').querySelectorAll('.note')) {
+                    const selected = row.dataset.noteId === selectedNoteId;
+                    row.classList.toggle('selected', selected);
+                    row.setAttribute('aria-current', String(selected));
+                }
+                post({ type: 'select', noteId: selectedNoteId });
             }
 
             // ---------- 右栏 PRD ----------
@@ -1013,8 +1117,9 @@ dialog.ppn-trash-dialog{position:fixed;top:12px;bottom:auto;margin:0;padding:0;w
                 host.replaceChildren();
                 for (const [note, num, stale] of rows) {
                     const row = document.createElement('section');
-                    row.className = 'note' + (stale ? ' stale' : '');
+                    row.className = 'note' + (stale ? ' stale' : '') + (note.id === selectedNoteId ? ' selected' : '');
                     row.dataset.noteId = note.id;
+                    row.setAttribute('aria-current', String(note.id === selectedNoteId));
                     row.tabIndex = 0;
                     row.setAttribute('aria-label', `标注 ${num}${stale ? '，已失锚' : '，回车定位到原型位置'}`);
                     const no = document.createElement('span');
@@ -1052,7 +1157,12 @@ dialog.ppn-trash-dialog{position:fixed;top:12px;bottom:auto;margin:0;padding:0;w
                 const stateId = page.states?.some((s) => s.id === params.get('s')) ? params.get('s') : (page.states?.[0]?.id || 'default');
                 selectPage(page, stateId);
             }
-            $('toggle-pages').onclick = () => $('layout').classList.toggle('left-closed');
+            const pageNavSizer = ProtoSidebarResize.attach($('page-nav-resizer'), {
+                storageKey: 'prototype-page-nav-width', isOpen: () => !$('layout').classList.contains('left-closed'),
+                getMax: () => $('layout').clientWidth - document.querySelector('aside').getBoundingClientRect().width - 240,
+                setWidth: width => $('layout').style.setProperty('--page-nav-width', width + 'px')
+            });
+            $('toggle-pages').onclick = () => { $('layout').classList.toggle('left-closed'); pageNavSizer.refresh(); };
             /* PRD 宽度：拖拽调节 + localStorage 记忆；收起时清除内联宽度让 --right 归 0。 */
             const PRD_KEY = 'proto-review-prd-width';
             const applyPrdWidth = () => {
@@ -1065,6 +1175,7 @@ dialog.ppn-trash-dialog{position:fixed;top:12px;bottom:auto;margin:0;padding:0;w
                 $('toggle-prd').textContent = closed ? '显示 PRD' : '收起 PRD';
                 if (closed) $('layout').style.removeProperty('--right');
                 else applyPrdWidth();
+                pageNavSizer.refresh();
                 post({ type: 'aside', open: !closed });
                 // 与 viewer 同源（约定 11/12）：收起态开的序号 popover，展开右栏时迁移为右栏定位——关 popover + 行首定位 + 高亮。
                 if (!closed) {
@@ -1085,6 +1196,7 @@ dialog.ppn-trash-dialog{position:fixed;top:12px;bottom:auto;margin:0;padding:0;w
                     prdResizer.removeEventListener('pointermove', move);
                     prdResizer.removeEventListener('pointerup', up);
                     prdResizer.classList.remove('resizing');
+                    pageNavSizer.refresh();
                     const w = parseInt($('layout').style.getPropertyValue('--right'), 10);
                     if (w >= 280) { try { localStorage.setItem(PRD_KEY, String(w)); } catch (_) { /* 存储异常忽略 */ } }
                 };
