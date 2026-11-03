@@ -92,6 +92,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 .btn-line:hover{border-color:var(--blue);color:var(--blue)}
 .btn-primary{height:28px;padding:0 15px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:12.5px;letter-spacing:1px;display:flex;align-items:center;gap:6px;cursor:pointer}
 .btn-primary:hover{background:var(--blue-deep)}
+.btn-primary.disabled,.btn-primary.disabled:hover{background:#a9c9f2;cursor:not-allowed}
 
 /* ═══════ 重批弹窗 ═══════ */
 .mask{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:300}
@@ -642,7 +643,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
       </div>
       <div class="m-warn">
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="flex-shrink:0"><path d="M6.5 1.7L11.9 11H1.1z" stroke="#faad14" stroke-width="1.2" stroke-linejoin="round"/><path d="M6.5 5v2.7" stroke="#faad14" stroke-width="1.3" stroke-linecap="round"/><circle cx="6.5" cy="9.3" r=".75" fill="#faad14"/></svg>
-        每位老师仅有 1 次重批机会，重批完成后不可再次重批。
+                <span id="rgChance">每位老师有 3 次重批机会，剩余 3 次，用完后不可再次重批。</span>
       </div>
     </div>
     <div class="m-foot">
@@ -667,8 +668,9 @@ function toast(msg){
    - 智批异常（有题目失败或因异常未智批）→ ai-partial：可人工批阅（表格操作列）或【重批】。
    - AI 复核提示条在「智批已完成 / 智批未全部完成」均显示，仅「智批进行中」不显示
      （2026-10-30 用户拍板扩展：未全部完成时已有 AI 批改结果，仍需复核提示）。
-   - 【重批】仅「智批未全部完成」且未重批过时显示；每位老师仅 1 次机会，
-     确定重批即消耗，重批完成后不再显示【重批】（再次异常也只能人工批阅）。 */
+   - 【重批】仅「智批未全部完成」显示；每位老师 3 次机会（2026-11-03 由 1 次改为 3 次），
+     确定重批即消耗 1 次；3 次用完后按钮置灰不隐藏（2026-11-03 拍板），点击 toast「重批次数已用完」，
+     再次异常只能人工批阅。 */
 const AI_STATES = {
   'default':    {cls:'',        text:'智批已完成',   tip:'智批已完成，可点击「回评」查看AI批改结果，如结果不符期望，可人工进行调整'},
   'ai-partial': {cls:'partial', text:'智批未全部完成', tip:'AI大模型在批阅过程中，因输出存在一定的不稳定性，个别题目会存在未批的情况，可人工批阅，或点击重批重新发起智能批改'},
@@ -680,7 +682,7 @@ const AI_ICONS = {
   'ai-running': '<svg class="spin" width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="#bcd8f7" stroke-width="1.8"/><path d="M7.5 1.5a6 6 0 016 6" stroke="#2f7de1" stroke-width="1.8" stroke-linecap="round"/></svg>'
 };
 let aiState = 'ai-partial';
-let regraded = false;   // 仅 1 次重批机会：确定重批即置 true（原型为页面内变量，真实产品需服务端按老师持久化）
+let regradeCount = 0;   // 每位老师 3 次重批机会：确定重批即消耗 1 次（原型为页面内变量，真实产品需服务端按老师持久化）
 let rgTimer = null;
 
 function setAiState(state){
@@ -694,11 +696,17 @@ function setAiState(state){
     + '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.7" stroke="#9fb3c8" stroke-width="1"/><text x="6.5" y="9.6" font-size="8" text-anchor="middle" fill="#9fb3c8" font-family="sans-serif">?</text></svg>'
     + '<span class="gd-q-bubble">' + conf.tip + '</span></span>';
   document.querySelector('[data-proto-id="ai-notice"]').style.display = state === 'ai-running' ? 'none' : '';
-  document.getElementById('btnRegrade').style.display = state === 'ai-partial' && !regraded ? '' : 'none';
+    const rb = document.getElementById('btnRegrade');
+    rb.style.display = state === 'ai-partial' ? '' : 'none';
+    rb.classList.toggle('disabled', regradeCount >= 3);
   document.documentElement.dataset.protoState = state;
 }
 
-function openRegrade(){ document.getElementById('regradeMask').classList.add('show'); }
+function openRegrade(){
+  if(regradeCount >= 3){ toast('重批次数已用完'); return; }
+  document.getElementById('rgChance').textContent = '每位老师有 3 次重批机会，剩余 ' + (3 - regradeCount) + ' 次，用完后不可再次重批。';
+  document.getElementById('regradeMask').classList.add('show');
+}
 function closeRegrade(){ document.getElementById('regradeMask').classList.remove('show'); }
 function confirmRegrade(){
   const qs = [...document.querySelectorAll('.rg-q:checked')].map(el => el.value);
@@ -706,7 +714,7 @@ function confirmRegrade(){
   const ss = [...document.querySelectorAll('.rg-s:checked')].map(el => el.value);
   if(!ss.length){ toast('请选择批改范围'); return; }
   closeRegrade();
-  regraded = true;
+  regradeCount += 1;
   setAiState('ai-running');
   toast('已发起重批：第' + qs.join('、') + '题');
   // 原型模拟重批流程：进行中 1.6 秒后全部成功，转为智批已完成，重批按钮不再出现
