@@ -187,6 +187,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
             || CONTROL_ROLES.has(el.getAttribute('role')) || el.dataset.protoHotspot === 'true';
     }
     function controlIssue(el) {
+        // 仅截图专用运行时中用户手动画出的矩形可使用自定尺寸。
+        if (window.ProtoScreenshot && el.parentElement?.id === 'screenshot-regions' && el.classList.contains('screenshot-region')) return null;
         // 事件代理容器不能替代实际操作节点，未授权的子控件也不能让父容器整块高亮。
         if (!CONTROL_TAGS.has(el.tagName) && [...el.querySelectorAll('*')].some(child =>
             !owned(child) && (controlLike(child) || action(child)))) return 'container';
@@ -225,7 +227,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
             if (/hidden|clip|auto|scroll/.test(css.overflowY)) { top = Math.max(top, clip.top); bottom = Math.min(bottom, clip.bottom); }
         }
         if (right - left < 4 || bottom - top < 4) return null;
-        if ((right - left) * (bottom - top) > innerWidth * innerHeight * .65) return null;
+        if ((right - left) * (bottom - top) > innerWidth * innerHeight * .65 && !(window.ProtoScreenshot && el.parentElement?.id === 'screenshot-regions')) return null;
         const points = [[.5, .5], [.2, .2], [.8, .8]];
         if (!points.some(([x, y]) => {
             const hit = document.elementFromPoint(left + (right - left) * x, top + (bottom - top) * y);
@@ -666,12 +668,32 @@ renderCards();
     }
     // 选择器就是页面唯一 id：id 本身即身份，文本变化（占位符→已选值、计数刷新）不视为目标变化。
     const idBound = (anchor) => /^#[^\s>+~]+$/.test(anchor?.selector || '');
-    const visible = (el) =>
-        !!el &&
-        !owned(el) &&
-        el.getClientRects().length > 0 &&
-        getComputedStyle(el).display !== 'none' &&
-        getComputedStyle(el).visibility !== 'hidden';
+    function hiddenRoot(el) {
+        if (!el) return null;
+        // 只依据标准 DOM / 渲染状态，不猜项目、路由名或框架的 active/on 类名。
+        for (let node = el; node; node = node.parentElement) {
+            const css = getComputedStyle(node);
+            if (node.hidden || node.inert || node.hasAttribute?.('hidden') || node.hasAttribute?.('inert') ||
+                node.getAttribute?.('aria-hidden')?.toLowerCase() === 'true' || node.tagName === 'DIALOG' && !node.open ||
+                css.display === 'none' || css.contentVisibility === 'hidden' || css.opacity !== undefined && css.opacity !== '' && Number(css.opacity) === 0) return node;
+        }
+        // visibility 可以被子节点显式覆盖，其他祖先隐藏条件则不可反向覆盖。
+        const state = getComputedStyle(el).visibility;
+        if (state === 'hidden' || state === 'collapse') {
+            let root = el;
+            while (root.parentElement && getComputedStyle(root.parentElement).visibility === state) root = root.parentElement;
+            return root;
+        }
+        return null;
+    }
+    const visible = el => !!el && !owned(el) && !hiddenRoot(el) && el.getClientRects().length > 0;
+    function paintedAt(el, x, y) {
+        if (typeof document.elementsFromPoint !== 'function') return true;
+        try {
+            const top = document.elementsFromPoint(x, y).find(node => visible(node));
+            return !top || top === el || !!el.contains?.(top) || !!top.contains?.(el);
+        } catch (_) { return true; }
+    }
     function selector(el) {
         if (el.id && document.querySelectorAll('#' + CSS.escape(el.id)).length === 1)
             return '#' + CSS.escape(el.id);
@@ -691,6 +713,7 @@ renderCards();
         return path.join(' > ');
     }
     function controlLabel(el) {
+        if (!el) return '';
         const byFor = el.id ? document.querySelector(`label[for="${CSS.escape(el.id)}"]`) : null;
         const label = el.labels?.[0] || byFor || el.closest('label') || el.closest('.f-item,.form-item,.form-group,.field')?.querySelector('label');
         return text(label).replace(/[：:]$/, '').slice(0, 80);
@@ -808,6 +831,12 @@ renderCards();
         return { element: null, reason: '目标变化，等待重新定位' };
     }
     function at(x, y) {
+        // 截图标注始终绑定图片自身；覆盖其上的热区可随时移动、删除。
+        const image = document.querySelector('html[data-proto-screenshot="true"] #screenshot-image');
+        if (image) {
+            const bounds = image.getBoundingClientRect();
+            if (x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom) return image;
+        }
         return (
             document
                 .elementsFromPoint(x, y)
@@ -875,14 +904,22 @@ renderCards();
             const visible = fullDocument || (x >= 0 && y >= 0 && x < innerWidth && y < innerHeight);
             return { point: { x, y, visible }, rect: { x, y, width: 0, height: 0, visible } };
         }
-        const found = resolve(note.anchor);
+        let found = resolve(note.anchor);
+        // 排序使用逻辑坐标：隐藏但仍保留布局时按原落点测量，不能退回容器左上角。
+        // display:none 等无布局目标继续由 ProtoOrder 使用展开入口代位。
+        if (fullDocument && !found.element) {
+            const element = resolveHidden(note.anchor);
+            if (element?.getClientRects().length) found = { element };
+        }
         if (!found.element) return { reason: found.reason, point: null, rect: null };
         const element = found.element, r = element.getBoundingClientRect(), clip = rect(element, fullDocument);
-        if (!p) return { element, rect: clip, point: { x: clip.x, y: clip.y, visible: clip.visible }, legacy: true };
+        if (!p) return { element, rect: clip, point: { x: clip.x, y: clip.y, visible: clip.visible && (fullDocument || paintedAt(element, clip.x, clip.y)) }, legacy: true };
         const ew = Math.max(r.width, element.scrollWidth), eh = Math.max(r.height, element.scrollHeight);
         let px = p.x, py = p.y;
         if (Number.isFinite(p.rx) && Number.isFinite(p.ry)) {
-            px = p.rx * ew; py = p.ry * eh;
+            // placement 的比例以边框矩形归一化，复原必须使用同一尺寸。
+            // tooltip / 绝对定位子节点可撑大 scrollWidth/Height，却没有改变控件本身。
+            px = p.rx * r.width; py = p.ry * r.height;
         } else {
             // 旧锚点无 rx/ry：仅当当前响应式尺寸缩小导致绝对偏移越界、且偏移在创建时 rect 内时，按原尺寸比例回退。
             const base = note.anchor?.rect;
@@ -901,8 +938,23 @@ renderCards();
             if (y < clip.y && !clip.reach.top) y = clip.y;
             if (y > bottom && !clip.reach.bottom) y = bottom;
         }
-        const visible = clip.visible && x >= clip.x && x <= clip.x + clip.width && y >= clip.y && y <= clip.y + clip.height;
+        const visible = clip.visible && x >= clip.x && x <= clip.x + clip.width && y >= clip.y && y <= clip.y + clip.height && (fullDocument || paintedAt(element, x, y));
         return { element, rect: clip, point: { x, y, visible } };
+    }
+    function pinPosition(x, y, width, height, occupied, viewportWidth = innerWidth, viewportHeight = innerHeight) {
+        const gap = 4, clamp = (value, min, max) => Math.max(min, Math.min(value, Math.max(min, max)));
+        const position = (left, bottom) => ({ x: clamp(left, gap, viewportWidth - width - gap), y: clamp(bottom, height + gap, viewportHeight - gap) });
+        const base = position(x, y);
+        const available = p => occupied.every(r => p.x + width + gap <= r.left || p.x >= r.right + gap || p.y + gap <= r.top || p.y - height >= r.bottom + gap);
+        let placed = base;
+        const limit = Math.min(occupied.length + 1, Math.ceil(viewportWidth / (width + gap)) + Math.ceil(viewportHeight / (height + gap)));
+        search: for (let distance = 0; distance <= limit; distance++) {
+            const candidates = distance ? [position(base.x + distance * (width + gap), base.y), position(base.x - distance * (width + gap), base.y),
+                position(base.x, base.y + distance * (height + gap)), position(base.x, base.y - distance * (height + gap))] : [base];
+            for (const candidate of candidates) if (available(candidate)) { placed = candidate; break search; }
+        }
+        occupied.push({ left: placed.x, right: placed.x + width, top: placed.y - height, bottom: placed.y });
+        return placed;
     }
     function inBox(box) {
         const nodes = [
@@ -939,9 +991,7 @@ renderCards();
     }
     // ---------- 折叠区展开 / 引导（标注工作台“点序号联动展开”与“点击引导”复用；全流程已归档，此为标注侧增补） ----------
     function hidden(el) {
-        if (!el) return true;
-        const cs = getComputedStyle(el);
-        return cs.display === 'none' || cs.visibility === 'hidden' || el.getClientRects().length === 0;
+        return !el || !!hiddenRoot(el) || el.getClientRects().length === 0;
     }
     function resolveHidden(anchor) {
         // 与 resolve 同规则但不过滤可见性：定位被折叠/隐藏的目标元素
@@ -1089,6 +1139,110 @@ renderCards();
         }
         return null;
     }
+    let revealNotes = [];
+    function setRevealNotes(notes) { revealNotes = Array.isArray(notes) ? notes : []; }
+    const revealPathKey = steps => JSON.stringify(steps.map(s => [s.protoId || s.selector, s.kind, s.value]));
+    function hiddenContainer(el) {
+        const root = hiddenRoot(el);
+        if (root) return root === document.body || root === document.documentElement ? null : root;
+        for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+            if (n.tagName === 'DETAILS' && !n.open) return n;
+        }
+        return null;
+    }
+    function sharedReveal(anchor, el = resolveHidden(anchor)) {
+        if (!el || !hidden(el) || anchor?.revealSteps?.length || declaredCondition(el) || revealTrigger(el, true) || conditionTrigger(anchor)) return null;
+        const container = hiddenContainer(el); if (!container) return null;
+        const paths = new Map();
+        for (const note of revealNotes) {
+            const steps = note.anchor?.revealSteps;
+            if (!steps?.length || steps.some(s => s.kind === 'click' && /删除|清空|提交|支付|发布|导出|确定|保存|下单/.test(s.label || ''))) continue;
+            const peer = resolveHidden(note.anchor);
+            if (!peer || peer === el || hiddenContainer(peer) !== container) continue;
+            const key = revealPathKey(steps);
+            if (!paths.has(key)) paths.set(key, { steps, sourceNoteIds: [], container });
+            paths.get(key).sourceNoteIds.push(note.id);
+        }
+        if (paths.size !== 1) return null;
+        const shared = paths.values().next().value;
+        return manualCondition({ revealSteps: shared.steps }) ? shared : null;
+    }
+    // 编辑器只读检查：不点击、不改条件，也能在弹窗已打开时展示识别到的完整路径。
+    function inspectReveal(anchor) {
+        const el = resolveHidden(anchor), shown = !!el && !hidden(el);
+        const result = (state, reason, steps = [], extra = {}) => ({ state, reason, steps, visible: shown, rendered: !!el, ...extra });
+        const find = locator => {
+            try { return [...document.querySelectorAll(locator || ':not(*)')].filter(n => !owned(n)); } catch (_) { return []; }
+        };
+        const inspectStep = step => {
+            const matches = find(step.protoId ? `[data-proto-id="${CSS.escape(step.protoId)}"]` : step.selector);
+            const control = matches.length === 1 ? matches[0] : null;
+            return { ...step, label: step.label || text(control) || controlLabel(control) || '展开',
+                status: matches.length > 1 ? 'duplicate' : !control ? 'missing' : control.disabled || control.getAttribute('aria-disabled') === 'true' ? 'disabled' : visible(control) ? 'ready' : 'hidden' };
+        };
+        if (anchor?.revealSteps?.length) {
+            const rows = anchor.revealSteps.map(inspectStep), broken = rows.some(s => ['missing', 'duplicate', 'disabled'].includes(s.status)) || !shown && rows.every(s => s.status === 'hidden');
+            return result(broken ? 'needed' : 'manual', broken ? '手动路径当前不可用，请检查入口或补充上层步骤' : !el ? '目标当前未渲染，可测试手动路径后检查定位' : '按手动配置的顺序展开', rows, { source: '手动配置' });
+        }
+        if (!el) return result('missing', '标注目标未找到，请先检查页面状态或重新绑定序号');
+        const chain = [];
+        for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) chain.unshift(n);
+        const steps = [], seen = new Set(); let problem = '';
+        const add = step => { const key = JSON.stringify([step.selector, step.kind, step.value]); if (!seen.has(key)) { seen.add(key); steps.push(inspectStep(step)); } };
+        const ariaControls = [...document.querySelectorAll('[aria-controls]')].filter(c => !owned(c));
+        for (const node of chain) {
+            const by = node.getAttribute('data-proto-reveal-by');
+            if (by) {
+                const matches = find(by), control = matches.length === 1 ? matches[0] : null;
+                const raw = node.getAttribute('data-proto-reveal-value') ?? 'true';
+                const kind = control?.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control?.type) ? control.type : 'click';
+                add({ selector: by, kind, value: kind === 'select' || kind === 'click' ? raw : raw === 'true',
+                    label: node.getAttribute('data-proto-reveal-label') || text(control) || controlLabel(control) || '展开' });
+            } else if (node.tagName === 'DETAILS') {
+                const summary = node.querySelector('summary');
+                if (summary) add({ selector: selector(summary), kind: 'click', value: 'true', label: text(summary) || '展开折叠区' });
+                else problem = '折叠区缺少展开入口，请手动补充';
+            } else if (node.id) {
+                const controls = ariaControls.filter(c => (c.getAttribute('aria-controls') || '').split(/\s+/).includes(node.id));
+                if (controls.length === 1) add({ selector: selector(controls[0]), kind: 'click', value: 'true', label: text(controls[0]) || controlLabel(controls[0]) || '展开' });
+                else if (controls.length > 1) problem = '发现多个不同入口，请选择实际使用的展开路径';
+            }
+        }
+        const report = (rows, reason, extra = {}) => {
+            const broken = rows.find(s => ['missing', 'duplicate', 'disabled'].includes(s.status));
+            const message = broken ? `入口“${broken.label}”${{ missing: '未找到', duplicate: '定位不唯一', disabled: '当前禁用' }[broken.status]}，请检查或手动调整` : problem || (!shown && rows.every(s => s.status === 'hidden') ? '所有入口当前均隐藏，请先展开其所在区域或补充上层入口' : '');
+            return result(message ? 'needed' : 'automatic', message || reason, rows, extra);
+        };
+        if (steps.length) return report(steps, '根据页面展开关系识别，无需重复添加', { source: '页面关联' });
+        if (problem) return result('needed', problem);
+        if (!shown) {
+            // 与运行时优先级一致：显式关系和当前记录条件优先于共用推断。
+            const hint = revealHint(anchor, el);
+            if (hint) {
+                const condition = conditionTrigger(anchor);
+                const rows = hint.sourceNoteIds?.length ? hint.target.revealSteps.map(inspectStep) : [inspectStep(condition?.element === hint.trigger ? { ...condition.condition, label: hint.label } : { selector: selector(hint.trigger), kind: 'click', label: hint.label, value: 'true' })];
+                return report(rows, hint.sourceNoteIds?.length ? '自动共用同一区域的展开路径，无需重复添加' : '已找到当前可用入口，可测试展开确认后续步骤', { source: '当前入口', sourceNoteIds: hint.sourceNoteIds });
+            }
+        }
+        const semantic = chain.slice().reverse().find(n => n.tagName === 'DIALOG' || n.tagName === 'DETAILS' || ['dialog', 'tabpanel'].includes(n.getAttribute('role')) || n.getAttribute('aria-modal') === 'true');
+        const boundary = hiddenContainer(el) || semantic;
+        if (boundary) {
+            const paths = new Map();
+            for (const note of revealNotes) {
+                const path = note.anchor?.revealSteps, peer = resolveHidden(note.anchor);
+                if (!peer || peer === el || !boundary.contains(peer) || (hiddenContainer(el) && hiddenContainer(peer) !== boundary) || !path?.length || path.some(s => s.kind === 'click' && /删除|清空|提交|支付|发布|导出|确定|保存|下单/.test(s.label || ''))) continue;
+                const key = revealPathKey(path);
+                if (!paths.has(key)) paths.set(key, { steps: path, sourceNoteIds: [] });
+                paths.get(key).sourceNoteIds.push(note.id);
+            }
+            if (paths.size > 1) return result('needed', '同一区域有不同展开路径，请选择复用或手动添加');
+            if (paths.size === 1) {
+                const shared = paths.values().next().value;
+                return report(shared.steps.map(inspectStep), '自动共用同一区域的展开路径，无需重复添加', { source: '共用路径', sourceNoteIds: shared.sourceNoteIds });
+            }
+        }
+        return shown && !semantic ? result('visible', '目标当前直接可见，无需添加展开入口') : result('needed', shown ? '目标位于可收起区域，尚未识别打开入口' : '目标已隐藏，尚未识别展开入口');
+    }
     function revealHint(anchor, el = resolveHidden(anchor)) {
         if (el && !hidden(el)) return null; // 目标已显现；若落点异常应走失锚/响应式回退，不能继续显示条件引导
         if (anchor?.revealSteps?.length) {
@@ -1106,7 +1260,9 @@ renderCards();
         if (conditionHint && !condition.satisfied) return conditionHint;
         const fallback = el ? revealTrigger(el) : null;
         if (fallback) return { trigger: fallback, target: el, label: '展开', kind: 'disclosure' };
-        return conditionHint;
+        if (conditionHint) return conditionHint;
+        const shared = sharedReveal(anchor, el), manual = shared && manualCondition({ revealSteps: shared.steps });
+        return manual ? { trigger: manual.element, target: { ...anchor, revealSteps: shared.steps }, label: manual.label, kind: 'condition', sourceNoteIds: shared.sourceNoteIds } : null;
     }
     function reveal(target, attempted = new Set(), notify = true) {
         const anchor = target && target.nodeType === 1 ? null : target;
@@ -1123,6 +1279,8 @@ renderCards();
             }
             return null;
         }
+        const shared = anchor && sharedReveal(anchor, el);
+        if (shared && !revealTrigger(el)) return reveal({ ...anchor, revealSteps: shared.steps }, attempted, notify);
         // 条件控件先恢复到创建标注时的值；change/click 处理器可同步显现，也可由 MutationObserver 在异步渲染后接力。
         const condition = (el ? declaredCondition(el) : null) || (anchor ? conditionTrigger(anchor) : null);
         if (condition && !condition.satisfied && !attempted.has(condition.element)) {
@@ -1161,9 +1319,18 @@ renderCards();
         return !el || hidden(el) ? null : el;
     }
     const pendingReveals = new Map();
+    const pendingContainerReveals = new WeakMap();
     function revealAndWait(target) {
         const key = target?.nodeType === 1 ? target : `${target?.protoId || ''}\n${target?.selector || ''}`;
         if (pendingReveals.has(key)) return pendingReveals.get(key);
+        const element = target?.nodeType === 1 ? target : resolveHidden(target);
+        const steps = target?.revealSteps?.length ? target.revealSteps : sharedReveal(target, element)?.steps;
+        const container = steps?.length && hiddenContainer(element), pathKey = steps?.length && revealPathKey(steps);
+        const sharedOperation = container && pendingContainerReveals.get(container)?.get(pathKey);
+        if (sharedOperation) return sharedOperation.then(() => {
+            const current = target?.nodeType === 1 ? target : resolveHidden(target);
+            return current && !hidden(current) ? current : null;
+        });
         const operation = (async () => {
             const attempted = new Set(), deadline = Date.now() + 1800;
             do {
@@ -1179,7 +1346,16 @@ renderCards();
             return null;
         })();
         pendingReveals.set(key, operation);
-        operation.finally(() => { if (pendingReveals.get(key) === operation) pendingReveals.delete(key); }).catch(() => {});
+        if (container) {
+            if (!pendingContainerReveals.has(container)) pendingContainerReveals.set(container, new Map());
+            pendingContainerReveals.get(container).set(pathKey, operation);
+        }
+        operation.finally(() => {
+            if (pendingReveals.get(key) === operation) pendingReveals.delete(key);
+            const paths = container && pendingContainerReveals.get(container);
+            if (paths?.get(pathKey) === operation) paths.delete(pathKey);
+            if (paths && !paths.size) pendingContainerReveals.delete(container);
+        }).catch(() => {});
         return operation;
     }
     globalThis.ProtoAnchors = {
@@ -1192,12 +1368,16 @@ renderCards();
         resolve,
         resolveHidden,
         revealTrigger,
+        setRevealNotes,
+        sharedReveal,
+        inspectReveal,
         revealHint,
         reveal,
         revealAndWait,
         rect,
         placement,
         point,
+        pinPosition,
         at,
         inBox,
         currentIds,
@@ -1281,7 +1461,7 @@ renderCards();
     function classify(note, win) {
         const PA = win.ProtoAnchors;
         let found = null;
-        try { found = PA.point(note); } catch (_) { /* 未就绪或失效锚点 */ }
+        try { found = PA.point(note, true); } catch (_) { /* 未就绪或失效锚点 */ }
         let point = logicalPoint(found, win), el = found?.element || null;
         if (!el && note.anchor) { try { el = PA.resolveHidden?.(note.anchor) || null; } catch (_) { /* 旧选择器失效 */ } }
         if (!point && note.anchor) { try { point = proxyPoint(note, el, win); } catch (_) { /* 代位失败按失锚处理 */ } }
@@ -1323,9 +1503,11 @@ renderCards();
     // review-pins.js 启动时读取的宿主对象：标注在 init 消息到达后填充，正文 HTML 由壳预渲染（气泡层无 Markdown 渲染器）。
     window.__REVIEW__ = {
         notes: [],
+        selectedNoteId: null,
         asideOpen: () => asideOpen,
         onSync: (map, state, stale) => post({ type: 'sync', map, state, stale }),
         onFocus: (noteId) => post({ type: 'focus', noteId }),
+        onSelect: (noteId) => post({ type: 'selection', noteId }),
         renderBody: (note) => note.bodyHtml || '<p>' + esc(note.body || '') + '</p>',
     };
     window.ProtoHotspots?.init({ scope: () => {
@@ -1349,7 +1531,9 @@ renderCards();
             try { window.__reviewRelayout?.(); } catch (_) { /* ignore */ }
             try { found = A.point(note); } catch (_) { /* ignore */ }
         }
-        if (found?.element) found.element.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        if (found?.element?.id === 'screenshot-image' && found.point && document.documentElement.dataset.protoScreenshot === 'true')
+            window.scrollTo({ top: Math.max(0, found.point.y + window.scrollY - window.innerHeight / 2), behavior: 'smooth' });
+        else if (found?.element) found.element.scrollIntoView({ block: 'center', behavior: 'smooth' });
         else if (found?.point) window.scrollTo({ top: Math.max(0, found.point.y + window.scrollY - window.innerHeight / 2), behavior: 'smooth' });
     }
 
@@ -1362,6 +1546,8 @@ renderCards();
                 window.ProtoHotspots?.hide();
                 document.documentElement.dataset.protoHost = 'review';
                 window.__REVIEW__.notes = Array.isArray(m.notes) ? m.notes : [];
+                window.__REVIEW__.selectedNoteId = m.selectedNoteId || null;
+                window.__reviewSelectNote?.(window.__REVIEW__.selectedNoteId);
                 asideOpen = m.asideOpen !== false;
                 if (m.enterState) { try { window.ProtoAnchors.enterState?.(m.enterState)?.catch?.(() => {}); } catch (_) { /* ignore */ } }
                 relayout();
@@ -1374,7 +1560,11 @@ renderCards();
                 try { window.ProtoAnchors.enterState?.(m.stateId)?.catch?.(() => {}); } catch (_) { /* ignore */ }
                 break;
             case 'reveal':
-                if (m.note) reveal(m.note);
+                if (m.note) { window.__REVIEW__.selectedNoteId = m.note.id; window.__reviewSelectNote?.(m.note.id); reveal(m.note); }
+                break;
+            case 'select':
+                window.__REVIEW__.selectedNoteId = m.noteId || null;
+                window.__reviewSelectNote?.(window.__REVIEW__.selectedNoteId);
                 break;
             case 'hidePop':
                 try { window.__reviewHidePop?.(); } catch (_) { /* ignore */ }
@@ -1396,7 +1586,7 @@ renderCards();
 <script data-proto-review="pins">
 /* 评审壳只读气泡层：随导出内嵌进每个原型 HTML（review_export.inject_bundle），跑在被评审原型页面内。
    依赖同页先加载的 proto-anchors.js / proto-order.js / review-bridge.js；通过 window.__REVIEW__（由 bridge 建立，内部走 postMessage）与壳父页通信。
-   只读：无编辑、无拖动、无删除。 */
+   只读：无编辑、无删除；正文浮窗支持移动与调整宽度。 */
 (() => {
     'use strict';
     if (window.__reviewPinsBoot) return;
@@ -1405,15 +1595,22 @@ renderCards();
     if (!R || !window.ProtoAnchors || !window.ProtoOrder) return;
 
     const style = document.createElement('style');
+    style.setAttribute('data-prototype-owned', '');
     style.textContent = `
 .__review_pin{position:absolute;display:grid;place-items:center;min-width:36px;height:36px;padding:0 8px;border:3px solid #fff;border-radius:50% 50% 50% 2px;background:#2563eb;color:#fff;font:600 13px/1 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;box-shadow:0 8px 24px rgba(16,24,40,.24);transform:translateY(-100%);cursor:pointer;pointer-events:auto;}
 .__review_pin:hover{background:#1d4ed8;}
 .__review_pin:not(.__stale){background:var(--pin-fill);color:var(--pin-ink);border-color:var(--pin-stroke);}
 .__review_pin:not(.__stale):hover{background:var(--pin-fill);filter:brightness(.96);}
 .__review_pin.__stale{background:#626b78;cursor:default;}
+.__review_pin.__review_selected{outline:3px solid #2563eb;outline-offset:3px;z-index:2;}
 @media(prefers-color-scheme:dark){.__review_pin{border-color:#121519;}}
-.__review_pop{position:fixed;z-index:2147482001;width:min(360px,calc(100vw - 16px));max-width:calc(100vw - 16px);overflow:visible;border:1px solid #d8dee3;border-radius:10px;background:#fff;color:#1a1d23;font:14px/1.7 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;letter-spacing:.02em;box-shadow:0 8px 24px rgba(16,24,40,.24);display:none;}
-.__review_pop_body{max-height:calc(100vh - 16px);overflow:auto;overscroll-behavior:contain;padding:12px 14px;border-radius:inherit;}
+.__review_pop{position:fixed;box-sizing:border-box;z-index:2147482001;width:min(360px,calc(100vw - 16px));max-width:calc(100vw - 16px);overflow:visible;border:1px solid #d8dee3;border-radius:10px;background:#fff;color:#1a1d23;font:14px/1.7 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;letter-spacing:.02em;box-shadow:0 8px 24px rgba(16,24,40,.24);display:none;}
+.__review_pop_body{box-sizing:border-box;max-height:calc(100vh - 36px);overflow:auto;overscroll-behavior:contain;padding:4px 14px 12px;border-radius:inherit;}
+.__review_pop_grip{box-sizing:border-box;display:grid;place-items:center;width:100%;height:18px;margin:0;padding:0;border:0;border-radius:9px 9px 0 0;background:transparent;color:inherit;cursor:grab;touch-action:none;user-select:none;}
+.__review_pop_grip::before{content:"";width:32px;height:4px;border-radius:2px;background:currentColor;opacity:.3;}
+.__review_pop_grip:focus-visible{outline:2px solid #2563eb;outline-offset:-3px;}
+.__review_pop.pop-moving{user-select:none;}
+.__review_pop.pop-moving,.__review_pop.pop-moving *{cursor:grabbing!important;}
 .__review_pop_resize{position:absolute;top:0;bottom:0;width:12px;cursor:ew-resize;touch-action:none;z-index:3;background:transparent;}
 /* 热区以浮窗真实边框为中心，不画独立蓝细条；视觉仍是浮窗自身边缘，命中区向内外各扩 6px。 */
 .__review_pop_resize_w{left:0;transform:translateX(-50%);}.__review_pop_resize_e{right:0;transform:translateX(50%);}
@@ -1454,9 +1651,10 @@ renderCards();
     (document.head || document.documentElement).appendChild(style);
 
     const layer = document.createElement('div');
+    layer.setAttribute('data-prototype-owned', '');
     layer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147482000;';
     document.documentElement.appendChild(layer);
-    // 引导框独立图层：序号层每次重排 replaceChildren 整体重建，引导框要按触发器复用（保住悬停态、呼吸相位与点击）
+    // 引导框独立图层，按触发器复用；序号按标注 ID 复用，保住悬停、聚焦与按下到松开的点击目标。
     const glayer = document.createElement('div');
     glayer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147481999;';
     glayer.setAttribute('data-prototype-owned', '');   // 引导框是 <button>，标记自有以免 revealTrigger 兜底搜索把它当成原型触发器
@@ -1464,17 +1662,78 @@ renderCards();
 
     // 收起态气泡：PRD 侧栏收起时，点序号在序号旁展示正文；正文独立滚动，左右边缘可拖宽。
     let pop = null, popBody = null, popResizing = null, popNoteId = null;
+    let popMoving = null, popMoveCleanup = null;
+    const owned = el => !!(el?.closest?.('[data-prototype-owned]') || el?.parentElement?.closest?.('[data-prototype-owned]'));
+    let selectedNoteId = R.selectedNoteId || null;
+    function selectNote(noteId) {
+        selectedNoteId = (R.notes || []).some(n => n.id === noteId && n.stateId === stateOf()) ? noteId : null;
+        R.selectedNoteId = selectedNoteId;
+        for (const pin of layer.querySelectorAll('.__review_pin')) {
+            const selected = pin.dataset.noteId === selectedNoteId;
+            pin.classList.toggle('__review_selected', selected);
+            pin.setAttribute('aria-current', String(selected));
+        }
+    }
+    window.__reviewSelectNote = selectNote;
     function setPinExpanded(noteId, expanded) {
         if (!noteId) return;
         layer.querySelector(`.__review_pin[data-note-id="${CSS.escape(noteId)}"]`)?.setAttribute('aria-expanded', String(expanded));
     }
     function hidePop() {
+        popMoveCleanup?.(true);
         if (pop) pop.style.display = 'none';
         setPinExpanded(popNoteId, false);
         popNoteId = null;
     }
+    function placePop(left, top) {
+        const r = pop.getBoundingClientRect();
+        pop.style.left = Math.max(8, Math.min(left, innerWidth - r.width - 8)) + 'px';
+        pop.style.top = Math.max(8, Math.min(top, innerHeight - r.height - 8)) + 'px';
+    }
+    function startPopMove(e, grip) {
+        if (!pop || pop.style.display !== 'block' || popResizing || popMoving || e.button !== 0) return;
+        e.preventDefault(); e.stopPropagation();
+        const r = pop.getBoundingClientRect(), root = document.documentElement;
+        const previous = { cursor: root.style.cursor, userSelect: root.style.userSelect };
+        const start = { x: e.clientX, y: e.clientY, left: r.left, top: r.top };
+        popMoving = { pointerId: e.pointerId, moved: false };
+        const move = ev => {
+            if (!popMoving || ev.pointerId !== e.pointerId) return;
+            const dx = ev.clientX - start.x, dy = ev.clientY - start.y;
+            if (!popMoving.moved && Math.hypot(dx, dy) < 5) return;
+            popMoving.moved = true;
+            ev.preventDefault();
+            pop.classList.add('pop-moving');
+            root.style.cursor = 'grabbing'; root.style.userSelect = 'none';
+            placePop(start.left + dx, start.top + dy);
+        };
+        const finish = (cancel = false) => {
+            if (!popMoving) return;
+            popMoving = null; popMoveCleanup = null;
+            if (cancel) { pop.style.left = start.left + 'px'; pop.style.top = start.top + 'px'; }
+            pop.classList.remove('pop-moving');
+            root.style.cursor = previous.cursor; root.style.userSelect = previous.userSelect;
+            window.removeEventListener('pointermove', move, true);
+            window.removeEventListener('pointerup', up, true);
+            window.removeEventListener('pointercancel', cancelPointer, true);
+            window.removeEventListener('blur', cancelMove, true);
+            window.removeEventListener('keydown', key, true);
+            try { if (grip.hasPointerCapture(e.pointerId)) grip.releasePointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+        };
+        const up = ev => { if (ev.pointerId === e.pointerId) finish(); };
+        const cancelPointer = ev => { if (ev.pointerId === e.pointerId) finish(true); };
+        const cancelMove = () => finish(true);
+        const key = ev => { if (ev.key === 'Escape') { ev.preventDefault(); ev.stopImmediatePropagation(); finish(true); } };
+        popMoveCleanup = finish;
+        try { grip.setPointerCapture(e.pointerId); } catch (_) { /* window 监听兜底 */ }
+        window.addEventListener('pointermove', move, { capture: true, passive: false });
+        window.addEventListener('pointerup', up, true);
+        window.addEventListener('pointercancel', cancelPointer, true);
+        window.addEventListener('blur', cancelMove, true);
+        window.addEventListener('keydown', key, true);
+    }
     function startPopResize(e, handle, side) {
-        if (!pop || e.button !== 0) return;
+        if (!pop || popMoving || e.button !== 0) return;
         e.preventDefault(); e.stopPropagation();
         const rect = pop.getBoundingClientRect(), startX = e.clientX, startW = rect.width, fixedRight = rect.right;
         popResizing = { handle, side, pointerId: e.pointerId };
@@ -1512,6 +1771,20 @@ renderCards();
         pop.setAttribute('role', 'dialog');
         pop.setAttribute('data-prototype-owned', '');
         pop.addEventListener('click', e => e.stopPropagation());
+        const grip = document.createElement('button');
+        grip.type = 'button'; grip.className = '__review_pop_grip';
+        grip.setAttribute('aria-label', '移动标注浮窗');
+        grip.title = '拖动移动；方向键微调，Shift 加速';
+        grip.onpointerdown = e => startPopMove(e, grip);
+        grip.addEventListener('keydown', e => {
+            if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); hidePop(); return; }
+            const direction = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+            if (!direction || e.ctrlKey || e.altKey || e.metaKey) return;
+            e.preventDefault(); e.stopPropagation();
+            const r = pop.getBoundingClientRect(), step = e.shiftKey ? 40 : 10;
+            placePop(r.left + direction[0] * step, r.top + direction[1] * step);
+        });
+        pop.appendChild(grip);
         popBody = document.createElement('div'); popBody.className = '__review_pop_body';
         pop.appendChild(popBody);
         for (const side of ['w', 'e']) {
@@ -1525,6 +1798,7 @@ renderCards();
     }
     function showPop(note, pin) {
         ensurePop();
+        popMoveCleanup?.();
         setPinExpanded(popNoteId, false);
         popNoteId = note.id;
         pin.setAttribute('aria-expanded', 'true');
@@ -1570,41 +1844,60 @@ renderCards();
     }
 
     const stateOf = () => document.documentElement.dataset.protoState || 'default';
-    let lastState = '', lastX = -1, lastY = -1, lastW = 0, lastH = 0, lastHtml = '';
+    let lastState = '', lastX = -1, lastY = -1, lastW = 0, lastH = 0;
     let lastOrder = '', lastStale = '';
+    const pinsById = new Map();
 
     function layout() {
         const state = stateOf();
         if (state !== lastState) hidePop(); // 只在原型状态切换时关气泡；纯几何重排不关（避免侧栏收起引发的 reflow 误关刚弹出的气泡）
         const notes = (R.notes || []).filter(n => n.stateId === state);
+        window.ProtoAnchors.setRevealNotes?.(notes);
+        if (selectedNoteId && !notes.some(n => n.id === selectedNoteId)) selectNote(null);
         const arranged = window.ProtoOrder.project(notes, window);
         const stale = [], noPoint = [];
-        layer.replaceChildren();
+        const visibleIds = new Set(), occupied = [];
         for (const n of arranged) {
             let found = null;
             try { found = window.ProtoAnchors.point(n); } catch (_) { /* 锚定异常按失效处理 */ }
             if (!found?.point) { noPoint.push(n); continue; }
             if (found.point.visible === false) continue; // 滚出嵌套容器的序号随锚点隐藏，不算失锚。
-            const pin = document.createElement('button');
-            pin.type = 'button';
-            pin.className = '__review_pin';
+            let pin = pinsById.get(n.id);
+            if (!pin) {
+                pin = document.createElement('button');
+                pin.type = 'button';
+                pin.className = '__review_pin';
+                pin.dataset.noteId = n.id;
+                pinsById.set(n.id, pin);
+                layer.appendChild(pin);
+            }
             window.ProtoAppearance?.applyPin(pin, n);
-            pin.dataset.noteId = n.id;
-            pin.textContent = n.displayNumber;
+            pin.classList.toggle('__review_selected', n.id === selectedNoteId);
+            pin.setAttribute('aria-current', String(n.id === selectedNoteId));
+            if (pin.textContent !== String(n.displayNumber)) pin.textContent = n.displayNumber;
             pin.setAttribute('aria-label', `标注 ${n.displayNumber}`);
             pin.setAttribute('aria-haspopup', 'dialog');
             pin.setAttribute('aria-controls', '__review_popover');
             pin.setAttribute('aria-expanded', String(popNoteId === n.id && pop?.style.display === 'block'));
-            pin.style.left = found.point.x + 'px';
-            pin.style.top = found.point.y + 'px';
+            const placed = window.ProtoAnchors.pinPosition
+                ? window.ProtoAnchors.pinPosition(found.point.x, found.point.y, pin.offsetWidth || 36, pin.offsetHeight || 36, occupied)
+                : found.point;
+            pin.style.left = placed.x + 'px';
+            pin.style.top = placed.y + 'px';
             pin.onclick = e => {
                 e.preventDefault(); e.stopPropagation();
+                selectNote(n.id);
+                R.onSelect?.(n.id);
                 // PRD 侧栏展开：定位到右栏对应内容；收起：就地弹气泡展示内容。
                 if (R.asideOpen && R.asideOpen()) { hidePop(); R.onFocus?.(n.id); }
                 else togglePop(n, pin);
             };
-            layer.appendChild(pin);
+            visibleIds.add(n.id);
         }
+        for (const [id, pin] of pinsById) {
+            if (!visibleIds.has(id)) { pin.remove(); pinsById.delete(id); }
+        }
+        if (popNoteId && !visibleIds.has(popNoteId)) hidePop();
         // 无落点分流（Feature 1 引导 + 失锚判定）：元素还在且被折叠/隐藏 → 正常颜色，可展开的盖透明脉冲描边框引导；
         // 元素真找不到、或可见但落点失效（目标变化）才算失锚（右栏灰显、置底、不可点）。
         const groups = new Map();
@@ -1670,11 +1963,21 @@ renderCards();
 
     document.addEventListener('proto-anchors:reveal-failed', layout);
 
+    // 关闭弹窗和显示入口可能保持 HTML 字符数不变；监听真实 DOM 变化。
+    // 过滤自有层，避免重建序号 / 拖动浮窗时反过来触发无限重排。
+    if (typeof MutationObserver !== 'undefined') {
+        new MutationObserver(records => { if (records.some(record => !owned(record.target))) scheduleLayout(); })
+            .observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true,
+                attributeFilter: ['class', 'style', 'hidden', 'open', 'aria-expanded', 'aria-hidden', 'inert', 'data-proto-state'] });
+    }
+    for (const event of ['transitionend', 'animationend', 'load'])
+        document.addEventListener(event, e => { if (!owned(e.target)) scheduleLayout(); }, true);
+    document.fonts?.ready.then(scheduleLayout);
+
     setInterval(() => {
-        const html = document.documentElement.outerHTML.length;
         if (stateOf() !== lastState || scrollX !== lastX || scrollY !== lastY ||
-            innerWidth !== lastW || innerHeight !== lastH || html !== lastHtml) {
-            lastX = scrollX; lastY = scrollY; lastW = innerWidth; lastH = innerHeight; lastHtml = html;
+            innerWidth !== lastW || innerHeight !== lastH) {
+            lastX = scrollX; lastY = scrollY; lastW = innerWidth; lastH = innerHeight;
             layout();
         }
     }, 350);
