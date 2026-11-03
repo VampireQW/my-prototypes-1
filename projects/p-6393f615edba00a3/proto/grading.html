@@ -77,6 +77,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 .gd-badge .spin{animation:gd-rot 1s linear infinite}
 @keyframes gd-rot{to{transform:rotate(360deg)}}
 .gd-q{display:flex;align-items:center;cursor:pointer}
+/* 问号说明气泡：fixed 定位（JS 计算坐标），hover 显示 / 点击固定，不受弹窗与滚动容器裁剪 */
+.gd-q-bubble{position:fixed;left:0;top:0;width:max-content;max-width:280px;background:rgba(0,0,0,.82);color:#fff;font-size:12px;line-height:1.7;padding:8px 12px;border-radius:5px;display:none;z-index:400;font-weight:400;text-align:left;cursor:default;white-space:normal}
+.gd-q-bubble::after{content:'';position:absolute;top:100%;left:var(--ax,50%);transform:translateX(-50%);border:5px solid transparent;border-top-color:rgba(0,0,0,.82)}
+.gd-q-bubble.below::after{top:auto;bottom:100%;border-top-color:transparent;border-bottom-color:rgba(0,0,0,.82)}
+.gd-q:hover .gd-q-bubble,.gd-q.show .gd-q-bubble{display:block}
 .gd-notice{display:flex;align-items:center;gap:6px;margin-left:14px;padding:4px 10px;background:#fffbe6;border:1px solid #ffe58f;border-radius:4px;color:var(--ink2);font-size:12px;line-height:1.5;white-space:nowrap;flex-shrink:0}
 @media (max-width:1280px){
   .gd-notice{order:6;flex-basis:100%;margin-left:0}
@@ -518,8 +523,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
     <span class="gd-badge partial" data-proto-id="ai-badge" id="aiBadge">
       <svg width="15" height="15" viewBox="0 0 15 15"><circle cx="7.5" cy="7.5" r="6.7" fill="#fa8c16"/><path d="M7.5 4v4.4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><circle cx="7.5" cy="10.8" r=".95" fill="#fff"/></svg>
       <span>智批未全部完成</span>
-      <span class="gd-q" title="存在智批失败或因异常未智批的题目，可人工批阅，或点击重批重新发起智能批改">
+      <span class="gd-q" tabindex="0" onclick="toggleTip(this,event)">
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.7" stroke="#9fb3c8" stroke-width="1"/><text x="6.5" y="9.6" font-size="8" text-anchor="middle" fill="#9fb3c8" font-family="sans-serif">?</text></svg>
+        <span class="gd-q-bubble">AI大模型在批阅过程中，因输出存在一定的不稳定性，个别题目会存在未批的情况，可人工批阅，或点击重批重新发起智能批改</span>
       </span>
     </span>
     <span class="gd-notice" data-proto-id="ai-notice">
@@ -626,7 +632,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
       </div>
       <div class="m-label">批改范围</div>
       <div class="m-checks col">
-        <label><input type="checkbox" class="ck rg-s" value="ungraded" checked> 未批及批改异常题目</label>
+        <label><input type="checkbox" class="ck rg-s" value="ungraded" checked> 未批题目
+                  <span class="gd-q" tabindex="0" onclick="toggleTip(this,event)">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.7" stroke="#9fb3c8" stroke-width="1"/><text x="6.5" y="9.6" font-size="8" text-anchor="middle" fill="#9fb3c8" font-family="sans-serif">?</text></svg>
+                    <span class="gd-q-bubble">AI大模型在批阅过程中，因输出存在一定的不稳定性，个别题目会存在未批的情况。</span>
+                  </span>
+                </label>
         <label><input type="checkbox" class="ck rg-s" value="zero"> 批改为0分的题目</label>
       </div>
       <div class="m-warn">
@@ -659,9 +670,9 @@ function toast(msg){
    - 【重批】仅「智批未全部完成」且未重批过时显示；每位老师仅 1 次机会，
      确定重批即消耗，重批完成后不再显示【重批】（再次异常也只能人工批阅）。 */
 const AI_STATES = {
-  'default':    {cls:'',        text:'智批已完成',   tip:'智能批改由 AI 完成'},
-  'ai-partial': {cls:'partial', text:'智批未全部完成', tip:'存在智批失败或因异常未智批的题目，可人工批阅，或点击重批重新发起智能批改'},
-  'ai-running': {cls:'running', text:'智批进行中',   tip:'智能批改进行中，可点击刷新查看进度'}
+  'default':    {cls:'',        text:'智批已完成',   tip:'智批已完成，可点击「回评」查看AI批改结果，如结果不符期望，可人工进行调整'},
+  'ai-partial': {cls:'partial', text:'智批未全部完成', tip:'AI大模型在批阅过程中，因输出存在一定的不稳定性，个别题目会存在未批的情况，可人工批阅，或点击重批重新发起智能批改'},
+  'ai-running': {cls:'running', text:'智批进行中',   tip:'智批进行中，可刷新查看进度；如不想等待，可人工批改，智批会自动跳过人工批改的题目。'}
 };
 const AI_ICONS = {
   'default':    '<svg width="15" height="15" viewBox="0 0 15 15"><circle cx="7.5" cy="7.5" r="6.7" fill="#52c41a"/><path d="M4.4 7.7l2.1 2.1 4-4.2" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -679,8 +690,9 @@ function setAiState(state){
   const badge = document.getElementById('aiBadge');
   badge.className = 'gd-badge' + (conf.cls ? ' ' + conf.cls : '');
   badge.innerHTML = AI_ICONS[state] + '<span>' + conf.text + '</span>'
-    + '<span class="gd-q" title="' + conf.tip + '">'
-    + '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.7" stroke="#9fb3c8" stroke-width="1"/><text x="6.5" y="9.6" font-size="8" text-anchor="middle" fill="#9fb3c8" font-family="sans-serif">?</text></svg></span>';
+    + '<span class="gd-q" tabindex="0" onclick="toggleTip(this,event)">'
+    + '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.7" stroke="#9fb3c8" stroke-width="1"/><text x="6.5" y="9.6" font-size="8" text-anchor="middle" fill="#9fb3c8" font-family="sans-serif">?</text></svg>'
+    + '<span class="gd-q-bubble">' + conf.tip + '</span></span>';
   document.querySelector('[data-proto-id="ai-notice"]').style.display = state === 'ai-running' ? 'none' : '';
   document.getElementById('btnRegrade').style.display = state === 'ai-partial' && !regraded ? '' : 'none';
   document.documentElement.dataset.protoState = state;
@@ -714,6 +726,41 @@ window.PrototypeBridge = {
     return Promise.resolve();
   }
 };
+/* 问号说明气泡（与 class-compare 的 qtip/placeBubble 同机制）：
+   fixed 定位由 JS 计算坐标，水平居中于问号并夹取进视口，上方不足 8px 改放下方，箭头随 --ax 指向问号；
+   hover 显示（mouseover 委托，兼容徽章动态重建）、点击固定 / 再点关闭、点他处关闭。
+   preventDefault 避免弹窗内 label 包裹的问号误触 checkbox。 */
+function placeBubble(q){
+  const b = q.querySelector('.gd-q-bubble');
+  if(!b) return;
+  b.style.display = 'block';
+  const bw = b.offsetWidth, bh = b.offsetHeight;
+  b.style.display = '';
+  const r = q.getBoundingClientRect();
+  let left = r.left + r.width / 2 - bw / 2;
+  left = Math.max(8, Math.min(left, window.innerWidth - bw - 8));
+  let top = r.top - bh - 8;
+  const below = top < 8;
+  if(below) top = r.bottom + 8;
+  b.classList.toggle('below', below);
+  b.style.left = left + 'px';
+  b.style.top = top + 'px';
+  b.style.setProperty('--ax', Math.max(12, Math.min(r.left + r.width / 2 - left, bw - 12)) + 'px');
+}
+document.addEventListener('mouseover', e => {
+  const q = e.target.closest('.gd-q');
+  if(q) placeBubble(q);
+});
+function toggleTip(el, e){
+  e.stopPropagation();
+  e.preventDefault();
+  const was = el.classList.contains('show');
+  document.querySelectorAll('.gd-q.show').forEach(q => q.classList.remove('show'));
+  if(!was){ el.classList.add('show'); placeBubble(el); }
+}
+document.addEventListener('click', e => {
+  if(!e.target.closest('.gd-q')) document.querySelectorAll('.gd-q.show').forEach(q => q.classList.remove('show'));
+});
 setAiState('ai-partial');
 </script>
 
