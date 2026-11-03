@@ -250,7 +250,7 @@
 
     $('#partTip').textContent = draft.mode === 'sub'
       ? '先定问数，再逐问、逐空微调'
-      : '先定空数，再均分或逐项微调';
+      : '先定空数，再逐项微调';
     $('#unitWord').textContent = unit + '，每' + unit;
     $('[data-field="count"]', panelForm).value = draft.parts.length;
     $('[data-field="count"]', panelForm).setAttribute('aria-label', unit + '数');
@@ -401,22 +401,6 @@
     }
     renumber();
     renderForm();
-  }
-
-  function distribute() {
-    var q = qOf(current);
-    var units = draft.mode === 'sub'
-      ? draft.parts.reduce(function (all, p) { return all.concat(p.blanks); }, [])
-      : draft.parts.slice();
-    var n = units.length;
-    if (!n) return;
-    var base = Math.floor(q.full / n);
-    var rest = round1(q.full - base * n);
-    units.forEach(function (u, i) {
-      u.score = round1(base + (i < Math.round(rest) ? 1 : 0));
-    });
-    renderForm();
-    markDirty();
   }
 
   function setMode(next) {
@@ -574,9 +558,6 @@
       renderForm();
       markDirty();
       return;
-    }
-    if (act === 'distribute') {
-      distribute();
     }
   });
 
