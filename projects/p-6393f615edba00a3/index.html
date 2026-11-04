@@ -215,6 +215,9 @@ dialog.ppn-trash-dialog{position:fixed;top:12px;bottom:auto;margin:0;padding:0;w
 .ppn .ppn-expand[aria-expanded="false"] svg{transform:rotate(-90deg)}
 .ppn .ppn-expand:hover{background:var(--nav-hover);color:var(--nav-ink)}
 .ppn .ppn-state{padding-left:calc(62px + var(--ppn-depth,0)*14px)}
+@media(hover:hover){.ppn .ppn-state[data-ppn-drag]:hover{cursor:grab}}
+.ppn .ppn-state-wrap{position:relative}.ppn .ppn-state-wrap>.ppn-state{padding-right:42px;min-height:32px;overflow-wrap:anywhere}.ppn .ppn-state-edit{top:50%;transform:translateY(-50%);width:24px;height:24px;padding:5px;background:transparent;opacity:.55}.ppn .ppn-state-wrap:hover>.ppn-state-edit,.ppn .ppn-state-wrap:focus-within>.ppn-state-edit{opacity:1}.ppn .ppn-state-edit:hover{background:var(--nav-hover);color:var(--nav-ink)}
+@media(pointer:coarse){.ppn .ppn-state-wrap>.ppn-state{min-height:44px;padding-right:52px}.ppn .ppn-state-edit{width:40px;height:40px;padding:12px}}
 .ppn .ppn-page.ppn-drop-inside{background:color-mix(in srgb,var(--nav-focus) 10%,var(--nav-surface));box-shadow:inset 0 0 0 1.5px var(--nav-focus);color:var(--nav-ink)}
 .ppn .ppn-drop-invalid{box-shadow:inset 0 0 0 1px var(--nav-danger);background:color-mix(in srgb,var(--nav-danger) 8%,var(--nav-surface))}
 .ppn .ppn-root-active{background:color-mix(in srgb,var(--nav-focus) 9%,var(--nav-surface));box-shadow:inset 0 0 0 1px var(--nav-focus);color:var(--nav-focus)}
@@ -238,6 +241,216 @@ dialog.ppn-trash-dialog{position:fixed;top:12px;bottom:auto;margin:0;padding:0;w
 body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing iframe{pointer-events:none}
 @media(pointer:coarse){.page-nav-resizer{width:16px}}
 </style>
+        <style>.pu-dialog{--pu-bg:#fff;--pu-soft:#f5f6f8;--pu-text:#202329;--pu-muted:#667085;--pu-line:#d8dee3;box-sizing:border-box;width:min(920px,94vw);max-height:86vh;padding:0;border:1px solid var(--pu-line);border-radius:12px;background:var(--pu-bg);color:var(--pu-text);font:14px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;box-shadow:0 20px 70px #0004}
+.pu-dialog:not([open]){display:none}.pu-dialog::backdrop{background:#10182880}.pu-dialog-head{display:flex;gap:20px;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--pu-line)}.pu-dialog h2{font-size:19px;font-weight:650;margin:0}.pu-dialog-body{padding:16px 20px;overflow:auto;max-height:calc(86vh - 76px)}
+.pu-muted{color:var(--pu-muted,#667085);font-size:12px;margin:4px 0 12px}.pu-table-wrap{overflow:auto}.pu-table{width:100%;border-collapse:collapse;table-layout:fixed}.pu-table th,.pu-table td{padding:12px 10px;border-bottom:1px solid var(--pu-line);text-align:left;vertical-align:top;overflow-wrap:anywhere}.pu-table th{font-size:12px;background:var(--pu-soft);color:var(--pu-muted);font-weight:500}.pu-table th:nth-child(1){width:19%}.pu-table th:nth-child(2){width:13%}.pu-table th:nth-child(4){width:100px}.pu-table strong{font-weight:600}.pu-table textarea{box-sizing:border-box;width:100%;padding:7px 9px;resize:vertical;min-height:54px;border:1px solid var(--pu-line);border-radius:5px;font:inherit;line-height:1.6;background:var(--pu-bg);color:inherit}.pu-table details{margin-top:7px;font-size:12px}.pu-table summary{cursor:pointer;color:var(--pu-muted)}.pu-before,.pu-after{white-space:pre-wrap;margin:8px 0;padding:7px;background:var(--pu-soft);border-radius:4px}.pu-kind{font-size:12px}.pu-release-section+.pu-release-section{margin-top:24px;padding-top:16px;border-top:1px solid var(--pu-line)}
+.pu-btn{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:5px 10px;border:1px solid #808790;border-radius:6px;font:inherit;font-size:12px;line-height:20px;white-space:nowrap;background:transparent;color:inherit;cursor:pointer}.pu-btn:hover{background:#80879015}.pu-btn:focus-visible,.pu-table textarea:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pu-btn.primary{background:#fff;color:#1744a8;border-color:#fff;font-weight:600}.pu-error{color:#e5484d}
+.pu-update-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;flex:none;padding:12px 20px;background:#1d4ed8;color:#fff;font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif}.pu-update-banner[hidden],.pu-update-badge[hidden]{display:none}.pu-banner-detail{font-size:12px;opacity:.9;margin-top:2px}.pu-banner-actions{display:flex;gap:8px;flex:none}.pu-update-banner .pu-btn{border-color:#ffffff70;color:white}.pu-update-banner .pu-btn.primary{color:#1744a8;background:white}.pu-update-badge{background:#1d4ed8!important;color:white!important;border-color:#1d4ed8!important}.pu-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:2147483640;padding:10px 16px;border-radius:8px;background:#202329;color:#fff;font:13px/1.6 sans-serif;max-width:min(80vw,600px);box-shadow:0 8px 24px #0003}.pu-toast[hidden]{display:none}
+:root[data-ext-theme="dark"] .pu-dialog,:root[data-home-theme="dark"] .pu-dialog{--pu-bg:#15181d;--pu-soft:#20252c;--pu-text:#edf0f4;--pu-muted:#a3adba;--pu-line:#39414b;color-scheme:dark}
+@media(prefers-color-scheme:dark){:root:not([data-ext-theme="light"]):not([data-home-theme="light"]) .pu-dialog{--pu-bg:#15181d;--pu-soft:#20252c;--pu-text:#edf0f4;--pu-muted:#a3adba;--pu-line:#39414b;color-scheme:dark}}
+@media(max-width:700px){.pu-update-banner{align-items:flex-start;flex-direction:column;padding:12px}.pu-banner-actions{flex-wrap:wrap}.pu-btn{min-height:38px}.pu-dialog{width:96vw}.pu-dialog-body{padding:12px}.pu-table{min-width:620px}.pu-dialog-head{padding:12px}}
+</style>
+        <script>/* 发布说明、本地草稿与静态站更新检测。只读取同站点版本文件。 */
+(function(global){
+    'use strict';
+    const KINDS={text:'文案',annotation:'标注',document:'页面需求','annotation-position':'标注位置',page:'页面配置',
+        'page-added':'新增页面','page-removed':'删除页面','element-added':'新增内容','element-removed':'删除内容',
+        style:'样式',logic:'交互代码',asset:'图片 / 资源',resource:'公共资源',layout:'结构',runtime:'评审组件',publication:'发布版本'};
+    function validRelease(value) {
+        return !!value && value.schemaVersion===1 && /^rel-[a-f0-9]{16}$/.test(value.releaseId || '') &&
+            /^[a-f0-9]{64}$/.test(value.contentVersion || '') && Number.isSafeInteger(value.sequence) && value.sequence>0 &&
+            ['review','pure'].includes(value.mode);
+    }
+    function safeRelative(value) {
+        return typeof value==='string' && value.length<300 && !value.includes('\\') && !/[?#:%]/.test(value) &&
+            value.split('/').every(p=>p && p!=='.' && p!=='..');
+    }
+    function createWatcher(options) {
+        const current=options.current, fetcher=options.fetch || global.fetch.bind(global);
+        const visible=options.visible || (()=>!global.document?.hidden);
+        const schedule=options.setTimeout || global.setTimeout.bind(global), cancel=options.clearTimeout || global.clearTimeout.bind(global);
+        let timer=null, stopped=true, inFlight=null, delay=30000, seen=current?.sequence || 0;
+        const protocol=options.protocol || global.location?.protocol;
+        function next(){ cancel(timer); if(!stopped && visible()) timer=schedule(check,delay); }
+        function check(){
+            if(stopped || !visible() || !validRelease(current) || !['http:','https:'].includes(protocol)) return Promise.resolve();
+            if(inFlight) return inFlight;
+            cancel(timer);
+            const abort=global.AbortController ? new global.AbortController():null;
+            const timeout=abort && schedule(()=>abort.abort(),5000);
+            inFlight=(async()=>{
+                try {
+                    const url=new URL('prototype-release.json',options.baseUrl || global.location.href);
+                    url.searchParams.set('_check',String(Date.now()));
+                    const response=await fetcher(url.href,{cache:'no-store',credentials:'omit',signal:abort?.signal});
+                    if(!response.ok) throw Error('版本暂不可读');
+                    const latest=await response.json();
+                    if(!validRelease(latest) || (current.projectId && latest.projectId!==current.projectId)) return;
+                    delay=30000;
+                    if(latest.sequence>seen){
+                        seen=latest.sequence;
+                        if(latest.contentVersion!==current.contentVersion) options.onUpdate(latest);
+                    }
+                } catch(_){ delay=Math.min(delay*2,300000); }
+                finally { if(timeout)cancel(timeout); inFlight=null;next(); }
+            })();
+            return inFlight;
+        }
+        const resume=()=>{if(visible())check();else cancel(timer);};
+        return {start(){if(!stopped)return;stopped=false;global.addEventListener?.('focus',resume);global.document?.addEventListener('visibilitychange',resume);check();},
+            check,stop(){stopped=true;cancel(timer);global.removeEventListener?.('focus',resume);global.document?.removeEventListener('visibilitychange',resume);}};
+    }
+    function node(tag,text,className){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;}
+    function notify(text){
+        let n=document.querySelector('.pu-toast');if(!n){n=node('div',undefined,'pu-toast');n.setAttribute('role','status');document.body.append(n);}
+        n.textContent=text;n.hidden=false;clearTimeout(n._timer);n._timer=setTimeout(()=>n.hidden=true,4500);
+    }
+    function targetHash(target){return new URLSearchParams({p:target.pageId || '',s:target.stateId || 'default',changeTarget:JSON.stringify(target)}).toString();}
+    function readTarget(hash){try{const raw=new URLSearchParams(hash.slice(1)).get('changeTarget');if(!raw || raw.length>6000)return null;const t=JSON.parse(raw);
+        if(!t || typeof t.pageId!=='string' || t.pageId.length>256 || typeof t.stateId!=='string' || t.stateId.length>256)return null;
+        const out={pageId:t.pageId,stateId:t.stateId};for(const k of ['noteId','documentId'])if(typeof t[k]==='string' && t[k].length<256)out[k]=t[k];
+        if(t.anchor && typeof t.anchor==='object'){out.anchor={};for(const k of ['selector','protoId','tag','text','parentText','textRule'])if(typeof t.anchor[k]==='string' && t.anchor[k].length<3000)out.anchor[k]=t.anchor[k];}
+        return out;
+    }catch(_){return null;}}
+    let currentDialog=null;
+    const previewCache=new Map();
+    function previewLocal(projectId,force=false){
+        const hit=previewCache.get(projectId);if(!force && hit && Date.now()-hit.time<5000)return hit.promise;
+        const promise=fetch('/api/ext/release-preview?projectId='+encodeURIComponent(projectId)).then(r=>r.json());
+        previewCache.set(projectId,{promise,time:Date.now()});return promise;
+    }
+    async function summarizeLocal(button,projectId,force=false){
+        if(!button)return;button.dataset.project=projectId;button.textContent='更新说明 · 正在对比…';
+        try{const result=await previewLocal(projectId,force);if(button.dataset.project!==projectId)return;
+            const s=result.release?.summary;button.textContent=result.ok?`更新说明 · ${s?.pages || 0} 页 / ${s?.changes || 0} 项`:'更新说明 · 点击重试';
+        }catch(_){if(button.dataset.project===projectId)button.textContent='更新说明 · 点击重试';}
+    }
+    function dialog(title){
+        currentDialog?.close();currentDialog?.remove();
+        const d=node('dialog',undefined,'pu-dialog');currentDialog=d;
+        const head=node('div',undefined,'pu-dialog-head');const heading=node('h2',title);heading.id='pu-title';d.setAttribute('aria-labelledby','pu-title');head.append(heading);
+        const close=node('button','关闭','pu-btn');close.type='button';close.onclick=()=>d.close();head.append(close);
+        const body=node('div',undefined,'pu-dialog-body');d.append(head,body);document.body.append(d);
+        d.addEventListener('close',()=>{d._flush?.();d.remove();if(currentDialog===d)currentDialog=null;},{once:true});
+        d.showModal();return {d,body};
+    }
+    function showItems(host,payload,options={}){
+        host.replaceChildren();
+        const items=Array.isArray(payload?.items)?payload.items:[];
+        const status=node('p',undefined,'pu-muted');host.append(status);
+        status.textContent=payload?.baselineStatus==='unavailable'?'首次建立版本基线，历史差异暂不可完整比较':
+            payload?.baselineStatus==='initial'?'首次发布摘要':items.length?`${new Set(items.map(i=>i.target?.pageId)).size} 个页面 · ${items.length} 项更新`:'与上次版本相比没有内容变化';
+        if(payload?.publishedAt)host.append(node('p',payload.publishedAt,'pu-muted'));
+        if(!items.length)return;
+        const wrap=node('div',undefined,'pu-table-wrap'), table=node('table',undefined,'pu-table');
+        const tr=node('tr');for(const label of ['页面 / 状态','类型','更新内容','操作'])tr.append(node('th',label));
+        const thead=node('thead');thead.append(tr);table.append(thead);
+        const tbody=node('tbody');table.append(tbody);wrap.append(table);host.append(wrap);
+        for(const item of items){
+            const row=node('tr'), page=node('td'), kind=node('td'), description=node('td'), action=node('td');
+            page.append(node('strong',item.pageTitle || '公共资源'),node('div',item.stateTitle || '默认','pu-muted'));
+            if(item.affectedPages?.length>1)page.append(node('small',(item.affectedPageTitles || item.affectedPages).join('、'),'pu-muted'));
+            kind.append(node('span',KINDS[item.kind] || '内容','pu-kind'));
+            if(options.edit){
+                const input=node('textarea');input.value=item.description || '';input.rows=2;input.maxLength=1000;
+                input.setAttribute('aria-label','修改更新说明：'+(item.pageTitle || '公共资源'));
+                input.oninput=()=>{item.description=input.value;options.onEdit?.(items);};description.append(input);
+            }else description.append(node('div',item.description || '内容有更新'));
+            if(item.before || item.after){
+                const details=node('details');details.append(node('summary',item.target?.deleted?'查看删除内容':'前后内容'));
+                if(item.before)details.append(node('p','原：'+item.before,'pu-before'));
+                if(item.after)details.append(node('p','新：'+item.after,'pu-after'));description.append(details);
+            }
+            const button=node('button',item.target?.deleted?'查看详情':options.refresh?'刷新并定位':'定位','pu-btn');button.type='button';
+            button.onclick=()=>{
+                if(item.target?.deleted){description.querySelector('details')?.setAttribute('open','');return;}
+                if(!item.target?.pageId){notify('此项为公共更新，请查看涉及页面');return;}
+                options.close?.();Promise.resolve(options.onLocate?.(item.target)).catch(e=>notify(e.message || '定位失败'));
+            };
+            action.append(button);row.append(page,kind,description,action);tbody.append(row);
+        }
+    }
+    async function openLocal({projectId,onLocate}){
+        const {d,body}=dialog('更新说明');body.append(node('p','正在对比上次发布…','pu-muted'));
+        let result,saveTimer=null,pending=null,saving=false;
+        const status=node('p','修改说明自动保存','pu-muted');
+        async function save(){
+            clearTimeout(saveTimer);if(saving || !pending)return;
+            saving=true;const descriptions=pending;pending=null;
+            try{
+                const response=await fetch('/api/ext/release-notes',{method:'POST',headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({projectId,branch:result.target.branch,sourceVersion:result.sourceVersion,descriptions})});
+                const data=await response.json();if(!data.ok)throw Error(data.error || '说明保存失败');status.textContent='说明已保存';
+            }catch(e){status.textContent=e.message;notify(e.message);}finally{saving=false;if(pending)save();}
+        }
+        d._flush=()=>{clearTimeout(saveTimer);save();};
+        try{
+            result=await previewLocal(projectId,true);
+            if(!result.ok)throw Error(result.error || '无法生成更新说明');if(!d.open)return;
+            const content=node('div');showItems(content,result.changes,{edit:true,close:()=>d.close(),onLocate:target=>{
+                if(onLocate)return onLocate(target);
+                const url=new URL('/src/viewer.html',location.href);url.searchParams.set('ext',projectId);url.searchParams.set('page',target.pageId);url.searchParams.set('state',target.stateId || 'default');url.searchParams.set('mode','annotate');url.hash=targetHash(target);global.open(url.href,'_blank','noopener');
+            },onEdit:items=>{pending=Object.fromEntries(items.map(i=>[i.id,i.description]));status.textContent='正在保存…';clearTimeout(saveTimer);saveTimer=setTimeout(save,600);}});
+            body.replaceChildren(content,status);
+        }catch(e){body.replaceChildren(node('p',e.message,'pu-error'));}
+    }
+    function mountPublished({data,onLocate}){
+        const header=document.querySelector('header.topbar');if(!header)return;
+        let latest=null;
+        const banner=node('section',undefined,'pu-update-banner');banner.hidden=true;banner.setAttribute('aria-label','页面更新通知');banner.setAttribute('role','status');
+        const label=node('div'),title=node('strong','页面有更新，请刷新查看最新版本。'),detail=node('div',undefined,'pu-banner-detail');label.append(title,detail);
+        const controls=node('div',undefined,'pu-banner-actions');
+        const refresh=node('button','刷新页面','pu-btn primary'),view=node('button','查看更新','pu-btn'),later=node('button','稍后','pu-btn');
+        controls.append(refresh,view,later);banner.append(label,controls);header.after(banner);
+        const badge=node('button','有更新','pu-btn pu-update-badge');badge.hidden=true;badge.onclick=()=>{badge.hidden=true;banner.hidden=false;};header.append(badge);
+        function refreshTo(target){const url=new URL(location.href);url.searchParams.set('v',latest.contentVersion);if(target)url.hash=targetHash(target);location.replace(url.href);}
+        refresh.onclick=()=>refreshTo();later.onclick=()=>{banner.hidden=true;badge.hidden=false;};
+        async function show(latestOnly=false){
+            const {d,body}=dialog(latestOnly?'最新更新说明':'更新说明');
+            if(!latestOnly){showItems(body,data.changeLog || {items:[]},{close:()=>d.close(),onLocate});}
+            else body.append(node('p','正在读取更新说明…','pu-muted'));
+            let release=latestOnly?latest:data.release;
+            if(!validRelease(release))return;
+            if(release.mode==='pure'){body.replaceChildren(node('p','最新发布已切换为纯净版，请刷新后查看原型。'));return;}
+            if(!latestOnly && ['http:','https:'].includes(location.protocol)){
+                try{
+                    const response=await fetch(new URL('prototype-release.json',location.href),{cache:'no-store',credentials:'omit'});
+                    const remote=await response.json();
+                    if(validRelease(remote) && remote.projectId===data.release.projectId && Array.isArray(remote.history))
+                        release={...release,history:remote.history.filter(h=>h.sequence<=data.release.sequence)};
+                }catch(_){/* 离线时保留随包携带的当前更新说明。 */}
+            }
+            const history=(Array.isArray(release.history)?release.history:[]).filter(h=>!latestOnly || h.sequence>data.release.sequence);
+            const paths=[...history.map(h=>h.changesUrl),release.changesUrl].filter((v,i,a)=>v && a.indexOf(v)===i && safeRelative(v));
+            if(!latestOnly){
+                if(!paths.length)return;
+                const more=node('button','查看保留的历史更新','pu-btn');body.append(more);more.onclick=()=>load();
+            }else await load();
+            async function load(){
+                const output=node('div');let count=0;
+                if(latestOnly && history.length && Math.min(...history.map(h=>h.sequence))>data.release.sequence+1)
+                    output.append(node('p','当前页面落后较多，以下仅包含保留范围内的更新；更早变化已归档。','pu-muted'));
+                for(const path of paths){
+                    try{
+                        const response=await fetch(new URL(path,location.href),{cache:'no-store',credentials:'omit'});if(!response.ok)continue;
+                        const payload=await response.json();if(payload.schemaVersion!==1 || !Array.isArray(payload.items) || path!=='prototype-changes/'+payload.releaseId+'.json')continue;
+                        const section=node('section',undefined,'pu-release-section');showItems(section,payload,{refresh:latestOnly,close:()=>d.close(),onLocate:latestOnly?refreshTo:onLocate});output.append(section);count++;
+                    }catch(_){/* 部分历史可能已归档 */}
+                }
+                if(!d.open)return;
+                if(count)body.replaceChildren(output);else if(latestOnly)body.replaceChildren(node('p','更新说明暂不可读，请稍后重试；可先刷新查看最新页面。'));
+            }
+        }
+        const notes=node('button','更新说明','pu-btn');notes.onclick=()=>show();header.append(notes);view.onclick=()=>show(true);
+        if(validRelease(data.release)){
+            const watcher=createWatcher({current:data.release,onUpdate:value=>{latest=value;const s=value.summary || {};detail.textContent=`${value.publishedAt || ''} · 涉及 ${s.pages || 0} 个页面、${s.changes || 0} 项变化`;banner.hidden=false;badge.hidden=true;}});
+            watcher.start();global.addEventListener('pagehide',()=>watcher.stop(),{once:true});
+        }
+        return {notify};
+    }
+    global.PublicationUpdates={createWatcher,validRelease,safeRelative,openLocal,summarizeLocal,mountPublished,notify,readTarget,targetHash};
+})(typeof window!=='undefined'?window:globalThis);
+</script>
         <script>(function () {
     'use strict';
     const svg = (path) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">' + path + '</svg>';
@@ -435,7 +648,19 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
         function visit(page) {if (!page || seen.has(page.id)) return; seen.add(page.id); result.push(page); (project.pages || []).filter(p => p.parentId === page.id).forEach(visit);}
         visit((project.pages || []).find(p => p.id === id)); return result;
     }
+    function orderedStates(page) {
+        const states=page?.states || [],records=new Map(states.map(s=>[s.id,s]));
+        const ordered=[];
+        for(const id of Array.isArray(page?.stateOrder)?page.stateOrder:[]){const state=records.get(id);if(state){ordered.push(state);records.delete(id);}}
+        return ordered.concat(states.filter(s=>records.has(s.id)));
+    }
     function reorderError(project, request) {
+        if(request.kind==='state'){
+            const page=project.pages?.find(p=>p.id===request.pageId && !p.trashedAt);
+            if(!page || !page.states?.some(s=>s.id===request.id) || !page.states.some(s=>s.id===request.targetId))return '状态已变化，请重新拖动';
+            if(!['before','after'].includes(request.position))return '状态只支持同一页面内上下排序';
+            return request.id===request.targetId?'请选择其他状态':'';
+        }
         if (request.kind === 'client') return '';
         const source = project.pages?.find(p => p.id === request.id), target = project.pages?.find(p => p.id === request.targetId);
         if (!source || source.trashedAt) return '页面已移除';
@@ -455,7 +680,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
         return depth + height(source) - 1 > 3 ? '最多支持三级页面，当前子树会超过三级' : '';
     }
     function reorderProject(project, request) {
-        if (!['page', 'client'].includes(request.kind)) return false;
+        if (!['page', 'client', 'state'].includes(request.kind)) return false;
         if (request.kind === 'client') {
             const records = [...(project.clients || [])], source = records.findIndex(p => p.id === request.id), target = records.findIndex(p => p.id === request.targetId);
             if (source < 0 || target < 0 || source === target || !['before', 'after'].includes(request.position)) return false;
@@ -465,6 +690,12 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
             project.clients = records; return true;
         }
         if (reorderError(project, request)) return false;
+        if(request.kind==='state'){
+            const page=project.pages.find(p=>p.id===request.pageId),states=orderedStates(page),ids=states.map(s=>s.id);
+            const next=ids.filter(id=>id!==request.id);next.splice(next.indexOf(request.targetId)+(request.position==='after'?1:0),0,request.id);
+            if(next.every((id,index)=>id===ids[index]))return false;
+            project.pages=project.pages.map(p=>p===page?{...p,stateOrder:next}:p);return true;
+        }
         const tree = pageTree(project), target = tree.nodes.get(request.targetId)?.page;
         const moved = subtreePages(project, request.id).map(p => ({...p})), ids = new Set(moved.map(p => p.id));
         const records = project.pages.filter(p => !ids.has(p.id));
@@ -499,6 +730,14 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
         if(page.role==='launcher'||(parent&&(parent.clientId || '')!==(page.clientId || '')))delete page.parentId;
         if(page.role==='launcher')for(const child of project.pages)if(child.parentId===id)delete child.parentId;
     }
+    function updateStateTitle(project, pageId, stateId, value) {
+        const title=typeof value==='string'?value.trim():'';
+        if(!title || title.length>100 || /[\u0000-\u001f\u007f]/.test(title))throw new Error(!title?'请填写状态名称':'状态名称最多 100 个字符，不能包含换行或控制字符');
+        const page=project.pages.find(p=>p.id===pageId && !p.trashedAt),state=page?.states?.find(s=>s.id===stateId);
+        if(!state)throw new Error('状态已移除，请重新打开项目');
+        if(title===(state.title || state.id))return false;
+        state.title=title;state.titleUserSet=true;return true;
+    }
     function mount(host, initial) {
         let options = initial, filter = '', closed = new Set(['__launchers']), closedPages = new Set(), filterControl = null, drag = null, saving = false, suppressClick = false;
         host.classList.add('ppn');
@@ -510,7 +749,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
         }
         function render() {
             const focused = document.activeElement?.closest('[data-ppn-key]')?.dataset.ppnKey;
-            const { project, currentPage, currentState, onSelect, onEdit, onReorder, annotations = [] } = options;
+            const { project, currentPage, currentState, onSelect, onEdit, onEditState, onReorder, annotations = [] } = options;
             const pages = (project.pages || []).filter(p=>!p.trashedAt), clients = project.clients || [], tree = pageTree(project);
             if (filter && !clients.some(c => c.id === filter)) filter = '';
             filterControl?.destroy(); filterControl = null; host.replaceChildren();
@@ -582,10 +821,18 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                         const expand=button('ppn-expand','',()=>{closedPages.has(page.id)?closedPages.delete(page.id):closedPages.add(page.id);render();});
                         expand.innerHTML=chevron;expand.setAttribute('aria-label',(nested.hidden?'展开':'收起')+' '+title.textContent+'的子页面');expand.setAttribute('aria-expanded',String(!nested.hidden));expand.setAttribute('aria-controls',nested.id);expand.dataset.ppnKey='expand:'+page.id;item.append(expand);
                     }
-                    if ((page.states || []).length>1) for (const state of page.states) {
+                    if ((page.states || []).length>1) for (const state of orderedStates(page)) {
                         const st=button('ppn-state',state.title || state.id,()=>onSelect(page.id,state.id));
                         st.dataset.pageId=page.id;st.dataset.stateId=state.id;st.dataset.scope=page.id+'\n'+state.id;st.dataset.ppnKey='state:'+page.id+':'+state.id;
-                        st.style.setProperty('--ppn-depth',depth-1);st.setAttribute('aria-current',String(page.id===currentPage && state.id===currentState));node.append(st);
+                        st.style.setProperty('--ppn-depth',depth-1);st.setAttribute('aria-current',String(page.id===currentPage && state.id===currentState));
+                        if(onReorder){st.dataset.ppnDrag='state';st.dataset.dragId=state.id;st.setAttribute('aria-keyshortcuts','Alt+ArrowUp Alt+ArrowDown');st.title='拖动调整状态顺序 · Alt + ↑ / ↓';}
+                        if(onEditState){
+                            const row=document.createElement('div');row.className='ppn-state-wrap';
+                            const edit=button('ppn-edit ppn-state-edit','',event=>{event.stopPropagation();onEditState(page,state,event.currentTarget);});
+                            edit.innerHTML=editIcon;edit.setAttribute('aria-label','修改状态名称：'+(state.title || state.id));edit.title='修改状态名称';edit.dataset.ppnKey='edit-state:'+page.id+':'+state.id;
+                            st.setAttribute('aria-keyshortcuts',(onReorder?'Alt+ArrowUp Alt+ArrowDown ':'')+'F2');st.onkeydown=event=>{if(event.key==='F2'){event.preventDefault();event.stopPropagation();onEditState(page,state,edit);}};
+                            row.append(st,edit);node.append(row);
+                        }else node.append(st);
                     }
                     children.forEach(child=>renderPage(child,nested));if(children.length)node.append(nested);
                 }
@@ -602,13 +849,14 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
             if (saving || !options.onReorder) return;
             const check = {pages: [...options.project.pages], clients: [...(options.project.clients || [])]};
             const error=reorderError(options.project,request);if(error){live.textContent=error;return;}
-            if (!reorderProject(check, request)) {live.textContent='页面位置未改变';return;}
+            const stateMove=request.kind==='state',label=stateMove?'状态顺序':'页面结构';
+            if (!reorderProject(check, request)) {live.textContent=label+'未改变';return;}
             const previousProject=options.project, save=options.onReorder;
             if(request.position==='inside')closedPages.delete(request.targetId);
-            const moved=check.pages.find(p=>p.id===request.id);if(moved)closed.delete(groupKey(moved,check));
+            const moved=request.kind==='page'&&check.pages.find(p=>p.id===request.id);if(moved)closed.delete(groupKey(moved,check));
             if(filter && moved && groupKey(moved,check)!==filter)filter='';
-            saving = true; options={...options,project:check}; live.textContent = '正在保存页面结构'; render();
-            try {const ok = await save(request); if(ok===false && options.project===check)options={...options,project:previousProject};live.textContent = ok === false ? '移动未保存，已恢复原结构' : '页面结构已保存';}
+            saving = true; options={...options,project:check}; live.textContent = '正在保存'+label; render();
+            try {const ok = await save(request); if(ok===false && options.project===check)options={...options,project:previousProject};live.textContent = ok === false ? '移动未保存，已恢复原结构' : label+'已保存';}
             catch (_) {if(options.project===check)options={...options,project:previousProject};live.textContent = '移动未保存，已恢复原结构';}
             finally {saving = false; render(); if(focusKey) Array.from(host.querySelectorAll('[data-ppn-key]')).find(n=>n.dataset.ppnKey===focusKey)?.focus({preventScroll:true});}
         }
@@ -632,7 +880,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                 drag.caption=document.createElement('div');drag.caption.className='ppn-drag-caption';drag.ghost.append(drag.caption);
                 drag.ghost.style.width=startRect.width+'px';document.body.append(drag.ghost);
                 drag.line=document.createElement('div');drag.line.className='ppn-drop-line';document.body.append(drag.line);
-                live.textContent=node.dataset.ppnDrag==='client'?'正在拖动端分组':'拖到中间成为子页面，上下边缘同级排序';tick();
+                live.textContent=node.dataset.ppnDrag==='state'?'上下拖动调整状态顺序，仅限当前页面':node.dataset.ppnDrag==='client'?'正在拖动端分组':'拖到中间成为子页面，上下边缘同级排序';tick();
             }
             function tick(schedule=true) {
                 if (!drag?.started) return;
@@ -641,13 +889,13 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                 const inPanel=d.x>=r.left-18 && d.x<=r.right+18;
                 if(inPanel){const edge=38;const delta=d.y<r.top+edge?-Math.min(9,(r.top+edge-d.y)/4):d.y>r.bottom-edge?Math.min(9,(d.y-r.bottom+edge)/4):0;host.scrollTop+=delta;}
                 host.querySelectorAll('.ppn-drop-inside,.ppn-drop-invalid,.ppn-root-active').forEach(n=>n.classList.remove('ppn-drop-inside','ppn-drop-invalid','ppn-root-active'));
-                const kind=node.dataset.ppnDrag, candidates=Array.from(host.querySelectorAll('[data-ppn-drag]')).filter(n=>n.dataset.ppnDrag===kind && n.getClientRects().length);
+                const kind=node.dataset.ppnDrag, candidates=Array.from(host.querySelectorAll('[data-ppn-drag]')).filter(n=>n.dataset.ppnDrag===kind && (kind!=='state'||n.dataset.pageId===node.dataset.pageId) && n.getClientRects().length);
                 let closest=null, distance=Infinity, request=null, caption='', inside=false;
                 const rootTarget=kind==='page'&&inPanel?Array.from(host.querySelectorAll('[data-ppn-root]')).find(n=>{const cr=n.getBoundingClientRect();return cr.height&&d.y>=cr.top&&d.y<=cr.bottom;}):null;
                 if(rootTarget){request={kind,id:node.dataset.dragId,targetId:rootTarget.dataset.ppnRoot,position:'root'};closest=rootTarget;caption='移到“'+rootTarget.querySelector('span')?.textContent+'”顶层';}
                 else if(inPanel && d.y>=r.top && d.y<=r.bottom)for(const candidate of candidates){const cr=candidate.getBoundingClientRect(),dist=Math.abs(d.y-(cr.top+cr.height/2));if(dist<distance&&d.y>=cr.top-8&&d.y<=cr.bottom+8){distance=dist;closest=candidate;}}
                 if(closest&&!rootTarget){const cr=closest.getBoundingClientRect(),part=(d.y-cr.top)/cr.height;inside=kind==='page'&&part>.25&&part<.75&&node.dataset.dragGroup!=='__launchers';
-                    const position=inside?'inside':part<.5?'before':'after';request={kind,id:node.dataset.dragId,targetId:closest.dataset.dragId,position};
+                    const position=inside?'inside':part<.5?'before':'after';request={kind,id:node.dataset.dragId,targetId:closest.dataset.dragId,position,...(kind==='state'?{pageId:node.dataset.pageId}:{})};
                     const title=closest.querySelector('.ppn-title')?.textContent || closest.textContent;caption=inside?'移入“'+title+'”':'放在“'+title+'”'+(position==='before'?'之前':'之后');
                 }
                 const error=request?reorderError(options.project,request):'', valid=request&&!error;
@@ -659,7 +907,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                 }
                 const expandId=valid&&inside?request.targetId:'';
                 if(d.expandId!==expandId){clearTimeout(d.expandTimer);d.expandId=expandId;if(expandId&&closedPages.has(expandId))d.expandTimer=setTimeout(()=>{if(!drag||drag.expandId!==expandId)return;closedPages.delete(expandId);const branch=closest.closest('.ppn-branch'),children=branch.querySelector(':scope > .ppn-children'),toggle=branch.querySelector(':scope > .ppn-item-wrap > .ppn-expand');if(children)children.hidden=false;if(toggle){toggle.setAttribute('aria-expanded','true');toggle.setAttribute('aria-label',toggle.getAttribute('aria-label').replace(/^展开/,'收起'));}},650);}
-                const message=error || caption || '中间移入 · 边缘排序 · 最多三级';d.caption.textContent=message;if(d.message!==message){live.textContent=message;d.message=message;}
+                const message=error || caption || (kind==='state'?'仅限当前页面的状态之间排序':'中间移入 · 边缘排序 · 最多三级');d.caption.textContent=message;if(d.message!==message){live.textContent=message;d.message=message;}
                 d.ghost.classList.toggle('ppn-no-drop',!d.drop);if(schedule)d.raf=requestAnimationFrame(tick);
             }
             const touchHandle=event.target.closest('.ppn-page-icon');
@@ -679,12 +927,12 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
             if(!event.altKey||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(event.key)||!options.onReorder)return;
             const node=event.target.closest('[data-ppn-drag]');if(!node)return;event.preventDefault();event.stopImmediatePropagation();
             const kind=node.dataset.ppnDrag,id=node.dataset.dragId,tree=pageTree(options.project),branch=tree.nodes.get(id);
-            const siblings=Array.from(host.querySelectorAll('[data-ppn-drag]')).filter(n=>n.dataset.ppnDrag===kind && (kind==='client'||(n.dataset.dragGroup===node.dataset.dragGroup&&n.dataset.parentId===node.dataset.parentId)));
+            const siblings=Array.from(host.querySelectorAll('[data-ppn-drag]')).filter(n=>n.dataset.ppnDrag===kind && (kind==='state'?n.dataset.pageId===node.dataset.pageId:kind==='client'||(n.dataset.dragGroup===node.dataset.dragGroup&&n.dataset.parentId===node.dataset.parentId)));
             const i=siblings.indexOf(node);let target,position;
             if(event.key==='ArrowLeft'&&kind==='page'){target=branch?.parentId;position='after';}
             else if(event.key==='ArrowRight'&&kind==='page'){target=siblings[i-1]?.dataset.dragId;position='inside';}
             else if(['ArrowUp','ArrowDown'].includes(event.key)){target=siblings[i+(event.key==='ArrowUp'?-1:1)]?.dataset.dragId;position=event.key==='ArrowUp'?'before':'after';}
-            if(target)commit({kind,id,targetId:target,position},node.dataset.ppnKey);
+            if(target)commit({kind,id,targetId:target,position,...(kind==='state'?{pageId:node.dataset.pageId}:{})},node.dataset.ppnKey);
         },true);
         function revealAncestors(pageId){const tree=pageTree(options.project);let node=tree.nodes.get(pageId);while(node?.parentId){closedPages.delete(node.parentId);node=tree.nodes.get(node.parentId);}}
         let revealedPage='';
@@ -711,7 +959,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
         canvas.classList.add('ppn-canvas');canvas.classList.toggle('ppn-mobile',type==='mobile');canvas.classList.toggle('ppn-pad',type==='pad');canvas.classList.toggle('ppn-shell',['mobile','pad'].includes(type) && shell);
         if(type==='pad')previewDevices.set(frame,fitDevice(frame,canvas,shell?1220:1180,shell?860:820));
     }
-    window.ProtoProjectNavigation = {mount, defaultPage, applyPreview, fitDevice, createSelect, positionPopup, reorderProject, reorderError, pageTree, subtreePages, updatePageNavigation, createPageTracking};
+    window.ProtoProjectNavigation = {mount, defaultPage, applyPreview, fitDevice, createSelect, positionPopup, reorderProject, reorderError, pageTree, subtreePages, updatePageNavigation, updateStateTitle, orderedStates, createPageTracking};
 })();
 </script>
         <script>/* 工作台和独立评审壳共用页面列表宽度交互。 */
@@ -815,7 +1063,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
             </aside>
         </main>
         <noscript>请开启 JavaScript 查看评审内容（页面树、PRD 与标注气泡均依赖脚本渲染）。</noscript>
-        <script type="application/json" id="review-data">{"name": "前台增加重批逻辑", "projectId": "p-6393f615edba00a3", "revision": 116, "publishedAt": "2026-11-03 16:14:14", "pages": [{"id": "home", "title": "作业批阅与班级对比原型", "file": "index.html", "states": [{"id": "default", "title": "默认页面", "kind": "default"}], "role": "launcher"}, {"id": "grading", "title": "作业批阅 - 作业", "file": "grading.html", "states": [{"id": "default", "title": "默认页面", "kind": "default"}, {"id": "ai-partial", "title": "智批未全部完成", "kind": "adapter"}, {"id": "ai-running", "title": "智批进行中", "kind": "adapter"}]}], "clients": [], "defaultPage": "grading", "documents": [{"id": "4700230f-e7cb-4e65-8c38-ac2bcf3a196a", "pageId": "home", "stateId": "default", "markdown": "## 一、需求描述\n「作业批阅与班级对比」原型项目的整合壳页：左侧为原型页面导航，右侧 iframe 加载被选中页面，供评审者在同一入口内切换查看（作业批阅、班级对比两页同属本项目，自「新教育后台」项目拆出）。默认打开导航第一项，当前选中页以蓝左条+浅蓝底高亮。\n\n## 二、研发实现\n页面清单由壳内 PAGES 数组静态注册（id/名称/文件路径），新增页面只需放入页面文件并追加一行注册项；URL hash（#页面id）与选中页双向同步，刷新或直达链接保持当前页；iframe 内各页面交互相互独立。", "confirmed": false, "updatedAt": "2026-10-14T01:38:28.101212+00:00"}, {"id": "e89687a6-79d1-4dee-8ab8-e4da1e883d18", "pageId": "grading", "stateId": "default", "markdown": "## 需求背景\n\n- 作业由 AI 智能批改完成后，结果需经教师复核才会被采信；教师对批改结果的查看入口与后续处理方式存在疑问。\n\n## 需求目标\n\n- 让教师明确感知智批已完成，知道如何查看 AI 批改结果，并能在结果不符期望时进行人工调整，提升对智批结果的信任与复核效率。", "confirmed": false, "updatedAt": "2026-11-03T07:36:59.419337+00:00"}, {"id": "ae3aeebd-02e0-4efc-9133-061c918d8df3", "pageId": "grading", "stateId": "ai-partial", "markdown": "## 需求背景\n\n- AI 大模型批阅输出存在不稳定性，个别题目可能未批；教师需要了解异常原因并有补救途径，过严的重批限制会影响异常时的处理灵活性。\n\n## 需求目标\n\n- 让教师在智批未全部完成时了解未批原因，可通过人工批阅或重批完成补救；重批机会与剩余次数清晰可见，次数用尽后也能明确理解当前限制，不产生疑惑。", "confirmed": false, "updatedAt": "2026-11-03T07:36:59.419337+00:00"}, {"id": "29b70c09-a882-4d32-af90-519c39e9c2e3", "pageId": "grading", "stateId": "ai-running", "markdown": "## 需求背景\n\n- 智批需要一定处理时间，等待期间教师可能希望先人工处理部分题目，而非只能干等。\n\n## 需求目标\n\n- 让教师知道可刷新查看智批进度，也可不等智批、直接人工批改，两种方式并行不冲突，批阅安排更灵活。", "confirmed": false, "updatedAt": "2026-11-03T07:36:59.419337+00:00"}], "annotations": [{"id": "031bf5bf-82ea-4fa9-b5f9-14dfd8f371f0", "pageId": "grading", "stateId": "default", "number": 8, "body": "**页面显示*\n\n1. 绿色图标「智批已完成」，问号提示“智批已完成，可点击「回评」查看AI批改结果，如结果不符期望，可人工进行调整”\n\n**业务规则**\n\n1. 批阅状态机为三态：智批已完成/ 智批未全部完成/ 智批进行中。\n2. 智批已完成逻辑改动：\n   1. 智批成功的题目数/应智批的题目数=1时，才显示智批已完成\n", "anchor": {"protoId": "", "selector": "body > main", "tag": "main", "text": "共2题，1题未完成批阅 智批已完成 ? AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。 合并批阅 刷 新 题目 批阅进度 平均得分 本题满分 批改完成时间 操作 12 12/62（19.4%） 10.42 11 - 批改更多 13 62/62（100.0%） 9.54 12 2026-10-10 10:12:13 回评更多", "parentText": "新教育 首页 备课授课 作业 错题本 题库卷库 学情分析 考试 试卷库 资源库 班级管理 徐老师 ▾ < 返回 | 第五章 作业3 不同价态含硫物质的转化 去讲评 9 ▾ 扫描时间：2026-07-06 已交人数：62 未交人数：6（异常学号卡？) 总批阅进度：59.7% 按题批阅 按学生批阅 选择题成绩 共2题，1题未完成批阅 智批已完成 ? AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。 合并批阅 刷 新 题目 批阅进度 平均得分 本题满分 批改完成时间 操作 12 12/62（19.4%） 10.42 11 - 批改更多 13 62/62（100.0%） 9.54 12 2026-10-10 10:12:13 回评更多 ?", "htmlSnippet": "<main class=\"content\">\n\n  <!-- 批阅状态行 -->\n  <div class=\"gdbar\" data-proto-id=\"status-bar\">\n    <span class=\"gd-sum\">共2题，<b class=\"n-red\">1<\/b>题未完成批阅<\/span>\n    <span class=\"gd-badge\" data-proto-id=\"ai-badge\" id=\"aiBadge\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 15 15\"><circle cx=\"7.5\" cy=\"7.5\" r=\"6.7\" fill=\"#52c41a\"><\/circle><path d=\"M4.4 7.7l2.1 2.1 4-4.2\" stroke=\"#fff\" stroke-width=\"1.6\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path><\/svg><span>智批已完成<\/span><span class=\"gd-q\" title=\"智能批改由 AI 完成\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><circle cx=\"6.5\" cy=\"6.5\" r=\"5.7\" stroke=\"#9fb3c8\" stroke-width=\"1\"><\/circle><text x=\"6.5\" y=\"9.6\" font-size=\"8\" text-anchor=\"middle\" fill=\"#9fb3c8\" font-family=\"sans-serif\">?<\/text><\/svg><\/span><\/span>\n    <span class=\"gd-notice\" data-proto-id=\"ai-notice\" style=\"\">\n      <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\" style=\"flex-shrink:0\"><path d=\"M6.5 1.7L11.9 11H1.1z\" stroke=\"#faad14\" stroke-width=\"1.2\" stroke-linejoin=\"round\"><\/path><path d=\"M6.5 5v2.7\" stroke=\"#faad14\" stroke-width=\"1.3\" stroke-linecap=\"round\"><\/path><circle cx=\"6.5\" cy=\"9.3\" r=\".75\" fill=\"#faad14\"><\/circle><\/svg>\n      AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。\n    <\/span>\n    <div class=\"gd-acts\">\n      <button class=\"btn-primary\" data-proto-id=\"btn-regrade\" id=\"btnRegrade\" onclick=\"openRegrade()\" style=\"display: none;\">\n        <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><path d=\"M11.2 6.5a4.7 4.7 0 11-1.4-3.4M11.3 1.6v2.7H8.6\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path><\/svg>\n        重批\n      <\/button>\n      <button class=\"btn-pale\" data-proto-id=\"btn-merge\" onclick=\"toast('第12题未完成批阅，暂不能合并批阅')\">合并批阅<\/button>\n      <button class=\"btn-line\" data", "rect": {"x": 0, "y": 197, "width": 1287, "height": 786}}, "placement": {"kind": "element", "x": 265.025, "y": 14.963996948242198, "rx": 0.20589262346175718, "ry": 0.019028479760528617}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-11-03T03:53:52.874Z"}, {"id": "57f6da34-cb2c-4114-9df9-c3de44906ee2", "pageId": "grading", "stateId": "ai-partial", "number": 1, "body": "### 页面显示\n\n1. 橙色按钮「智批未全部完成」，问号说明「AI大模型在批阅过程中，因输出存在一定的不稳定性，个别题目会存在未批的情况，可人工批阅，或点击重批重新发起智能批改」。\n\n### 业务规则\n\n1. 触发条件：有题目智批失败，或有题目因异常原因未智批；此状态下可人工批阅（表格操作列「批改」）或重批。\n", "anchor": {"protoId": "status-bar", "selector": "body > main > div:nth-of-type(1)", "tag": "div", "text": "共2题，1题未完成批阅 智批未全部完成 ? 重批 合并批阅 刷 新", "parentText": "共2题，1题未完成批阅 智批未全部完成 ? 重批 合并批阅 刷 新 题目 批阅进度 平均得分 本题满分 批改完成时间 操作 12 12/62（19.4%） 10.42 11 - 批改更多 13 62/62（100.0%） 9.54 12 2026-10-10 10:12:13 回评更多", "htmlSnippet": "<div class=\"gdbar\" data-proto-id=\"status-bar\">\n    <span class=\"gd-sum\">共2题，<b class=\"n-red\">1<\/b>题未完成批阅<\/span>\n    <span class=\"gd-badge partial\" data-proto-id=\"ai-badge\" id=\"aiBadge\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 15 15\"><circle cx=\"7.5\" cy=\"7.5\" r=\"6.7\" fill=\"#fa8c16\"><\/circle><path d=\"M7.5 4v4.4\" stroke=\"#fff\" stroke-width=\"1.7\" stroke-linecap=\"round\"><\/path><circle cx=\"7.5\" cy=\"10.8\" r=\".95\" fill=\"#fff\"><\/circle><\/svg><span>智批未全部完成<\/span><span class=\"gd-q\" title=\"存在智批失败或因异常未智批的题目，可人工批阅，或点击重批重新发起智能批改\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><circle cx=\"6.5\" cy=\"6.5\" r=\"5.7\" stroke=\"#9fb3c8\" stroke-width=\"1\"><\/circle><text x=\"6.5\" y=\"9.6\" font-size=\"8\" text-anchor=\"middle\" fill=\"#9fb3c8\" font-family=\"sans-serif\">?<\/text><\/svg><\/span><\/span>\n    <span class=\"gd-notice\" data-proto-id=\"ai-notice\" style=\"display: none;\">\n      <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\" style=\"flex-shrink:0\"><path d=\"M6.5 1.7L11.9 11H1.1z\" stroke=\"#faad14\" stroke-width=\"1.2\" stroke-linejoin=\"round\"><\/path><path d=\"M6.5 5v2.7\" stroke=\"#faad14\" stroke-width=\"1.3\" stroke-linecap=\"round\"><\/path><circle cx=\"6.5\" cy=\"9.3\" r=\".75\" fill=\"#faad14\"><\/circle><\/svg>\n      AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。\n    <\/span>\n    <div class=\"gd-acts\">\n      <button class=\"btn-primary\" data-proto-id=\"btn-regrade\" id=\"btnRegrade\" onclick=\"openRegrade()\" style=\"\">\n        <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><path d=\"M11.2 6.5a4.7 4.7 0 11-1.4-3.4M11.3 1.6v2.7H8.6\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path><\/svg>\n        重批\n      <\/button>\n      <button class=\"btn-pale\" data-proto-id=\"btn-merge\" onclick=\"toast('第12题未完成批阅，暂不能合并批阅')\">合并批阅<\/button>\n      <button class=\"btn-line\" data", "rect": {"x": 22, "y": 213, "width": 1243, "height": 28}}, "placement": {"kind": "element", "x": 134.325, "y": 2.799996948242182, "rx": 0.10804777355722707, "ry": 0.09999989100864935}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-11-03T07:29:01.322Z"}, {"id": "19ec1c50-77e1-4fe6-87f7-56912672cabf", "pageId": "grading", "stateId": "ai-partial", "number": 2, "body": "### 页面显示\n\n1. 蓝色主按钮，仅「智批未全部完成」显示；每位老师 3 次重批机会（2026-11-03 由 1 次改 3 次），确定重批即消耗 1 次。\n1. 3 次用完后按钮置灰（浅蓝 #a9c9f2、cursor:not-allowed）不隐藏，点击 toast「重批次数已用完」，不再打开弹窗（2026-11-03 拍板，避免用户疑惑按钮消失）。\n\n### 业务规则\n\n1. 重批机会需按老师持久化计数（原型为页面内变量 regradeCount，刷新复位）。\n\n### 交互说明\n\n1. 点击弹出重批弹窗：「题目范围」列出支持智批的题号（原型为第 12、13 题，默认全选，至少选 1）；「批改范围」含「未批题目」（默认勾选，带问号气泡解释未批原因、不含引导语；气泡 hover 显示 / 点击固定，点击不误触 checkbox）与「批改为0分的题目」（默认不勾），至少选 1 项，未选足时 toast 拦截且不消耗次数。\n1. 取消、× 或点遮罩关闭不消耗机会；确定后进入「智批进行中」，原型模拟 1.6 秒后全部成功转「智批已完成」并 toast 提示；弹窗黄条动态显示「每位老师有 3 次重批机会，剩余 X 次，用完后不可再次重批」。", "anchor": {"protoId": "btn-regrade", "selector": "#btnRegrade", "tag": "button", "text": "重批", "parentText": "重批 合并批阅 刷 新", "htmlSnippet": "<button class=\"btn-primary\" data-proto-id=\"btn-regrade\" id=\"btnRegrade\" onclick=\"openRegrade()\" style=\"\">\n        <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><path d=\"M11.2 6.5a4.7 4.7 0 11-1.4-3.4M11.3 1.6v2.7H8.6\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path><\/svg>\n        重批\n      <\/button>", "rect": {"x": 1007, "y": 213, "width": 76, "height": 28}}, "placement": {"kind": "element", "x": 9.602487792968759, "y": 2.799996948242182, "rx": 0.1263485235916942, "ry": 0.09999989100864935}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-11-03T07:25:54.458853+00:00"}, {"id": "a589a543-43cd-4ce3-8550-a558e4718a4a", "pageId": "grading", "stateId": "ai-running", "number": 1, "body": "### 页面显示\n\n1. 蓝色旋转环徽章「智批进行中」；问号气泡文案：智批进行中，可刷新查看进度；如不想等待，可人工批改，智批会自动跳过人工批改的题目。\n\n### 业务规则\n\n1. 人工批改与智批并行，智批自动跳过人工已批改的题目；本状态【重批】按钮与 AI 复核提示条均不显示。", "anchor": {"protoId": "ai-badge", "selector": "[data-proto-id=\"ai-badge\"]", "tag": "span", "text": "智批未全部完成?"}, "placement": {"kind": "element", "x": 0, "y": 0, "rx": 0, "ry": 0.5}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-11-03T06:43:41.448843+00:00"}, {"id": "1ba97751-b24d-4d88-bdb8-b2a4c8edae69", "pageId": "grading", "stateId": "ai-partial", "number": 3, "body": "### 数据流转\n\n1. 本状态同样展示 AI 复核提示条\n", "anchor": {"protoId": "", "selector": "body > main", "tag": "main", "text": "共2题，1题未完成批阅 智批未全部完成 ? AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。 重批 合并批阅 刷 新 题目 批阅进度 平均得分 本题满分 批改完成时间 操作 12 12/62（19.4%） 10.42 11 - 批改更多 13 62/62（100.0%） 9.54 12 2026-10-10 10:12:13 回评更多", "parentText": "新教育 首页 备课授课 作业 错题本 题库卷库 学情分析 考试 试卷库 资源库 班级管理 徐老师 ▾ < 返回 | 第五章 作业3 不同价态含硫物质的转化 去讲评 9 ▾ 扫描时间：2026-07-06 已交人数：62 未交人数：6（异常学号卡？) 总批阅进度：59.7% 按题批阅 按学生批阅 选择题成绩 共2题，1题未完成批阅 智批未全部完成 ? AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。 重批 合并批阅 刷 新 题目 批阅进度 平均得分 本题满分 批改完成时间 操作 12 12/62（19.4%） 10.42 11 - 批改更多 13 62/62（100.0%） 9.54 12 2026-10-10 10:12:13 回评更多 ?", "htmlSnippet": "<main class=\"content\">\n\n  <!-- 批阅状态行 -->\n  <div class=\"gdbar\" data-proto-id=\"status-bar\">\n    <span class=\"gd-sum\">共2题，<b class=\"n-red\">1<\/b>题未完成批阅<\/span>\n    <span class=\"gd-badge partial\" data-proto-id=\"ai-badge\" id=\"aiBadge\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 15 15\"><circle cx=\"7.5\" cy=\"7.5\" r=\"6.7\" fill=\"#fa8c16\"><\/circle><path d=\"M7.5 4v4.4\" stroke=\"#fff\" stroke-width=\"1.7\" stroke-linecap=\"round\"><\/path><circle cx=\"7.5\" cy=\"10.8\" r=\".95\" fill=\"#fff\"><\/circle><\/svg><span>智批未全部完成<\/span><span class=\"gd-q\" title=\"存在智批失败或因异常未智批的题目，可人工批阅，或点击重批重新发起智能批改\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><circle cx=\"6.5\" cy=\"6.5\" r=\"5.7\" stroke=\"#9fb3c8\" stroke-width=\"1\"><\/circle><text x=\"6.5\" y=\"9.6\" font-size=\"8\" text-anchor=\"middle\" fill=\"#9fb3c8\" font-family=\"sans-serif\">?<\/text><\/svg><\/span><\/span>\n    <span class=\"gd-notice\" data-proto-id=\"ai-notice\" style=\"\">\n      <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\" style=\"flex-shrink:0\"><path d=\"M6.5 1.7L11.9 11H1.1z\" stroke=\"#faad14\" stroke-width=\"1.2\" stroke-linejoin=\"round\"><\/path><path d=\"M6.5 5v2.7\" stroke=\"#faad14\" stroke-width=\"1.3\" stroke-linecap=\"round\"><\/path><circle cx=\"6.5\" cy=\"9.3\" r=\".75\" fill=\"#faad14\"><\/circle><\/svg>\n      AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。\n    <\/span>\n    <div class=\"gd-acts\">\n      <button class=\"btn-primary\" data-proto-id=\"btn-regrade\" id=\"btnRegrade\" onclick=\"openRegrade()\" style=\"\">\n        <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><path d=\"M11.2 6.5a4.7 4.7 0 11-1.4-3.4M11.3 1.6v2.7H8.6\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path><\/svg>\n        重批\n      <\/button>\n      <button class=\"btn-pale\" data-proto-id=\"btn-merge\" onclick=\"toast('第12题未完成批阅，暂不能合并批阅')\">合并批阅<\/button>\n      ", "rect": {"x": 0, "y": 197, "width": 1287, "height": 786}}, "placement": {"kind": "element", "x": 323.8, "y": 6.799996948242182, "rx": 0.2515537457859333, "ry": 0.00864699483358839}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-11-03T03:54:41.121Z"}], "prototypeVersions": {"grading.html": "739f19d994278726e10d", "index.html": "b7e7f8c7c49a2e1a3e78"}}</script>
+        <script type="application/json" id="review-data">{"name": "前台增加重批逻辑", "projectId": "p-6393f615edba00a3", "revision": 184, "publishedAt": "2026-11-04 11:39:38", "pages": [{"id": "home", "title": "作业批阅与班级对比原型", "file": "index.html", "states": [{"id": "default", "title": "默认页面", "kind": "default"}], "role": "launcher"}, {"id": "grading", "title": "作业批阅 - 作业", "file": "grading.html", "states": [{"id": "default", "title": "智批已完成", "kind": "default", "titleUserSet": true}, {"id": "ai-partial", "title": "智批未全部完成", "kind": "adapter"}, {"id": "ai-running", "title": "智批进行中", "kind": "adapter"}], "stateOrder": ["ai-running", "ai-partial", "default"]}], "clients": [], "defaultPage": "grading", "documents": [{"id": "4700230f-e7cb-4e65-8c38-ac2bcf3a196a", "pageId": "home", "stateId": "default", "markdown": "## 需求背景\n\n- 作业批阅与班级对比两个页面需要在同一环境中连续对照查看。\n\n## 需求目标\n\n- 在同一入口切换查看两个页面，并支持直达链接与刷新后保持当前页。", "confirmed": false, "updatedAt": "2026-11-04T02:40:49.721928+00:00"}, {"id": "e89687a6-79d1-4dee-8ab8-e4da1e883d18", "pageId": "grading", "stateId": "default", "markdown": "## 需求背景\n\n- 作业由 AI 智能批改完成后，结果需经教师复核才会被采信；教师对批改结果的查看入口与后续处理方式存在疑问。\n\n## 需求目标\n\n- 让教师明确感知智批已完成，知道如何查看 AI 批改结果；结果不符期望时可人工调整，对批改为 0 分的题目也能再次发起重批，提升对智批结果的信任与复核效率。", "confirmed": false, "updatedAt": "2026-11-04T01:11:05.708119+00:00"}, {"id": "ae3aeebd-02e0-4efc-9133-061c918d8df3", "pageId": "grading", "stateId": "ai-partial", "markdown": "## 需求背景\n\n- AI 大模型批阅输出存在不稳定性，个别题目可能未批；教师需要了解异常原因并有补救途径，过严的重批限制会影响异常时的处理灵活性。\n\n## 需求目标\n\n- 让教师在智批未全部完成时了解未批原因，可通过人工批阅或重批完成补救；重批机会与剩余次数清晰可见，次数用尽后也能明确理解当前限制，不产生疑惑。", "confirmed": false, "updatedAt": "2026-11-03T07:36:59.419337+00:00"}, {"id": "29b70c09-a882-4d32-af90-519c39e9c2e3", "pageId": "grading", "stateId": "ai-running", "markdown": "## 需求背景\n\n- 智批需要一定处理时间，等待期间教师可能希望先人工处理部分题目，而非只能干等。\n\n## 需求目标\n\n- 让教师知道可刷新查看智批进度，也可不等智批、直接人工批改，两种方式并行不冲突，批阅安排更灵活。", "confirmed": false, "updatedAt": "2026-11-03T07:36:59.419337+00:00"}], "annotations": [{"id": "031bf5bf-82ea-4fa9-b5f9-14dfd8f371f0", "pageId": "grading", "stateId": "default", "number": 8, "body": "### 页面显示\n\n1. 显示绿色图标与“智批已完成”；问号提示“智批已完成，可点击「回评」查看AI批改结果，如结果不符期望，可人工进行调整”。\n\n### 业务规则\n\n1. 批阅状态分为智批已完成、智批未全部完成、智批进行中三种。\n2. 智批成功的题目数+应智批题目中老师手动打了分题目数 / 应智批的题目数 = 1 时，才显示“智批已完成”。\n", "anchor": {"protoId": "status-bar", "selector": "body > main > div:nth-of-type(1)", "tag": "div", "text": "共2题，1题未完成批阅 智批已完成 ? AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。 重批 合并批阅 刷 新", "parentText": "共2题，1题未完成批阅 智批已完成 ? AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。 重批 合并批阅 刷 新 题目 批阅进度 平均得分 本题满分 批改完成时间 操作 12 12/62（19.4%） 10.42 11 - 批改更多 13 62/62（100.0%） 9.54 12 2026-10-10 10:12:13 回评更多", "htmlSnippet": "<div class=\"gdbar\" data-proto-id=\"status-bar\">\n    <span class=\"gd-sum\">共2题，<b class=\"n-red\">1<\/b>题未完成批阅<\/span>\n    <span class=\"gd-badge\" data-proto-id=\"ai-badge\" id=\"aiBadge\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 15 15\"><circle cx=\"7.5\" cy=\"7.5\" r=\"6.7\" fill=\"#52c41a\"><\/circle><path d=\"M4.4 7.7l2.1 2.1 4-4.2\" stroke=\"#fff\" stroke-width=\"1.6\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path><\/svg><span>智批已完成<\/span><span class=\"gd-q\" tabindex=\"0\" onclick=\"toggleTip(this,event)\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><circle cx=\"6.5\" cy=\"6.5\" r=\"5.7\" stroke=\"#9fb3c8\" stroke-width=\"1\"><\/circle><text x=\"6.5\" y=\"9.6\" font-size=\"8\" text-anchor=\"middle\" fill=\"#9fb3c8\" font-family=\"sans-serif\">?<\/text><\/svg><span class=\"gd-q-bubble\" style=\"left: 121.512px; top: 155.3px; --ax: 140px;\">智批已完成，可点击「回评」查看AI批改结果，如结果不符期望，可人工进行调整<\/span><\/span><\/span>\n    <span class=\"gd-notice\" data-proto-id=\"ai-notice\">\n      <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\" style=\"flex-shrink:0\"><path d=\"M6.5 1.7L11.9 11H1.1z\" stroke=\"#faad14\" stroke-width=\"1.2\" stroke-linejoin=\"round\"><\/path><path d=\"M6.5 5v2.7\" stroke=\"#faad14\" stroke-width=\"1.3\" stroke-linecap=\"round\"><\/path><circle cx=\"6.5\" cy=\"9.3\" r=\".75\" fill=\"#faad14\"><\/circle><\/svg>\n      AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。\n    <\/span>\n    <div class=\"gd-acts\">\n      <button class=\"btn-primary\" data-proto-id=\"btn-regrade\" id=\"btnRegrade\" onclick=\"openRegrade()\">\n        <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><path d=\"M11.2 6.5a4.7 4.7 0 11-1.4-3.4M11.3 1.6v2.7H8.6\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path><\/svg>\n        重批\n      <\/button>\n      <button class=\"btn-pale\" data-proto-id=\"btn-merge\" onclick=\"toast", "rect": {"x": 22, "y": 213, "width": 1243, "height": 28}}, "placement": {"kind": "element", "x": 250.22500000000002, "y": 14.963996948242198, "rx": 0.2012749237919758, "ry": 0.5344284624372213}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-11-04T02:59:54.236Z"}, {"id": "57f6da34-cb2c-4114-9df9-c3de44906ee2", "pageId": "grading", "stateId": "ai-partial", "number": 1, "body": "### 页面显示\n\n1. 显示橙色状态图标与“智批未全部完成”，问号提示“AI大模型在批阅过程中，因输出存在一定的不稳定性，个别题目会存在未批的情况，可人工批阅，或点击重批重新发起智能批改”。\n\n### 业务规则\n\n1. 有题目未智批时，进入“智批未全部完成”。<span style=\"color:#ec4954\">（2026-10-30 更新：新增“智批未全部完成”状态）<\/span>\n2. 该状态可人工批阅（操作列「批改」）或重批。\n", "anchor": {"protoId": "status-bar", "selector": "body > main > div:nth-of-type(1)", "tag": "div", "text": "共2题，1题未完成批阅 智批未全部完成 ? 重批 合并批阅 刷 新", "parentText": "共2题，1题未完成批阅 智批未全部完成 ? 重批 合并批阅 刷 新 题目 批阅进度 平均得分 本题满分 批改完成时间 操作 12 12/62（19.4%） 10.42 11 - 批改更多 13 62/62（100.0%） 9.54 12 2026-10-10 10:12:13 回评更多", "htmlSnippet": "<div class=\"gdbar\" data-proto-id=\"status-bar\">\n    <span class=\"gd-sum\">共2题，<b class=\"n-red\">1<\/b>题未完成批阅<\/span>\n    <span class=\"gd-badge partial\" data-proto-id=\"ai-badge\" id=\"aiBadge\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 15 15\"><circle cx=\"7.5\" cy=\"7.5\" r=\"6.7\" fill=\"#fa8c16\"><\/circle><path d=\"M7.5 4v4.4\" stroke=\"#fff\" stroke-width=\"1.7\" stroke-linecap=\"round\"><\/path><circle cx=\"7.5\" cy=\"10.8\" r=\".95\" fill=\"#fff\"><\/circle><\/svg><span>智批未全部完成<\/span><span class=\"gd-q\" title=\"存在智批失败或因异常未智批的题目，可人工批阅，或点击重批重新发起智能批改\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><circle cx=\"6.5\" cy=\"6.5\" r=\"5.7\" stroke=\"#9fb3c8\" stroke-width=\"1\"><\/circle><text x=\"6.5\" y=\"9.6\" font-size=\"8\" text-anchor=\"middle\" fill=\"#9fb3c8\" font-family=\"sans-serif\">?<\/text><\/svg><\/span><\/span>\n    <span class=\"gd-notice\" data-proto-id=\"ai-notice\" style=\"display: none;\">\n      <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\" style=\"flex-shrink:0\"><path d=\"M6.5 1.7L11.9 11H1.1z\" stroke=\"#faad14\" stroke-width=\"1.2\" stroke-linejoin=\"round\"><\/path><path d=\"M6.5 5v2.7\" stroke=\"#faad14\" stroke-width=\"1.3\" stroke-linecap=\"round\"><\/path><circle cx=\"6.5\" cy=\"9.3\" r=\".75\" fill=\"#faad14\"><\/circle><\/svg>\n      AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。\n    <\/span>\n    <div class=\"gd-acts\">\n      <button class=\"btn-primary\" data-proto-id=\"btn-regrade\" id=\"btnRegrade\" onclick=\"openRegrade()\" style=\"\">\n        <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><path d=\"M11.2 6.5a4.7 4.7 0 11-1.4-3.4M11.3 1.6v2.7H8.6\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path><\/svg>\n        重批\n      <\/button>\n      <button class=\"btn-pale\" data-proto-id=\"btn-merge\" onclick=\"toast('第12题未完成批阅，暂不能合并批阅')\">合并批阅<\/button>\n      <button class=\"btn-line\" data", "rect": {"x": 22, "y": 213, "width": 1243, "height": 28}}, "placement": {"kind": "element", "x": 134.325, "y": 2.799996948242182, "rx": 0.10804777355722707, "ry": 0.09999989100864935}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-11-04T03:31:56.639Z"}, {"id": "19ec1c50-77e1-4fe6-87f7-56912672cabf", "pageId": "grading", "stateId": "ai-partial", "number": 2, "body": "### 页面显示\n\n1. 应智批题目中存在智批为0分的题目数或未批的题目数量>=1时显示「重批」，否则「重批」按钮置灰，点击则toast提示“没有需重批的题目”\n2. 重批弹窗内提示条显示“每位老师有 3 次重批机会，剩余 X 次，用完后不可再次重批”。\n\n### 业务规则\n\n1. 每位老师共 3 次重批机会，确定重批即扣减 1 次。\n2. 3 次用尽后「重批」保持显示并置灰，点击提示“重批次数已用完”，不打开弹窗。<span style=\"color:#ec4954\">（2026-11-03 更新：次数用尽后保留按钮并置灰）<\/span>\n\n### 交互说明\n\n1. 点击「重批」打开重批弹窗，题目范围只列出有未批或智批为 0 分的应智批题目，全部老师已打分的题目不列出，默认全选且至少选择 1 道。\n2. 批改范围含“未批题目”与“批改为 0 分的题目”，至少选择 1 项，存在未批题目时“未批题目”默认选中。\n3. 未选择题目或未选择批改范围时提示“请选择要重批的题目”或“请选择批改范围”，**不扣减重批次数**。\n4. 点击「取消」、关闭按钮或遮罩关闭弹窗，**不扣减重批次数**。\n5. 确定重批后进入“智批进行中”，并按重批结果重新判定批阅状态。\n", "anchor": {"protoId": "btn-regrade", "selector": "#btnRegrade", "tag": "button", "text": "重批", "parentText": "重批 合并批阅 刷 新", "htmlSnippet": "<button class=\"btn-primary\" data-proto-id=\"btn-regrade\" id=\"btnRegrade\" onclick=\"openRegrade()\" style=\"\">\n        <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><path d=\"M11.2 6.5a4.7 4.7 0 11-1.4-3.4M11.3 1.6v2.7H8.6\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path><\/svg>\n        重批\n      <\/button>", "rect": {"x": 1007, "y": 213, "width": 76, "height": 28}}, "placement": {"kind": "element", "x": 9.602487792968759, "y": 2.799996948242182, "rx": 0.1263485235916942, "ry": 0.09999989100864935}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-11-04T03:36:05.686Z"}, {"id": "a589a543-43cd-4ce3-8550-a558e4718a4a", "pageId": "grading", "stateId": "ai-running", "number": 1, "body": "### 页面显示\n\n1. 显示蓝色旋转环图标与“智批进行中”；问号提示“智批进行中，可刷新查看进度；如不想等待，可人工批改，智批会自动跳过人工批改的题目。”<span style=\"color:#ec4954\">（2026-11-03 更新：补充人工批改与智批并行的说明）<\/span>\n\n### 业务规则\n\n1. 人工批改与智批可并行，智批自动跳过人工已批改的题目。\n1. 该状态不显示「重批」与 AI 复核提示条。", "anchor": {"protoId": "ai-badge", "selector": "[data-proto-id=\"ai-badge\"]", "tag": "span", "text": "智批未全部完成?"}, "placement": {"kind": "element", "x": 0, "y": 0, "rx": 0, "ry": 0.5}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-11-04T02:40:49.721928+00:00"}, {"id": "1ba97751-b24d-4d88-bdb8-b2a4c8edae69", "pageId": "grading", "stateId": "ai-partial", "number": 3, "body": "### 数据流转\n\n1. 本状态同样展示 AI 复核提示条\n", "anchor": {"protoId": "", "selector": "body > main", "tag": "main", "text": "共2题，1题未完成批阅 智批未全部完成 ? AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。 重批 合并批阅 刷 新 题目 批阅进度 平均得分 本题满分 批改完成时间 操作 12 12/62（19.4%） 10.42 11 - 批改更多 13 62/62（100.0%） 9.54 12 2026-10-10 10:12:13 回评更多", "parentText": "新教育 首页 备课授课 作业 错题本 题库卷库 学情分析 考试 试卷库 资源库 班级管理 徐老师 ▾ < 返回 | 第五章 作业3 不同价态含硫物质的转化 去讲评 9 ▾ 扫描时间：2026-07-06 已交人数：62 未交人数：6（异常学号卡？) 总批阅进度：59.7% 按题批阅 按学生批阅 选择题成绩 共2题，1题未完成批阅 智批未全部完成 ? AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。 重批 合并批阅 刷 新 题目 批阅进度 平均得分 本题满分 批改完成时间 操作 12 12/62（19.4%） 10.42 11 - 批改更多 13 62/62（100.0%） 9.54 12 2026-10-10 10:12:13 回评更多 ?", "htmlSnippet": "<main class=\"content\">\n\n  <!-- 批阅状态行 -->\n  <div class=\"gdbar\" data-proto-id=\"status-bar\">\n    <span class=\"gd-sum\">共2题，<b class=\"n-red\">1<\/b>题未完成批阅<\/span>\n    <span class=\"gd-badge partial\" data-proto-id=\"ai-badge\" id=\"aiBadge\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 15 15\"><circle cx=\"7.5\" cy=\"7.5\" r=\"6.7\" fill=\"#fa8c16\"><\/circle><path d=\"M7.5 4v4.4\" stroke=\"#fff\" stroke-width=\"1.7\" stroke-linecap=\"round\"><\/path><circle cx=\"7.5\" cy=\"10.8\" r=\".95\" fill=\"#fff\"><\/circle><\/svg><span>智批未全部完成<\/span><span class=\"gd-q\" title=\"存在智批失败或因异常未智批的题目，可人工批阅，或点击重批重新发起智能批改\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><circle cx=\"6.5\" cy=\"6.5\" r=\"5.7\" stroke=\"#9fb3c8\" stroke-width=\"1\"><\/circle><text x=\"6.5\" y=\"9.6\" font-size=\"8\" text-anchor=\"middle\" fill=\"#9fb3c8\" font-family=\"sans-serif\">?<\/text><\/svg><\/span><\/span>\n    <span class=\"gd-notice\" data-proto-id=\"ai-notice\" style=\"\">\n      <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\" style=\"flex-shrink:0\"><path d=\"M6.5 1.7L11.9 11H1.1z\" stroke=\"#faad14\" stroke-width=\"1.2\" stroke-linejoin=\"round\"><\/path><path d=\"M6.5 5v2.7\" stroke=\"#faad14\" stroke-width=\"1.3\" stroke-linecap=\"round\"><\/path><circle cx=\"6.5\" cy=\"9.3\" r=\".75\" fill=\"#faad14\"><\/circle><\/svg>\n      AI批改结果仅供参考，可能存在一定误差，建议教师结合教学实际情况进行复核，确保评分准确。\n    <\/span>\n    <div class=\"gd-acts\">\n      <button class=\"btn-primary\" data-proto-id=\"btn-regrade\" id=\"btnRegrade\" onclick=\"openRegrade()\" style=\"\">\n        <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><path d=\"M11.2 6.5a4.7 4.7 0 11-1.4-3.4M11.3 1.6v2.7H8.6\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path><\/svg>\n        重批\n      <\/button>\n      <button class=\"btn-pale\" data-proto-id=\"btn-merge\" onclick=\"toast('第12题未完成批阅，暂不能合并批阅')\">合并批阅<\/button>\n      ", "rect": {"x": 0, "y": 197, "width": 1287, "height": 786}}, "placement": {"kind": "element", "x": 323.8, "y": 6.799996948242182, "rx": 0.2515537457859333, "ry": 0.00864699483358839}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-11-03T03:54:41.121Z"}, {"id": "0919b26c-cd75-4ad3-b0c6-01223b9a1b90", "pageId": "grading", "stateId": "default", "number": 9, "body": "### 页面显示\n\n1. 应智批题目中存在批改为 0 分且智批打分的数量>=1时显示「重批」，否则「重批」按钮置灰，点击则toast提示“没有需重批的题目”\n2. 重批弹窗内提示条显示“每位老师有 3 次重批机会，剩余 X 次，用完后不可再次重批”。\n\n### 业务规则\n\n1. 每位老师共 3 次重批机会，确定重批即扣减 1 次。\n2. 3 次用尽后「重批」保持显示并置灰，点击提示“重批次数已用完”，不打开弹窗。\n\n### 交互说明\n\n1. 点击「重批」打开重批弹窗，题目范围只列出智批为 0 分的应智批题目，全部老师已打分的题目不列出，默认全选且至少选择 1 道。\n2. “未批题目”批改范围不可选，“批改为 0 分的题目”默认选中，仅支持重批 0 分题目。\n3. 未选择题目或未选择批改范围时提示“请选择要重批的题目”或“请选择批改范围”，**不扣减重批次数**。\n4. 点击「取消」、关闭按钮或遮罩关闭弹窗，**不扣减重批次数**。\n5. 确定重批后进入“智批进行中”，并按重批结果重新判定批阅状态。\n", "anchor": {"protoId": "btn-regrade", "selector": "[data-proto-id=\"btn-regrade\"]", "tag": "button", "text": "重批"}, "placement": {"kind": "element", "x": 0, "y": 0, "rx": 0, "ry": 0.5}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-11-04T03:36:19.299Z"}], "release": {"schemaVersion": 1, "projectId": "p-6393f615edba00a3", "releaseId": "rel-67e88529bc144d60", "sequence": 1, "contentVersion": "11283d82df065a33ca91213b503cecc5b039747f1361a6c5048cf01df3740a85", "publishedAt": "2026-11-04 11:39:38", "mode": "review", "baseReleaseId": "", "summary": {"pages": 2, "changes": 19}, "changesUrl": "prototype-changes/rel-67e88529bc144d60.json", "snapshotUrl": "prototype-changes/rel-67e88529bc144d60.snapshot.json", "prototypeBase": "prototype-versions/11283d82df065a33ca91213b/", "baselineStatus": "previous"}, "changeLog": {"schemaVersion": 1, "releaseId": "rel-67e88529bc144d60", "sequence": 1, "publishedAt": "2026-11-04 11:39:38", "contentVersion": "11283d82df065a33ca91213b503cecc5b039747f1361a6c5048cf01df3740a85", "baselineStatus": "previous", "items": [{"kind": "page", "description": "页面结构、状态或交互配置更新", "pageTitle": "作业批阅 - 作业", "stateTitle": "智批已完成", "target": {"pageId": "grading", "stateId": "default"}, "before": "", "after": "", "affectedPages": ["grading"], "affectedPageTitles": ["作业批阅 - 作业"], "id": "change-432c5f313adc4ae5c149"}, {"kind": "annotation", "description": "标注内容更新：“**页面显示* 1. 绿色图标「智批已完成」，问号提示“智批已完成，可点击「回评」查看AI批改结果，如结果不符期望，可人工进行调整” **业…” → “### 页面显示 1. 显示绿色图标与“智批已完成”；问号提示“智批已完成，可点击「回评」查看AI批改结果，如结果不符期望，可人工进行调整”…”", "pageTitle": "作业批阅 - 作业", "stateTitle": "智批已完成", "target": {"pageId": "grading", "stateId": "default", "noteId": "031bf5bf-82ea-4fa9-b5f9-14dfd8f371f0"}, "before": "**页面显示* 1. 绿色图标「智批已完成」，问号提示“智批已完成，可点击「回评」查看AI批改结果，如结果不符期望，可人工进行调整” **业务规则** 1. 批阅状态机为三态：智批已完成/ 智批未全部完成/ 智批进行中。 2. 智批已完成逻辑改动： 1. 智批成功的题目数/应智批的题目数=1时，才显示智批已完成", "after": "### 页面显示 1. 显示绿色图标与“智批已完成”；问号提示“智批已完成，可点击「回评」查看AI批改结果，如结果不符期望，可人工进行调整”。 ### 业务规则 1. 批阅状态分为智批已完成、智批未全部完成、智批进行中三种。 2. 智批成功的题目数+应智批题目中老师手动打了分题目数 / 应智批的题目数 = 1 时，才显示“智批已完成”。", "affectedPages": ["grading"], "affectedPageTitles": ["作业批阅 - 作业"], "id": "change-c70120a420a557b21368"}, {"kind": "annotation", "description": "标注内容新增：新增“### 页面显示 1. 应智批题目中存在批改为 0 分且智批打分的数量>=1时显示「重批」，否则「重批」按钮置灰，点击则toast提示“没有…”", "pageTitle": "作业批阅 - 作业", "stateTitle": "智批已完成", "target": {"pageId": "grading", "stateId": "default", "noteId": "0919b26c-cd75-4ad3-b0c6-01223b9a1b90"}, "before": "", "after": "### 页面显示 1. 应智批题目中存在批改为 0 分且智批打分的数量>=1时显示「重批」，否则「重批」按钮置灰，点击则toast提示“没有需重批的题目” 2. 重批弹窗内提示条显示“每位老师有 3 次重批机会，剩余 X 次，用完后不可再次重批”。 ### 业务规则 1. 每位老师共 3 次重批机会，确定重批即扣减 1 次。 2. 3 次用尽后「重批」保持显示并置灰，点击提示“重批次数已用完”，不打开弹窗。 ### 交互说明 1. 点击「重批」打开重批弹窗，题目范围只列出智批为 0 分的应智批题目，全部老师已打分的题目不列出，默认全选且至少选择 1 道。 2. “未批题目”批改范围不可选，“批改为 0 分的题目”默认选中，仅支持重批 0 分题目。 3. 未选择题目或未选择批改范围时提示“请选择要重批的题目”或“请选择批改范围”，**不扣减重批次数**。 4. 点击「取消」、关闭按钮或遮罩关闭弹窗，**不扣减重批次数**。 5. 确定重批后进入“智批进行中”，并按重批结果重新判定批阅状态。", "affectedPages": ["grading"], "affectedPageTitles": ["作业批阅 - 作业"], "id": "change-2ca08badc9ee00044351"}, {"kind": "annotation", "description": "标注内容更新：“1. 蓝色主按钮，仅「智批未全部完成」显示；每位老师 3 次重批机会（2026-11-03 由 1 次改 3 次），确定重批即消耗 1 次。…” → “1. 应智批题目中存在智批为0分的题目数或未批的题目数量>=1时显示「重批」，否则「重批」按钮置灰，点击则toast提示“没有需重批的题目”…”", "pageTitle": "作业批阅 - 作业", "stateTitle": "智批未全部完成", "target": {"pageId": "grading", "stateId": "ai-partial", "noteId": "19ec1c50-77e1-4fe6-87f7-56912672cabf"}, "before": "1. 蓝色主按钮，仅「智批未全部完成」显示；每位老师 3 次重批机会（2026-11-03 由 1 次改 3 次），确定重批即消耗 1 次。 1. 3 次用完后按钮置灰（浅蓝 #a9c9f2、cursor:not-allowed）不隐藏，点击 toast「重批次数已用完」，不再打开弹窗（2026-11-03 拍板，避免用户疑惑按钮消失）。 1. 重批机会需按老师持久化计数（原型为页面内变量 regradeCount，刷新复位）。 1. 点击弹出重批弹窗：「题目范围」列出支持智批的题号（原型为第 12、13 题，默认全选，至少选 1）；「批改范围」含「未批题目」（默认勾选，带问号气泡解释未批原因、不含引导语；气泡 hover 显示 / 点击固定，点击不误触 checkbox）与「批改为0分的题目」（默认不勾），至少选 1 项，未选足时 toast 拦截且不消耗次数。 1. 取消、× 或点遮罩关闭不消耗机会；确定后进入「智批进行中」，原型模拟 1.6 秒后全部成功转「智批已完成」并 toast 提示；弹窗黄条动态显示「每位老师有 3 次重批机会，剩余 X 次，用完后不可再次重批」。", "after": "1. 应智批题目中存在智批为0分的题目数或未批的题目数量>=1时显示「重批」，否则「重批」按钮置灰，点击则toast提示“没有需重批的题目” 2. 重批弹窗内提示条显示“每位老师有 3 次重批机会，剩余 X 次，用完后不可再次重批”。 1. 每位老师共 3 次重批机会，确定重批即扣减 1 次。 2. 3 次用尽后「重批」保持显示并置灰，点击提示“重批次数已用完”，不打开弹窗。<span style=\"color:#ec4954\">（2026-11-03 更新：次数用尽后保留按钮并置灰）<\/span> 1. 点击「重批」打开重批弹窗，题目范围只列出有未批或智批为 0 分的应智批题目，全部老师已打分的题目不列出，默认全选且至少选择 1 道。 2. 批改范围含“未批题目”与“批改为 0 分的题目”，至少选择 1 项，存在未批题目时“未批题目”默认选中。 3. 未选择题目或未选择批改范围时提示“请选择要重批的题目”或“请选择批改范围”，**不扣减重批次数**。 4. 点击「取消」、关闭按钮或遮罩关闭弹窗，**不扣减重批次数**。 5. 确定重批后进入“智批进行中”，并按重批结果重新判定批阅状态。", "affectedPages": ["grading"], "affectedPageTitles": ["作业批阅 - 作业"], "id": "change-b4d34212046882b2e58b"}, {"kind": "annotation", "description": "标注内容更新：“1. 橙色按钮「智批未全部完成」，问号说明「AI大模型在批阅过程中，因输出存在一定的不稳定性，个别题目会存在未批的情况，可人工批阅，或点击重…” → “1. 显示橙色状态图标与“智批未全部完成”，问号提示“AI大模型在批阅过程中，因输出存在一定的不稳定性，个别题目会存在未批的情况，可人工批阅…”", "pageTitle": "作业批阅 - 作业", "stateTitle": "智批未全部完成", "target": {"pageId": "grading", "stateId": "ai-partial", "noteId": "57f6da34-cb2c-4114-9df9-c3de44906ee2"}, "before": "1. 橙色按钮「智批未全部完成」，问号说明「AI大模型在批阅过程中，因输出存在一定的不稳定性，个别题目会存在未批的情况，可人工批阅，或点击重批重新发起智能批改」。 1. 触发条件：有题目智批失败，或有题目因异常原因未智批；此状态下可人工批阅（表格操作列「批改」）或重批。", "after": "1. 显示橙色状态图标与“智批未全部完成”，问号提示“AI大模型在批阅过程中，因输出存在一定的不稳定性，个别题目会存在未批的情况，可人工批阅，或点击重批重新发起智能批改”。 1. 有题目未智批时，进入“智批未全部完成”。<span style=\"color:#ec4954\">（2026-10-30 更新：新增“智批未全部完成”状态）<\/span> 2. 该状态可人工批阅（操作列「批改」）或重批。", "affectedPages": ["grading"], "affectedPageTitles": ["作业批阅 - 作业"], "id": "change-108d041267b75c5d44fb"}, {"kind": "annotation", "description": "标注内容更新：“1. 蓝色旋转环徽章「智批进行中」；问号气泡文案：智批进行中，可刷新查看进度；如不想等待，可人工批改，智批会自动跳过人工批改的题目。 1. …” → “1. 显示蓝色旋转环图标与“智批进行中”；问号提示“智批进行中，可刷新查看进度；如不想等待，可人工批改，智批会自动跳过人工批改的题目。”<s…”", "pageTitle": "作业批阅 - 作业", "stateTitle": "智批进行中", "target": {"pageId": "grading", "stateId": "ai-running", "noteId": "a589a543-43cd-4ce3-8550-a558e4718a4a"}, "before": "1. 蓝色旋转环徽章「智批进行中」；问号气泡文案：智批进行中，可刷新查看进度；如不想等待，可人工批改，智批会自动跳过人工批改的题目。 1. 人工批改与智批并行，智批自动跳过人工已批改的题目；本状态【重批】按钮与 AI 复核提示条均不显示。", "after": "1. 显示蓝色旋转环图标与“智批进行中”；问号提示“智批进行中，可刷新查看进度；如不想等待，可人工批改，智批会自动跳过人工批改的题目。”<span style=\"color:#ec4954\">（2026-11-03 更新：补充人工批改与智批并行的说明）<\/span> 1. 人工批改与智批可并行，智批自动跳过人工已批改的题目。 1. 该状态不显示「重批」与 AI 复核提示条。", "affectedPages": ["grading"], "affectedPageTitles": ["作业批阅 - 作业"], "id": "change-ac34096bfea1dec68896"}, {"kind": "document", "description": "页面需求内容更新：“## 一、需求描述 「作业批阅与班级对比」原型项目的整合壳页：左侧为原型页面导航，右侧 iframe 加载被选中页面，供评审者在同一入口内切…” → “## 需求背景 - 作业批阅与班级对比两个页面需要在同一环境中连续对照查看。 ## 需求目标 - 在同一入口切换查看两个页面，并支持直达链接…”", "pageTitle": "作业批阅与班级对比原型", "stateTitle": "默认页面", "target": {"pageId": "home", "stateId": "default", "documentId": "4700230f-e7cb-4e65-8c38-ac2bcf3a196a"}, "before": "## 一、需求描述 「作业批阅与班级对比」原型项目的整合壳页：左侧为原型页面导航，右侧 iframe 加载被选中页面，供评审者在同一入口内切换查看（作业批阅、班级对比两页同属本项目，自「新教育后台」项目拆出）。默认打开导航第一项，当前选中页以蓝左条+浅蓝底高亮。 ## 二、研发实现 页面清单由壳内 PAGES 数组静态注册（id/名称/文件路径），新增页面只需放入页面文件并追加一行注册项；URL hash（#页面id）与选中页双向同步，刷新或直达链接保持当前页；iframe 内各页面交互相互独立。", "after": "## 需求背景 - 作业批阅与班级对比两个页面需要在同一环境中连续对照查看。 ## 需求目标 - 在同一入口切换查看两个页面，并支持直达链接与刷新后保持当前页。", "affectedPages": ["home"], "affectedPageTitles": ["作业批阅与班级对比原型"], "id": "change-9e781ca59825c0e1470c"}, {"kind": "document", "description": "页面需求内容更新：“- 让教师明确感知智批已完成，知道如何查看 AI 批改结果，并能在结果不符期望时进行人工调整，提升对智批结果的信任与复核效率。” → “- 让教师明确感知智批已完成，知道如何查看 AI 批改结果；结果不符期望时可人工调整，对批改为 0 分的题目也能再次发起重批，提升对智批结果…”", "pageTitle": "作业批阅 - 作业", "stateTitle": "智批已完成", "target": {"pageId": "grading", "stateId": "default", "documentId": "e89687a6-79d1-4dee-8ab8-e4da1e883d18"}, "before": "- 让教师明确感知智批已完成，知道如何查看 AI 批改结果，并能在结果不符期望时进行人工调整，提升对智批结果的信任与复核效率。", "after": "- 让教师明确感知智批已完成，知道如何查看 AI 批改结果；结果不符期望时可人工调整，对批改为 0 分的题目也能再次发起重批，提升对智批结果的信任与复核效率。", "affectedPages": ["grading"], "affectedPageTitles": ["作业批阅 - 作业"], "id": "change-de997e340b48f4861e88"}, {"kind": "style", "description": "样式资源移除：assets/prototype-navigation/project-navigation.css", "pageTitle": "作业批阅与班级对比原型", "stateTitle": "默认页面", "target": {"pageId": "home", "stateId": "default", "deleted": true}, "before": "assets/prototype-navigation/project-navigation.css", "after": "", "affectedPages": ["home"], "affectedPageTitles": ["作业批阅与班级对比原型"], "id": "change-954c1660f8f8ec3aa132"}, {"kind": "logic", "description": "交互资源移除：assets/prototype-navigation/project-navigation.js", "pageTitle": "作业批阅与班级对比原型", "stateTitle": "默认页面", "target": {"pageId": "home", "stateId": "default", "deleted": true}, "before": "assets/prototype-navigation/project-navigation.js", "after": "", "affectedPages": ["home"], "affectedPageTitles": ["作业批阅与班级对比原型"], "id": "change-1254f0ee9973afff72d9"}, {"kind": "logic", "description": "交互资源移除：assets/prototype-navigation/project-page.js", "pageTitle": "公共资源", "stateTitle": "智批已完成", "target": {"pageId": "grading", "stateId": "default", "deleted": true}, "before": "assets/prototype-navigation/project-page.js", "after": "", "affectedPages": ["grading", "home"], "affectedPageTitles": ["作业批阅 - 作业", "作业批阅与班级对比原型"], "id": "change-63b27442be14027e8dcf"}, {"kind": "text", "description": "文案：“（支持智批的题目）” → “（未批或批改为0分的应智批题目）”", "pageTitle": "作业批阅 - 作业", "stateTitle": "智批未全部完成", "target": {"pageId": "grading", "stateId": "ai-partial", "anchor": {"selector": "[id=\"regradeMask\"] > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > span:nth-of-type(1)", "tag": "span", "text": "（未批或批改为0分的应智批题目）"}}, "before": "（支持智批的题目）", "after": "（未批或批改为0分的应智批题目）", "affectedPages": ["grading"], "affectedPageTitles": ["作业批阅 - 作业"], "id": "change-bd53f7c6793f9e64fcba"}, {"kind": "logic", "description": "页面交互代码或动态文案有更新，请核对", "pageTitle": "作业批阅 - 作业", "stateTitle": "智批已完成", "target": {"pageId": "grading", "stateId": "default"}, "before": "", "after": "", "affectedPages": ["grading"], "affectedPageTitles": ["作业批阅 - 作业"], "id": "change-9c99905252068a2d37a7"}, {"kind": "element-added", "description": "新增页面内容", "pageTitle": "作业批阅与班级对比原型", "stateTitle": "默认页面", "target": {"pageId": "home", "stateId": "default", "anchor": {"selector": "[id=\"pageCount\"]", "tag": "span", "text": "0"}}, "before": "", "after": "0", "affectedPages": ["home"], "affectedPageTitles": ["作业批阅与班级对比原型"], "id": "change-5038395ae6181c8695e7"}, {"kind": "element-removed", "description": "移除页面内容", "pageTitle": "作业批阅与班级对比原型", "stateTitle": "默认页面", "target": {"pageId": "home", "stateId": "default", "anchor": {"selector": "[id=\"scope\"]", "tag": "span", "text": "前台增加重批逻辑"}, "deleted": true}, "before": "前台增加重批逻辑", "after": "", "affectedPages": ["home"], "affectedPageTitles": ["作业批阅与班级对比原型"], "id": "change-d11353b66d743bf90e5b"}, {"kind": "element-removed", "description": "移除页面内容", "pageTitle": "作业批阅与班级对比原型", "stateTitle": "默认页面", "target": {"pageId": "home", "stateId": "default", "anchor": {"selector": "[id=\"shellToggle\"]", "tag": "button", "text": "真机外壳"}, "deleted": true}, "before": "真机外壳", "after": "", "affectedPages": ["home"], "affectedPageTitles": ["作业批阅与班级对比原型"], "id": "change-5af34e9761fdc7a6bb1b"}, {"kind": "element-removed", "description": "移除页面内容", "pageTitle": "作业批阅与班级对比原型", "stateTitle": "默认页面", "target": {"pageId": "home", "stateId": "default", "anchor": {"selector": "[id=\"toggleNav\"]", "tag": "button", "text": "收起页面导航"}, "deleted": true}, "before": "收起页面导航", "after": "", "affectedPages": ["home"], "affectedPageTitles": ["作业批阅与班级对比原型"], "id": "change-e6922a8c90a1986fb60b"}, {"kind": "logic", "description": "页面交互代码或动态文案有更新，请核对", "pageTitle": "作业批阅与班级对比原型", "stateTitle": "默认页面", "target": {"pageId": "home", "stateId": "default"}, "before": "", "after": "", "affectedPages": ["home"], "affectedPageTitles": ["作业批阅与班级对比原型"], "id": "change-6265bb4eced58e44903d"}, {"kind": "style", "description": "页面样式更新", "pageTitle": "作业批阅与班级对比原型", "stateTitle": "默认页面", "target": {"pageId": "home", "stateId": "default"}, "before": "", "after": "", "affectedPages": ["home"], "affectedPageTitles": ["作业批阅与班级对比原型"], "id": "change-cf8ebc4ef132a7925e75"}]}, "prototypeBase": "prototype-versions/11283d82df065a33ca91213b/", "prototypeVersions": {"grading.html": "0fc4f5857747a797cc46", "index.html": "1507af45b6b3d0af5102"}}</script>
         <script>
             'use strict';
             const $ = (id) => document.getElementById(id);
@@ -835,7 +1083,8 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                         const size = /(?:^|\s)proto-width=(\d{1,4})$/.exec(title);
                         const width = size && +size[1] >= 48 && +size[1] <= 4096 ? ` width="${+size[1]}"` : '';
                         if (width) title = title.slice(0, size.index).trim();
-                        return hold(`<img src="${esc(new URL('proto/' + path, location.href).href)}" alt="${alt}"${width}${title ? ` title="${title}"` : ''} loading="lazy">`);
+                        const base=/^(?:proto\/|prototype-versions\/[a-f0-9]{24}\/)$/.test(data?.prototypeBase || '') ? data.prototypeBase : 'proto/';
+                        return hold(`<img src="${esc(new URL(base + path, location.href).href)}" alt="${alt}"${width}${title ? ` title="${title}"` : ''} loading="lazy">`);
                     })
                     // 文字颜色：与工作台 safeHTML 同口径，只放行 <span style="color:…"> 这一种内联 HTML（色值限十六进制 / 颜色名）
                     .replace(/&lt;span style=&quot;color:(#[0-9a-fA-F]{3,8}|[a-zA-Z]+)&quot;&gt;/g, (m, c) => `<span style="color:${c.toLowerCase()}">`)
@@ -921,6 +1170,8 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
             let frameReady = false;     // 当前 iframe 页已握手（收到 ready 且已下发 init）
             let projectNavigation = null;
             let selectedNoteId = null;
+            let pendingPublicationTarget=PublicationUpdates.readTarget(location.hash);
+            let publicationRequest=0;
 
             const safePath = (path) => {
                 const parts = String(path || '').replace(/\\/g, '/').split('/');
@@ -929,7 +1180,8 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
             };
             function prototypeUrl(page) {
                 const file = String(page.file || '').replace(/\\/g, '/');
-                const path = 'proto/' + safePath(file);
+                const base=/^(?:proto\/|prototype-versions\/[a-f0-9]{24}\/)$/.test(data.prototypeBase || '') ? data.prototypeBase : 'proto/';
+                const path = base + safePath(file);
                 const version = data.prototypeVersions?.[file];
                 return typeof version === 'string' && /^[a-f0-9]{20}$/.test(version) ? path + '?v=' + version : path;
             }
@@ -969,6 +1221,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
 
             // ---------- 页面 / 状态切换 ----------
             function selectPage(page, stateId) {
+                if(pendingPublicationTarget?.pageId!==page.id)pendingPublicationTarget=null;
                 const samePage = current.page?.id === page.id && loadedFile === page.file;
                 if (current.page?.id !== page.id || current.stateId !== stateId) selectedNoteId = null;
                 current = { page, stateId };
@@ -979,6 +1232,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                 renderAside();
                 if (samePage && frameReady) {
                     post({ type: 'enterState', stateId });
+                    flushPublicationTarget();
                 } else {
                     pendingState = stateId;
                     loadedFile = page.file;
@@ -1027,6 +1281,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                 renderAside();
                 post({ type: 'init', notes: pageNotes(), asideOpen: prdAsideOpen(), enterState, selectedNoteId,
                     hintScopes: (current.page?.states || []).map(state => ({id: state.id, interactionHints: state.interactionHints})) });
+                flushPublicationTarget();
             }
             window.addEventListener('message', (e) => {
                 if (e.source === frame.contentWindow && e.data?.__protoScreenshot === 1 && e.data.type === 'navigate' && current.page?.kind === 'screenshot') {
@@ -1041,7 +1296,22 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                 if (m.type === 'sync') onPinSync(m.map || {}, m.state || 'default', m.stale || []);
                 else if (m.type === 'focus') onPinFocus(m.noteId);
                 else if (m.type === 'selection') selectReviewNote(m.noteId);
+                else if (m.type === 'changeLocated' && m.requestId===publicationRequest && !m.cancelled) PublicationUpdates.notify(m.message || (m.ok?'已定位更新位置':'目标暂不可定位'));
             });
+
+            function flushPublicationTarget(){
+                if(!pendingPublicationTarget || !frameReady)return;
+                const target=pendingPublicationTarget;pendingPublicationTarget=null;
+                if(target.documentId){document.querySelector('aside')?.scrollTo({top:0,behavior:'smooth'});PublicationUpdates.notify('已打开对应页面需求');return;}
+                if(target.noteId)onPinFocus(target.noteId);
+                post({type:'locateChange',target,requestId:++publicationRequest});
+            }
+            function locatePublicationTarget(target){
+                const page=data.pages.find(p=>p.id===target.pageId);
+                if(!page){PublicationUpdates.notify('该页面已删除，请查看变更详情');return;}
+                const state=page.states?.some(s=>s.id===target.stateId)?target.stateId:page.states?.[0]?.id || 'default';
+                pendingPublicationTarget={...target,stateId:state};selectPage(page,state);
+            }
 
             // ---------- 气泡层回调 ----------
             function onPinSync(map, state, stale) {
@@ -1153,9 +1423,10 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                 $('generated').textContent = data.publishedAt ? '发布于 ' + String(data.publishedAt).slice(0, 19).replace('T', ' ') : '';
                 buildTree();
                 const params = new URLSearchParams(location.hash.slice(1));
-                const page = data.pages.find((p) => p.id === params.get('p')) || ProtoProjectNavigation.defaultPage(data);
+                const page = data.pages.find((p) => p.id === (pendingPublicationTarget?.pageId || params.get('p'))) || ProtoProjectNavigation.defaultPage(data);
                 const stateId = page.states?.some((s) => s.id === params.get('s')) ? params.get('s') : (page.states?.[0]?.id || 'default');
                 selectPage(page, stateId);
+                PublicationUpdates.mountPublished({data,onLocate:locatePublicationTarget});
             }
             const pageNavSizer = ProtoSidebarResize.attach($('page-nav-resizer'), {
                 storageKey: 'prototype-page-nav-width', isOpen: () => !$('layout').classList.contains('left-closed'),
