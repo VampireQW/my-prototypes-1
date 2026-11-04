@@ -1,0 +1,3052 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-proto-page="class-review" data-proto-state="default">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>班级电子作业本-7</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bar: #2b2b2b;
+    --bar-line: #1d1d1d;
+    --dir-bg: #262626;
+    --dir-line: rgba(255, 255, 255, 0.07);
+    --txt: #eaeaec;
+    --txt-2: #a8a8ac;
+    --txt-3: #7e7e84;
+    --blue: #1a73e8;
+    --blue-ink: #8ab4f8;
+    --dir-w: 268px;
+    --rail-w: 52px;
+    --paper-w: 424px;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+    background: #1d1d1d;
+    color: var(--txt);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+  }
+
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  svg { display: block; }
+  :focus-visible { outline: 2px solid var(--blue-ink); outline-offset: 2px; border-radius: 4px; }
+
+  /* ═════════ 顶栏 ═════════ */
+  .top-bar {
+    height: 52px;
+    flex: 0 0 auto;
+    background: var(--bar);
+    border-bottom: 1px solid var(--bar-line);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 16px;
+    padding: 0 18px;
+    position: relative;
+    z-index: 60;
+  }
+
+  .tb-left, .tb-right { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .tb-right { justify-self: end; }
+
+  .icon-btn {
+    width: 26px; height: 26px; border-radius: 4px;
+    display: grid; place-items: center;
+    color: #9a9aae;
+    transition: background .15s, color .15s;
+  }
+  .icon-btn:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+
+  .book-title { font-size: 15px; font-weight: 400; color: #ededee; white-space: nowrap; }
+  .book-title span { color: #a8a8ac; font-weight: 400; }
+
+  .tb-center {
+    justify-self: center;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+  }
+
+  .nav-arrow {
+    width: 24px; height: 24px; border-radius: 4px;
+    display: grid; place-items: center;
+    color: #9a9a9e;
+    transition: background .15s, color .15s;
+  }
+  .nav-arrow:hover { background: rgba(255, 255, 255, .1); color: #fff; }
+
+  .student-info { display: flex; align-items: center; gap: 12px; }
+
+  .student-name-btn {
+    display: flex; align-items: center; gap: 5px;
+    padding: 3px 8px; border-radius: 4px;
+    font-size: 14.5px; font-weight: 500; color: #f0f0f2;
+    transition: background .15s;
+  }
+  .student-name-btn:hover { background: rgba(255, 255, 255, .08); }
+  .student-name-btn svg { color: #9a9a9e; }
+
+  .divider-v { width: 1px; height: 16px; background: #4e4e50; }
+
+  .score-item { display: flex; align-items: center; gap: 5px; font-size: 14px; color: #b8b8bc; }
+  .score-item b { color: #f2f2f4; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+  /* 右上角：当前目录项（原为目录下拉触发器，目录左置后作为当前项回显） */
+  .cur-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14.5px; color: #ececee;
+    max-width: 300px;
+  }
+  .cur-item .txt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .refresh-btn {
+    width: 24px; height: 24px; border-radius: 4px;
+    display: grid; place-items: center;
+    color: #9a9a9e;
+  }
+  .refresh-btn:hover { color: #fff; }
+
+  .export-btn {
+    height: 34px; padding: 0 18px;
+    background: #1a73e8; color: #fff;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background .15s;
+  }
+  .export-btn:hover { background: #1765cc; }
+
+  /* ═════════ 工作区 ═════════ */
+  .workspace { flex: 1; display: flex; min-height: 0; position: relative; }
+
+  /* ── 左侧目录（悬浮卡片，上下留白） ── */
+  .dir-side {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--dir-w);
+    max-height: calc(100% - 48px);
+    display: flex;
+    flex-direction: column;
+    background: var(--dir-bg);
+    border: 1px solid rgba(255, 255, 255, .07);
+    border-radius: 10px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .35);
+    overflow: hidden;
+    z-index: 40;
+    transition: transform .24s cubic-bezier(.4, 0, .2, 1), opacity .2s ease;
+  }
+  .dir-side.collapsed {
+    transform: translateY(-50%) translateX(calc(-100% - 18px));
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .dir-inner {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .dir-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 13px 10px 11px 16px;
+    border-bottom: 1px solid var(--dir-line);
+    flex: 0 0 auto;
+  }
+  .dir-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; letter-spacing: .08em; color: #ececf6;
+  }
+  .dir-title .count {
+    font-size: 10.5px; font-weight: 500; letter-spacing: 0;
+    color: #a8a8ae; background: rgba(255, 255, 255, .08);
+    padding: 1px 6px; border-radius: 9px;
+  }
+
+  .dir-collapse {
+    flex: 0 0 auto;
+    height: 24px;
+    padding: 0 8px;
+    border-radius: 5px;
+    font-size: 12.5px;
+    color: #a0a0a6;
+    transition: background .15s, color .15s;
+  }
+  .dir-collapse:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+
+  .dir-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, .14) transparent;
+  }
+  .dir-list::-webkit-scrollbar { width: 6px; }
+  .dir-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .14); border-radius: 3px; }
+  .dir-list::-webkit-scrollbar-track { background: transparent; }
+
+  .dir-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+    padding: 11px 10px;
+    border-radius: 4px;
+    border-left: 3px solid transparent;
+    margin-bottom: 2px;
+    transition: background .15s, border-color .15s;
+  }
+  .dir-item:hover { background: rgba(255, 255, 255, .05); }
+  .dir-item.active {
+    background: rgba(255, 255, 255, .07);
+    border-left-color: var(--blue);
+  }
+
+  /* 单行目录项：第五章　作业1　硫和二氧化硫，与原来的目录浮层一致 */
+  .di-text {
+    flex: 1;
+    min-width: 0;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #d4d4d6;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dir-item.active .di-text { color: #fff; }
+
+  .di-rate {
+    flex: 0 0 auto;
+    font-size: 12.5px;
+    color: #9c9ca0;
+    font-variant-numeric: tabular-nums;
+  }
+  .dir-item.active .di-rate { color: #e2e2e4; }
+
+  .dir-foot {
+    flex: 0 0 auto;
+    padding: 9px 14px 10px;
+    border-top: 1px solid var(--dir-line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 10.5px;
+    color: var(--txt-3);
+  }
+  .dir-foot b { color: #b9b9cc; font-weight: 600; }
+
+  /* 收起后吸附左边中部的按钮 */
+  .dir-tab {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%) translateX(-100%);
+    width: 34px;
+    padding: 16px 0;
+    border-radius: 0 8px 8px 0;
+    background: rgba(38, 38, 38, .94);
+    color: #e8e8ea;
+    font-size: 13px;
+    letter-spacing: .16em;
+    writing-mode: vertical-rl;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, .2);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 41;
+    transition: transform .22s cubic-bezier(.4, 0, .2, 1), opacity .18s, background .15s, color .15s;
+  }
+  .dir-side.collapsed ~ .dir-tab {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(-50%);
+  }
+  .dir-tab:hover { background: #333; color: #fff; }
+
+  /* 窄屏抽屉遮罩 */
+  .dir-scrim { display: none; }
+
+  /* ── 桌面舞台（浅木色桌面） ── */
+  .stage {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    background:
+      radial-gradient(130% 90% at 50% 34%, rgba(255, 255, 255, .30), rgba(255, 255, 255, 0) 62%),
+      repeating-linear-gradient(0deg, rgba(150, 124, 90, .06) 0 12px, rgba(255, 255, 255, .022) 12px 22px, rgba(132, 106, 74, .045) 22px 34px),
+      linear-gradient(180deg, #e0d6c6 0%, #dbd0be 48%, #d3c7b3 100%);
+  }
+
+  /* 纸张 */
+  .paper-row {
+    position: absolute;
+    inset: 46px 44px 120px 14px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 16px;
+    transition: opacity .18s, left .24s cubic-bezier(.4, 0, .2, 1);
+  }
+  .paper-row.fading { opacity: .3; }
+
+  .paper {
+    width: var(--paper-w);
+    aspect-ratio: 210 / 297;
+    flex: 0 0 auto;
+    background: #fff;
+    border-radius: 1px;
+    box-shadow: 0 8px 22px rgba(72, 54, 32, .20), 0 1px 3px rgba(0, 0, 0, .12);
+    position: relative;
+    overflow: hidden;
+    color: #1a1a1a;
+    font-family: "SimSun", "Songti SC", "Times New Roman", serif;
+  }
+  body.single .paper-a { display: none; }
+
+  /* 纸张内部按设计稿（459×649）排版，整体等比缩放到纸面，字号随纸面同步缩放 */
+  .paper-inner {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 459px;
+    height: 649.29px;
+    padding: 11px 13px 12px;
+    font-size: 8.9px;
+    line-height: 1.48;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: scale(var(--paper-scale, 1));
+    transform-origin: 0 0;
+  }
+
+  .paper-inner > * { flex-shrink: 0; }
+
+  .p-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 5px;
+    border-bottom: 1.4px solid #222;
+  }
+  .p-title { font-family: "Microsoft YaHei", sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: .02em; }
+  .p-meta { margin-top: 2px; font-size: 8px; color: #555; }
+  .p-qr { width: 26px; height: 26px; flex: 0 0 auto; }
+
+  .p-inkrow { position: relative; height: 23px; margin-bottom: 1px; flex-shrink: 0; }
+
+  .p-sec {
+    display: flex; align-items: center; gap: 6px;
+    margin: 4px 0 2px;
+    font-family: "Microsoft YaHei", sans-serif;
+    font-size: 9px; font-weight: 700; color: #111;
+  }
+  .p-sec i { width: 3px; height: 10px; background: #222; display: block; }
+  .p-sec em { font-style: normal; font-weight: 400; font-size: 8px; color: #555; }
+
+  .p-sub {
+    margin: 3px 0 2px;
+    font-family: "Microsoft YaHei", sans-serif;
+    font-size: 8.6px; font-weight: 700; color: #222;
+  }
+
+  .q { position: relative; margin-bottom: 2px; }
+  .opts { line-height: 1.36; }
+  .q .qn { font-weight: 700; }
+  .q .cond { font-size: 7px; vertical-align: -1px; color: #333; padding: 0 1px; }
+
+  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 0 6px; padding-left: 10px; }
+  .opts.one { grid-template-columns: 1fr; }
+  .opt { display: flex; gap: 2px; }
+
+  .inline-fill { display: inline-block; min-width: 46px; border-bottom: 1px solid #555; height: 10px; vertical-align: -1px; margin: 0 2px; }
+
+  /* 手写与批阅笔迹 */
+  .ink {
+    position: absolute;
+    font-family: "KaiTi", "STKaiti", "楷体", cursive;
+    color: #d92b1c;
+    pointer-events: none;
+  }
+  .ink-score {
+    top: 0; left: 1px;
+    font-size: 13px; font-weight: 700;
+    transform: rotate(-4deg);
+    line-height: 1.1;
+  }
+  .ink-score span { display: block; font-size: 7.8px; font-weight: 400; letter-spacing: .02em; margin-top: 1px; }
+  .ink-name {
+    top: -3px; right: 58px;
+    font-size: 12px;
+    transform: rotate(-3deg);
+    color: #1d2f6e;
+  }
+  .ink-note {
+    font-family: "KaiTi", "STKaiti", cursive;
+    font-size: 9px;
+    color: #1c3fa8;
+    transform: rotate(-2deg);
+    white-space: nowrap;
+  }
+  .ink-red-text {
+    font-family: "KaiTi", "STKaiti", cursive;
+    color: #d92b1c;
+    font-size: 9px;
+    transform: rotate(-1.4deg);
+    white-space: nowrap;
+  }
+
+  .hand-ans {
+    font-family: "KaiTi", "STKaiti", "楷体", cursive;
+    font-size: 8.8px;
+    color: #d92b1c;
+    padding: 0 2px;
+  }
+  .hand-ans.blue { color: #1c3fa8; }
+
+  .mark {
+    position: absolute;
+    width: 15px; height: 15px;
+    color: #d92b1c;
+    pointer-events: none;
+  }
+  .mark.blue { color: #1c3fa8; }
+  .mark.cross { width: 13px; height: 13px; }
+
+  .score-chip {
+    position: absolute;
+    font-family: "Microsoft YaHei", sans-serif;
+    font-size: 8px;
+    font-weight: 700;
+    color: #fff;
+    background: #d94032;
+    border-radius: 2px;
+    padding: 1px 4px;
+    transform: rotate(-2deg);
+    white-space: nowrap;
+  }
+
+  /* 图示 */
+  .figure {
+    margin: 3px 0 4px;
+    border: 1px solid #c9c9c9;
+    background: #fbfbfb;
+    padding: 4px 8px;
+    position: relative;
+  }
+  .dish-row { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .dish {
+    position: relative;
+    width: 96px; height: 46px;
+    border-radius: 50%;
+    border: 1.2px solid #666;
+    background: radial-gradient(ellipse at 50% 45%, #fff 45%, #f1f1f1 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: "Microsoft YaHei", sans-serif;
+    font-size: 7px; color: #333; text-align: center; line-height: 1.35;
+  }
+  .dish.small { width: 58px; height: 32px; font-size: 6.5px; }
+  .dish .inner {
+    width: 70%; height: 66%;
+    border-radius: 50%;
+    border: 1px dashed #999;
+    display: flex; align-items: center; justify-content: center;
+    color: #444;
+  }
+  .label-row { display: flex; justify-content: space-around; margin-top: 3px; font-family: "Microsoft YaHei", sans-serif; font-size: 6.8px; color: #444; }
+  .tubes { display: flex; justify-content: center; gap: 14px; align-items: flex-end; font-family: "Microsoft YaHei", sans-serif; }
+  .tube { width: 22px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 6.5px; color: #444; }
+  .tube .glass {
+    width: 16px; height: 24px;
+    border: 1px solid #666;
+    border-top: 0;
+    border-radius: 0 0 8px 8px;
+    background: linear-gradient(180deg, rgba(190, 220, 240, .35), rgba(150, 195, 225, .55));
+  }
+
+  table.p-table { width: 100%; border-collapse: collapse; font-size: 7.8px; margin: 3px 0 5px; }
+  table.p-table th, table.p-table td { border: 0.8px solid #333; padding: 1.4px 3px; text-align: center; line-height: 1.4; }
+  table.p-table th { background: #f2f2f2; font-weight: 700; }
+  table.p-table td:last-child { text-align: left; }
+
+  .p-foot {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 0.8px solid #999;
+    padding-top: 3px;
+    font-size: 6.6px;
+    color: #666;
+    letter-spacing: .02em;
+  }
+  .p-foot .pg { font-weight: 700; color: #333; }
+
+  .stage-next {
+    position: absolute;
+    right: 18px; top: 46%;
+    transform: translateY(-50%);
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: #fff;
+    color: #6a6a6e;
+    box-shadow: 0 2px 10px rgba(60, 44, 24, .22);
+    display: grid; place-items: center;
+    font-size: 20px; line-height: 1;
+    z-index: 6;
+    transition: box-shadow .15s, color .15s;
+  }
+  .stage-next:hover { color: #222; box-shadow: 0 3px 14px rgba(60, 44, 24, .3); }
+
+  /* ═════════ 底部工具条（浮在桌面上） ═════════ */
+  .stage-tools {
+    position: absolute;
+    left: 50%;
+    bottom: 56px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 30;
+  }
+
+  .bottom-bar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 44px;
+    padding: 0 8px;
+    background: rgba(36, 36, 38, .82);
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(48, 34, 18, .22);
+    backdrop-filter: blur(8px);
+  }
+
+  .seg { display: flex; gap: 2px; }
+  .seg button {
+    padding: 6px 13px;
+    border-radius: 5px;
+    font-size: 13.5px;
+    color: #b0b0b4;
+    white-space: nowrap;
+    transition: background .15s, color .15s;
+  }
+  .seg button.active { background: rgba(255, 255, 255, .17); color: #fff; }
+  .seg button:hover:not(.active) { color: #e2e2e4; }
+
+  .tb-divider { width: 1px; height: 20px; background: rgba(255, 255, 255, .16); margin: 0 6px; }
+
+  .tool-btn {
+    width: 32px; height: 32px;
+    border-radius: 5px;
+    display: grid; place-items: center;
+    color: #c8c8cc;
+    transition: background .15s, color .15s;
+  }
+  .tool-btn:hover { background: rgba(255, 255, 255, .1); color: #fff; }
+
+  .trace { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #f0f0f2; }
+  .switch {
+    width: 34px; height: 18px;
+    border-radius: 9px;
+    background: #ffffff;
+    position: relative;
+    transition: background .18s;
+  }
+  .switch::after {
+    content: "";
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #9a9a9e;
+    transition: transform .18s, background .18s;
+  }
+  .switch[aria-checked="true"]::after { transform: translateX(16px); background: var(--blue); }
+
+  /* ═════════ 响应式 ═════════ */
+  @media (max-width: 1240px) {
+    .tb-center { position: static; transform: none; flex: 1; justify-content: center; }
+    .book-title { display: none; }
+    .mean { display: none; }
+  }
+  @media (max-width: 960px) {
+    .export-btn { display: none; }
+    .cur-item { max-width: 170px; }
+  }
+  @media (max-width: 760px) {
+    .dir-side { left: 8px; top: 50%; max-height: calc(100% - 24px); }
+    .dir-side:not(.collapsed) { box-shadow: 0 12px 32px rgba(0, 0, 0, .45); }
+    .dir-side:not(.collapsed) ~ .dir-scrim { display: block; }
+    .paper-row { inset: 12px 44px 96px 10px; }
+    .cur-item { max-width: 120px; }
+    .stage-tools { bottom: 16px; gap: 10px; }
+    .bottom-bar { height: 40px; padding: 0 6px; }
+    .seg button { padding: 5px 10px; font-size: 12.5px; }
+    .tool-btn { width: 28px; height: 28px; }
+    .tb-divider { margin: 0 3px; height: 18px; }
+    .trace span { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+  }
+
+  @media (max-width: 760px) {
+    .dir-scrim {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, .4);
+      z-index: 35;
+      pointer-events: none;
+    }
+  }
+</style>
+<script data-prototype-owned data-proto-hotspot-bootstrap data-proto-review="hotspots">
+/* 点击空白时短暂提示本次需求范围内的真实交互；未声明范围时不扫描整页。 */
+(() => {
+    'use strict';
+    if (window.ProtoHotspots) return;
+    const DURATION = 2000, MAX_HINTS = 80;
+    const COLORS = { fill: '#ff9f29' };
+    const EVENTS = new Set(['click', 'pointerdown', 'pointerup', 'mousedown', 'mouseup', 'touchend']);
+    const EDITABLE = 'input,textarea,select,[contenteditable]:not([contenteditable="false"])';
+    const BLOCKED = '[hidden],[inert],[aria-hidden="true"],[aria-disabled="true"],[data-proto-hotspot="false"]';
+    const CONTROL_TAGS = new Set(['BUTTON', 'A', 'AREA', 'INPUT', 'SELECT', 'TEXTAREA', 'SUMMARY']);
+    const CONTROL_ROLES = new Set(['button', 'link', 'checkbox', 'radio', 'switch', 'tab', 'menuitem', 'option', 'combobox', 'slider', 'textbox']);
+    const owned = el => !!el?.closest?.('[data-prototype-owned],.__review_pin,.__review_pop,.__review_guide');
+    let options = {}, layer, style, observer, timer = 0, frame = 0, started = 0, down = null;
+    const boxes = new Map();
+
+    // 先于业务脚本载入：只记录实际绑定，不运行任何按钮来试探功能。
+    const listeners = new WeakMap();
+    const nativeAdd = EventTarget.prototype.addEventListener, nativeRemove = EventTarget.prototype.removeEventListener;
+    const captureOf = config => typeof config === 'boolean' ? config : !!config?.capture;
+    EventTarget.prototype.addEventListener = function (type, listener, config) {
+        if (!EVENTS.has(type) || !listener || typeof listener !== 'function' && typeof listener.handleEvent !== 'function')
+            return nativeAdd.call(this, type, listener, config);
+        let entries = listeners.get(this);
+        if (!entries) { entries = new Set(); listeners.set(this, entries); }
+        const capture = captureOf(config);
+        const existing = [...entries].find(entry => entry.type === type && entry.listener === listener && entry.capture === capture && !entry.signal?.aborted);
+        if (existing) return nativeAdd.call(this, type, existing.wrapper, config);
+        const entry = { type, listener, capture, once: !!config?.once, signal: config?.signal };
+        entry.wrapper = function (event) {
+            if (entry.once) { entries.delete(entry); schedule(); }
+            return typeof listener === 'function' ? listener.call(this, event) : listener.handleEvent.call(listener, event);
+        };
+        const result = nativeAdd.call(this, type, entry.wrapper, config);
+        if (!entry.signal?.aborted) {
+            entries.add(entry);
+            if (entry.signal) nativeAdd.call(entry.signal, 'abort', () => { entries.delete(entry); schedule(); }, { once: true });
+            schedule();
+        }
+        return result;
+    };
+    EventTarget.prototype.removeEventListener = function (type, listener, config) {
+        const entries = listeners.get(this), capture = captureOf(config);
+        const entry = entries && [...entries].find(item => item.type === type && item.listener === listener && item.capture === capture);
+        if (!entry) return nativeRemove.call(this, type, listener, config);
+        const result = nativeRemove.call(this, type, entry.wrapper, config);
+        entries.delete(entry); schedule(); return result;
+    };
+
+    function binding(el) {
+        if ([...EVENTS].some(type => typeof el['on' + type] === 'function')) return true;
+        const reactRoot = Object.keys(el).some(key => key.startsWith('__reactContainer$'));
+        if (!reactRoot && [...(listeners.get(el) || [])].some(entry => !entry.signal?.aborted)) return true;
+        // React 的点击监听由根节点代理，真实业务回调在元素 props 上。
+        const props = Object.keys(el).find(key => key.startsWith('__reactProps$'));
+        return !!props && Object.entries(el[props] || {}).some(([key, value]) =>
+            /^on(Click|PointerDown|PointerUp|MouseDown|MouseUp|TouchEnd)(Capture)?$/.test(key) && typeof value === 'function');
+    }
+    function navigation(el) {
+        if (!el.matches('a[href],area[href]')) return false;
+        const href = el.getAttribute('href').trim();
+        if (!href || href === '#' || /^javascript:/i.test(href)) return false;
+        if (href.startsWith('#')) {
+            let id; try { id = decodeURIComponent(href.slice(1)); } catch (_) { return false; }
+            return !!document.getElementById(id) || !!document.getElementsByName(id).length;
+        }
+        return true;
+    }
+    function nativeAction(el) {
+        if (el.matches('select,input[type="checkbox"],input[type="radio"],input[type="file"],input[type="color"],input[type="range"]')) return true;
+        if (el.tagName === 'SUMMARY') return el.parentElement?.tagName === 'DETAILS' && el.parentElement.querySelector('summary') === el;
+        if (el.matches('button,input') && el.form) return el.type === 'submit' || el.type === 'reset';
+        return false;
+    }
+
+    function enabled() {
+        try { return typeof options.isEnabled === 'function' ? !!options.isEnabled() : options.enabled !== false; }
+        catch (_) { return false; }
+    }
+    function action(el) {
+        if (!(el instanceof Element) || el === document.body || el === document.documentElement || owned(el) || el.closest(BLOCKED) || el.matches(':disabled')) return false;
+        return el.dataset.protoHotspot === 'true' || binding(el) || navigation(el) || nativeAction(el);
+    }
+    function controlLike(el) {
+        return CONTROL_TAGS.has(el.tagName) && !(el.tagName === 'INPUT' && el.type === 'hidden')
+            || CONTROL_ROLES.has(el.getAttribute('role')) || el.dataset.protoHotspot === 'true';
+    }
+    function controlIssue(el) {
+        // 仅截图专用运行时中用户手动画出的矩形可使用自定尺寸。
+        if (window.ProtoScreenshot && el.parentElement?.id === 'screenshot-regions' && el.classList.contains('screenshot-region')) return null;
+        // 事件代理容器不能替代实际操作节点，未授权的子控件也不能让父容器整块高亮。
+        if (!CONTROL_TAGS.has(el.tagName) && [...el.querySelectorAll('*')].some(child =>
+            !owned(child) && (controlLike(child) || action(child)))) return 'container';
+        const rect = el.getBoundingClientRect();
+        // 长而矮的整行按钮可保留；高且大面积的卡片 / 面板需拆到具体控件。
+        if (rect.height > 96 && rect.width * rect.height > Math.min(64000, innerWidth * innerHeight * .12)) return 'oversized';
+        return null;
+    }
+    function currentScope() {
+        try { return typeof options.scope === 'function' ? options.scope() : options.scope; }
+        catch (_) { return null; }
+    }
+    function inScope(el, scope = currentScope()) {
+        if (scope?.mode === 'all') return true;
+        if (scope?.mode !== 'targets' || !Array.isArray(scope.protoIds)) return false;
+        // 范围只授权该控件自身；容器标注不授权内部的历史交互。
+        return scope.protoIds.includes(el.getAttribute('data-proto-id'));
+    }
+    function hitAction(target) {
+        if (currentScope()?.manualTargets?.length && scan().some(item => item.source === 'manual' && item.status === 'ready' && item.el.contains(target))) return true;
+        for (let el = target instanceof Element ? target : target?.parentElement; el && el !== document.documentElement; el = el.parentElement)
+            if ((controlLike(el) || action(el)) && !controlIssue(el) && rectFor(el)) return true;
+        return false;
+    }
+    function rectFor(el) {
+        if (!el?.isConnected || owned(el) || el.closest(BLOCKED) || el.matches(':disabled')) return null;
+        const original = el.getBoundingClientRect();
+        let left = Math.max(0, original.left), top = Math.max(0, original.top);
+        let right = Math.min(innerWidth, original.right), bottom = Math.min(innerHeight, original.bottom);
+        for (let node = el; node && node !== document.documentElement; node = node.parentElement) {
+            const css = getComputedStyle(node);
+            if (css.display === 'none' || css.visibility === 'hidden' || Number(css.opacity) === 0) return null;
+            if (node === el) continue;
+            const clip = node.getBoundingClientRect();
+            if (/hidden|clip|auto|scroll/.test(css.overflowX)) { left = Math.max(left, clip.left); right = Math.min(right, clip.right); }
+            if (/hidden|clip|auto|scroll/.test(css.overflowY)) { top = Math.max(top, clip.top); bottom = Math.min(bottom, clip.bottom); }
+        }
+        if (right - left < 4 || bottom - top < 4) return null;
+        if ((right - left) * (bottom - top) > innerWidth * innerHeight * .65 && !(window.ProtoScreenshot && el.parentElement?.id === 'screenshot-regions')) return null;
+        const points = [[.5, .5], [.2, .2], [.8, .8]];
+        if (!points.some(([x, y]) => {
+            const hit = document.elementFromPoint(left + (right - left) * x, top + (bottom - top) * y);
+            return hit === el || !!hit && el.contains(hit);
+        })) return null;
+        return { left, top, right, bottom };
+    }
+    function examine(el, manual = false) {
+        if (owned(el) || el.closest('[data-proto-hotspot="false"]')) return { status: 'excluded' };
+        if (el.matches(':disabled') || el.closest('[inert],[aria-disabled="true"]')) return { status: 'disabled' };
+        for (let node = el; node && node !== document.documentElement; node = node.parentElement) {
+            const css = getComputedStyle(node);
+            if (node.matches('[hidden],[aria-hidden="true"]') || css.display === 'none' || css.visibility === 'hidden' || Number(css.opacity) === 0)
+                return { status: 'hidden' };
+        }
+        if (/^(SCRIPT|STYLE|LINK|META|OPTION|OPTGROUP|PATH|SVG)$/.test(el.tagName)) return { status: 'unsupported' };
+        const issue = controlIssue(el);
+        if (issue) return { status: issue };
+        if (!manual && !action(el)) return { status: 'no-action' };
+        const bounds = el.getBoundingClientRect();
+        if (!bounds.width || !bounds.height) return { status: 'hidden' };
+        if (bounds.bottom <= 0 || bounds.top >= innerHeight || bounds.right <= 0 || bounds.left >= innerWidth) return { status: 'offscreen' };
+        const rect = rectFor(el);
+        return rect ? { status: 'ready', rect } : { status: 'occluded' };
+    }
+    function scan(scope = currentScope()) {
+        const elements = [...document.querySelectorAll('body *')], byId = new Map();
+        for (const el of elements) {
+            const id = el.getAttribute('data-proto-id');
+            if (id) { if (!byId.has(id)) byId.set(id, []); byId.get(id).push(el); }
+        }
+        const anchorFor = el => {
+            if (window.ProtoAnchors) {
+                const A = window.ProtoAnchors;
+                return { protoId: el.getAttribute('data-proto-id') || '', selector: A.selector(el), tag: el.tagName.toLowerCase(), text: A.text(el), parentText: A.text(el.parentElement) };
+            }
+            return { protoId: el.getAttribute('data-proto-id') || '', selector: el.id ? '#' + CSS.escape(el.id) : '', tag: el.tagName.toLowerCase() };
+        };
+        const resolve = anchor => {
+            if (anchor?.protoId) { const hits = byId.get(anchor.protoId) || []; return hits.length === 1 ? hits[0] : null; }
+            if (window.ProtoAnchors) return window.ProtoAnchors.resolveHidden(anchor);
+            try { const hits = [...document.querySelectorAll(anchor?.selector || ':not(*)')]; return hits.length === 1 ? hits[0] : null; } catch (_) { return null; }
+        };
+        let entries = [];
+        if (scope?.mode === 'targets' && Array.isArray(scope.protoIds)) {
+            entries = scope.protoIds.map(protoId => {
+                const hits = byId.get(protoId) || [];
+                const base = { protoId, key: 'proto:' + protoId, source: 'declared', anchor: { protoId } };
+                if (hits.length !== 1) return { ...base, status: hits.length ? 'duplicate' : 'missing' };
+                return { ...base, el: hits[0], label: labelFor(hits[0]), anchor: anchorFor(hits[0]), ...examine(hits[0]) };
+            });
+        } else if (scope?.mode === 'all') {
+            entries = elements.filter(el => action(el)).map(el => ({
+                protoId: el.getAttribute('data-proto-id') || el.id || el.tagName.toLowerCase(), source: 'automatic',
+                anchor: anchorFor(el), label: labelFor(el), key: 'all:' + (el.getAttribute('data-proto-id') || el.id || anchorFor(el).selector), el, ...examine(el)
+            }));
+        }
+        for (const target of scope?.manualTargets || []) {
+            const el = resolve(target.anchor);
+            const existing = el && entries.find(item => item.el === el);
+            if (existing) entries = entries.filter(item => item !== existing);
+            entries.push({ ...target, key: 'manual:' + target.id, source: 'manual', protoId: target.anchor.protoId || target.id, el,
+                ...(el ? examine(el, true) : { status: target.anchor.protoId && (byId.get(target.anchor.protoId)?.length || 0) > 1 ? 'duplicate' : 'missing' }) });
+        }
+        const excluded = (scope?.excludedTargets || []).map(target => resolve(target.anchor)).filter(Boolean);
+        for (const item of entries) if (item.el && excluded.includes(item.el)) item.status = 'excluded';
+        const ready = entries.filter(item => item.status === 'ready');
+        let count = 0;
+        for (const item of ready) {
+            if (ready.some(other => other.el !== item.el && item.el.contains(other.el))) item.status = 'contains-target';
+            else if (++count > MAX_HINTS) item.status = 'limit';
+        }
+        return entries;
+    }
+    function labelFor(el) { return (el.getAttribute('aria-label') || el.getAttribute('title') || el.textContent || el.value || el.tagName).replace(/\s+/g, ' ').trim().slice(0, 120); }
+    function candidate(el) { return el instanceof Element ? { ...examine(el, true), label: labelFor(el) } : { status: 'missing' }; }
+    // 只读诊断，不执行点击、不展开页面，也不修改 PRD / 提示配置。
+    function inspect() {
+        const scope = currentScope();
+        return { mode: scope?.mode || 'off', enabled: enabled(), items: scan(scope).map(({ el, ...item }) => item) };
+    }
+    function position(box, rect) {
+        box.style.left = Math.max(0, rect.left - 3) + 'px';
+        box.style.top = Math.max(0, rect.top - 3) + 'px';
+        box.style.width = Math.min(innerWidth, rect.right + 3) - Math.max(0, rect.left - 3) + 'px';
+        box.style.height = Math.min(innerHeight, rect.bottom + 3) - Math.max(0, rect.top - 3) + 'px';
+    }
+    function hide() {
+        clearTimeout(timer); timer = 0;
+        cancelAnimationFrame(frame); frame = 0;
+        boxes.clear(); layer?.replaceChildren();
+    }
+    function refresh() {
+        frame = 0;
+        if (!enabled()) { hide(); return; }
+        const ready = new Map(scan().filter(item => item.status === 'ready').map(item => [item.el, item.rect]));
+        for (const [el, box] of boxes) {
+            const rect = ready.get(el);
+            if (!rect) { box.remove(); boxes.delete(el); }
+            else position(box, rect);
+        }
+    }
+    function schedule() {
+        if (boxes.size && !frame) frame = requestAnimationFrame(refresh);
+    }
+    function show() {
+        if (!layer || !enabled()) { hide(); return 0; }
+        const scope = currentScope();
+        if (scope?.mode !== 'all' && (scope?.mode !== 'targets' || !scope.protoIds?.length && !scope.manualTargets?.length)) { hide(); return 0; }
+        if (boxes.size && performance.now() - started < DURATION) { refresh(); return boxes.size; }
+        hide();
+        for (const { el, rect } of scan(scope).filter(item => item.status === 'ready')) {
+            const box = document.createElement('div');
+            box.className = 'ph-box'; box.setAttribute('data-prototype-owned', '');
+            box.dataset.hotspotFor = el.getAttribute('data-proto-id') || el.id || el.tagName.toLowerCase();
+            position(box, rect); layer.appendChild(box); boxes.set(el, box);
+        }
+        if (boxes.size) { started = performance.now(); timer = setTimeout(hide, DURATION); }
+        return boxes.size;
+    }
+    function pointerDown(event) { down = { x: event.clientX, y: event.clientY, moved: false }; }
+    function pointerMove(event) {
+        if (down && Math.hypot(event.clientX - down.x, event.clientY - down.y) > 8) down.moved = true;
+    }
+    function click(event) {
+        const drag = down?.moved; down = null;
+        const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+        if (!enabled() || owned(target) || hitAction(target)) { hide(); return; }
+        if (event.defaultPrevented || event.button !== 0 || event.detail === 0 || drag || target?.closest(EDITABLE) || String(getSelection()).trim()) return;
+        show();
+    }
+    function mutations(records) {
+        if (!boxes.size) return;
+        for (const record of records) {
+            if (owned(record.target)) continue;
+            if (record.type === 'attributes' && /data-proto-(page|state)/.test(record.attributeName)) { hide(); return; }
+            if (record.type === 'childList' && [...record.addedNodes, ...record.removedNodes].every(node => node instanceof Element && owned(node))) continue;
+            schedule(); break;
+        }
+    }
+    function init(config = {}) {
+        options = config;
+        if (layer) { hide(); return window.ProtoHotspots; }
+        style = document.createElement('style'); style.setAttribute('data-prototype-owned', '');
+        style.textContent = `
+.ph-layer{--ph-fill:${COLORS.fill};--ph-opacity-low:.18;--ph-opacity-high:.42;--ph-opacity-still:.3;position:fixed;inset:0;z-index:2147481000;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;pointer-events:none!important;overflow:hidden;}
+.ph-layer .ph-box{position:absolute;box-sizing:border-box;margin:0;padding:0;border:0!important;outline:0!important;border-radius:6px;background:var(--ph-fill);box-shadow:none!important;pointer-events:none!important;opacity:var(--ph-opacity-still);animation:ph-discover ${DURATION}ms cubic-bezier(.4,0,.2,1) 1 forwards;}
+@keyframes ph-discover{0%{opacity:var(--ph-opacity-low)}20%{opacity:var(--ph-opacity-high)}45%{opacity:var(--ph-opacity-low)}70%{opacity:var(--ph-opacity-high)}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.ph-layer .ph-box{animation:none;opacity:var(--ph-opacity-still)}}
+`;
+        layer = document.createElement('div'); layer.className = 'ph-layer';
+        layer.setAttribute('data-prototype-owned', ''); layer.setAttribute('aria-hidden', 'true');
+        (document.head || document.documentElement).appendChild(style); document.documentElement.appendChild(layer);
+        document.addEventListener('pointerdown', pointerDown, true);
+        document.addEventListener('pointermove', pointerMove, true);
+        document.addEventListener('pointercancel', hide, true);
+        document.addEventListener('click', click);
+        document.addEventListener('scroll', schedule, true);
+        window.addEventListener('resize', schedule);
+        window.addEventListener('pagehide', hide);
+        observer = new MutationObserver(mutations);
+        observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['style', 'class', 'hidden', 'inert', 'disabled', 'aria-hidden', 'aria-disabled', 'role', 'onclick', 'href', 'type', 'data-proto-id', 'data-proto-hotspot', 'data-proto-state', 'data-proto-page'] });
+        return window.ProtoHotspots;
+    }
+    function destroy() {
+        hide(); observer?.disconnect(); observer = null;
+        document.removeEventListener('pointerdown', pointerDown, true);
+        document.removeEventListener('pointermove', pointerMove, true);
+        document.removeEventListener('pointercancel', hide, true);
+        document.removeEventListener('click', click);
+        document.removeEventListener('scroll', schedule, true);
+        window.removeEventListener('resize', schedule); window.removeEventListener('pagehide', hide);
+        layer?.remove(); style?.remove(); layer = null; style = null; down = null;
+    }
+    window.ProtoHotspots = { init, show, hide, destroy, inspect, candidate };
+})();
+
+</script>
+</head>
+<body>
+
+<!-- ═════════ 顶栏 ═════════ -->
+<header class="top-bar">
+  <div class="tb-left">
+    <button class="icon-btn" title="返回" aria-label="返回">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 3L5 8l5 5"/>
+      </svg>
+    </button>
+    <span class="book-title">班级电子作业本-7 <span>· 5班</span></span>
+    <button class="icon-btn" title="同步" aria-label="同步">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="tb-center">
+    <button class="nav-arrow" id="prevStu" title="上一个学生" aria-label="上一个学生">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2L4 6l4 4"/></svg>
+    </button>
+    <div class="student-info">
+      <button class="student-name-btn" id="stuBtn" title="切换学生">
+        冉梓阳
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 3.5L5 6.5L8 3.5"/></svg>
+      </button>
+      <span class="divider-v"></span>
+      <div class="score-item"><span>得分:</span><b id="hdrScore">89</b></div>
+      <span class="divider-v mean"></span>
+      <div class="score-item mean"><span>班级均分:</span><b>72.59</b></div>
+      <button class="refresh-btn" title="刷新" aria-label="刷新">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13.5 8a5.5 5.5 0 1 1-1.9-4.15"/><path d="M13.5 2.2v2.6h-2.6"/>
+        </svg>
+      </button>
+    </div>
+    <button class="nav-arrow" id="nextStu" title="下一个学生" aria-label="下一个学生">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 2l4 4-4 4"/></svg>
+    </button>
+  </div>
+
+  <div class="tb-right">
+    <span class="cur-item"><span class="txt" id="curItemText">第五章　作业1　硫和二氧化硫</span></span>
+    <button class="refresh-btn" title="刷新" aria-label="刷新">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M13.5 8a5.5 5.5 0 1 1-1.9-4.15"/><path d="M13.5 2.2v2.6h-2.6"/>
+      </svg>
+    </button>
+    <button class="export-btn">导出</button>
+  </div>
+</header>
+
+<!-- ═════════ 工作区 ═════════ -->
+<div class="workspace">
+
+  <!-- 左侧目录 -->
+  <aside class="dir-side" id="dirSide" data-proto-id="dir-panel" aria-label="作业目录">
+    <div class="dir-inner">
+      <div class="dir-head">
+        <div class="dir-title">目录 <span class="count" id="dirCount">6</span></div>
+        <button class="dir-collapse" id="dirCollapse" data-proto-id="dir-collapse" data-proto-hotspot="true" title="收起目录（[）" aria-label="收起目录">收起</button>
+      </div>
+
+      <nav class="dir-list" id="dirList" aria-label="第五章作业与笔记"></nav>
+    </div>
+  </aside>
+
+  <button class="dir-tab" id="dirTab" data-proto-id="dir-tab" data-proto-hotspot="true" title="展开目录（[）" aria-label="展开目录" aria-expanded="false">目录</button>
+
+  <div class="dir-scrim" data-proto-id="dir-scrim" aria-hidden="true"></div>
+
+  <!-- 桌面舞台 -->
+  <section class="stage" data-proto-id="paper-stage">
+
+    <div class="paper-row" id="paperRow">
+
+      <!-- ─────── 左页：原卷 ─────── -->
+      <article class="paper paper-a" data-proto-id="paper-question" aria-label="原卷">
+        <div class="paper-inner">
+          <div class="p-inkrow">
+            <span class="ink ink-score">89<span>客:66　主:23</span></span>
+            <span class="ink ink-name">冉梓阳</span>
+          </div>
+          <div class="p-head">
+            <div>
+              <div class="p-title">［第五章 作业1］硫和二氧化硫</div>
+              <div class="p-meta">化学 · 必修第二册　　班级 ______　姓名 ______　得分 ______</div>
+            </div>
+            <svg class="p-qr" viewBox="0 0 21 21" shape-rendering="crispEdges" aria-hidden="true">
+              <rect width="21" height="21" fill="#fff"/>
+              <g fill="#111">
+                <rect x="0" y="0" width="7" height="7"/><rect x="1" y="1" width="5" height="5" fill="#fff"/><rect x="2" y="2" width="3" height="3"/>
+                <rect x="14" y="0" width="7" height="7"/><rect x="15" y="1" width="5" height="5" fill="#fff"/><rect x="16" y="2" width="3" height="3"/>
+                <rect x="0" y="14" width="7" height="7"/><rect x="1" y="15" width="5" height="5" fill="#fff"/><rect x="2" y="16" width="3" height="3"/>
+                <rect x="9" y="1" width="1" height="1"/><rect x="11" y="2" width="1" height="1"/><rect x="9" y="4" width="1" height="1"/>
+                <rect x="12" y="5" width="1" height="1"/><rect x="9" y="7" width="1" height="1"/><rect x="10" y="9" width="1" height="1"/>
+                <rect x="13" y="9" width="1" height="1"/><rect x="15" y="10" width="1" height="1"/><rect x="17" y="9" width="1" height="1"/>
+                <rect x="19" y="11" width="1" height="1"/><rect x="1" y="9" width="1" height="1"/><rect x="3" y="10" width="1" height="1"/>
+                <rect x="5" y="9" width="1" height="1"/><rect x="8" y="12" width="1" height="1"/><rect x="11" y="12" width="1" height="1"/>
+                <rect x="14" y="13" width="1" height="1"/><rect x="17" y="15" width="1" height="1"/><rect x="19" y="17" width="1" height="1"/>
+                <rect x="9" y="17" width="1" height="1"/><rect x="12" y="18" width="1" height="1"/><rect x="15" y="19" width="1" height="1"/>
+              </g>
+            </svg>
+          </div>
+
+          <div class="p-sec" style="margin-top:7px;"><i></i>基础对点练 <em>1～8 题，每小题 5 分</em></div>
+
+          <div class="p-sub">题型一　硫单质的性质</div>
+
+          <div class="q">
+            <span class="qn">1.</span>下列关于硫单质的说法正确的是（　　）
+            <div class="opts">
+              <div class="opt">A．硫在空气中燃烧发出明亮的蓝紫色火焰</div>
+              <div class="opt">B．硫难溶于水，易溶于 CS₂</div>
+              <div class="opt">C．硫与其他物质反应时只表现氧化性</div>
+              <div class="opt">D．硫与铜加热反应生成 CuS</div>
+            </div>
+            <svg class="mark" style="left:53%;top:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M4 13l5 5L20 5"/></svg>
+            <svg class="mark cross" style="left:1%;top:31px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </div>
+
+          <div class="q">
+            <span class="qn">2.</span>下列关于硫单质性质的叙述正确的是（　　）
+            <div class="opts">
+              <div class="opt">A．硫易溶于水，难溶于 CS₂</div>
+              <div class="opt">B．加热时硫与 Fe 反应生成 FeS</div>
+              <div class="opt">C．硫在纯氧中燃烧生成 SO₃</div>
+              <div class="opt">D．硫与钠反应时作还原剂</div>
+            </div>
+            <svg class="mark" style="left:53%;top:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M4 13l5 5L20 5"/></svg>
+          </div>
+
+          <div class="q">
+            <span class="qn">3.</span>硫的非金属性弱于氧，下列事实不能说明的是（　　）
+            <div class="opts">
+              <div class="opt">A．S + O₂ 中 O₂ 作氧化剂</div>
+              <div class="opt">B．硫是淡黄色固体，氧气无色</div>
+              <div class="opt">C．2H₂S + O₂ = 2S↓ + 2H₂O</div>
+              <div class="opt">D．H₂S 在空气中易变质</div>
+            </div>
+            <svg class="mark" style="left:53%;top:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M4 13l5 5L20 5"/></svg>
+          </div>
+
+          <div class="p-sub">题型二　二氧化硫的性质及应用</div>
+
+          <div class="q">
+            <span class="qn">4.</span>下列过程利用了 SO₂ 的氧化性的是（　　）
+            <div class="opts">
+              <div class="opt">A．用 SO₂ 漂白纸浆</div>
+              <div class="opt">B．SO₂ 通入 H₂S 溶液析出硫</div>
+              <div class="opt">C．SO₂ 用于杀菌、消毒</div>
+              <div class="opt">D．用 SO₂ 还原金属氧化物</div>
+            </div>
+            <svg class="mark" style="left:53%;top:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M4 13l5 5L20 5"/></svg>
+          </div>
+
+          <div class="q">
+            <span class="qn">5.</span>Cl₂ 与 SO₂ 按 1∶1 混合后通入品红与 BaCl₂ 的混合溶液中，可观察到的现象是（　　）
+            <div>①溶液褪色　②溶液不褪色　③出现白色沉淀　④不出现沉淀</div>
+            <div class="opts">
+              <div class="opt">A．①②</div>
+              <div class="opt">B．②③</div>
+              <div class="opt">C．③④</div>
+              <div class="opt">D．②④</div>
+            </div>
+            <svg class="mark" style="left:53%;top:30px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M4 13l5 5L20 5"/></svg>
+          </div>
+
+          <div class="q">
+            <span class="qn">6.</span>下列离子方程式书写正确的是（　　）
+            <div class="opts one">
+              <div class="opt">A．少量 SO₂ 通入 NaClO 溶液：SO₂ + H₂O + ClO⁻ = SO₃²⁻ + Cl⁻ + 2H⁺</div>
+              <div class="opt">B．少量 SO₂ 通入 NaOH 溶液：SO₂ + OH⁻ = HSO₃⁻</div>
+              <div class="opt">C．SO₂ 通入溴水：SO₂ + Br₂ + 2H₂O = SO₄²⁻ + 2Br⁻ + 4H⁺</div>
+              <div class="opt">D．少量 SO₂ 通入 Na₂S 溶液：SO₂ + S²⁻ + H₂O = S↓ + HSO₃⁻</div>
+            </div>
+            <svg class="mark cross" style="right:0;top:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            <svg class="mark" style="right:0;top:44px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M4 13l5 5L20 5"/></svg>
+          </div>
+
+          <div class="p-sub">题型三　三氧化硫的性质与应用</div>
+
+          <div class="q">
+            <span class="qn">7.</span>下列有关 SO₃ 性质的叙述正确的是（　　）
+            <div class="opts">
+              <div class="opt">A．标况下 1 mol SO₃ 体积约 22.4 L</div>
+              <div class="opt">B．SO₃ 是酸性氧化物，能与碱反应</div>
+              <div class="opt">C．SO₃ 中硫为 +4 价，具有还原性</div>
+              <div class="opt">D．SO₃ 与水反应属于氧化还原反应</div>
+            </div>
+            <svg class="mark" style="left:53%;top:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M4 13l5 5L20 5"/></svg>
+          </div>
+
+          <div class="q">
+            <span class="qn">8.</span>将 SO₂ 与 SO₃ 的混合气体通入 BaCl₂ 溶液，其结果是（　　）
+            <div class="opts">
+              <div class="opt">A．生成 BaSO₃ 沉淀</div>
+              <div class="opt">B．生成 BaSO₄ 沉淀</div>
+              <div class="opt">C．生成两种沉淀</div>
+              <div class="opt">D．无沉淀生成</div>
+            </div>
+            <svg class="mark" style="left:53%;top:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M4 13l5 5L20 5"/></svg>
+          </div>
+
+          <div class="p-sec"><i></i>能力提升练 <em>9～12 题，每小题 5 分</em></div>
+
+          <div class="q">
+            <span class="qn">9.</span>常温下单质硫主要以 S₈ 存在，加热时转化为 S₆、S₄、S₂ 等。下列说法正确的是（　　）
+            <div class="opts">
+              <div class="opt">A．三者互为同位素</div>
+              <div class="opt">B．S₈ 与 S₆ 互为同素异形体</div>
+              <div class="opt">C．燃烧产物各不相同</div>
+              <div class="opt">D．转化属于物理变化</div>
+            </div>
+            <svg class="mark" style="left:53%;top:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M4 13l5 5L20 5"/></svg>
+          </div>
+
+          <div class="q">
+            <span class="qn">10.</span>下列实验操作或原理描述正确的是（　　）
+            <div class="opts one">
+              <div class="opt">A．H₂O₂ 与 SO₂ 使品红褪色原理相同</div>
+              <div class="opt">B．用 BaCl₂ 除去 NaCl 中的 SO₄²⁻</div>
+              <div class="opt">C．用灼烧法除去 CO₂ 中的 SO₂</div>
+              <div class="opt">D．Fe 与 S 生成 FeS，Cu 与 S 生成 Cu₂S</div>
+            </div>
+            <svg class="mark" style="right:0;top:58px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M4 13l5 5L20 5"/></svg>
+          </div>
+
+          <div class="p-foot">
+            <span>第五章　作业1</span>
+            <span>25-26 化学 必修第二册 R13</span>
+            <span class="pg">1</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- ─────── 右页：作答与批阅 ─────── -->
+      <article class="paper paper-b" data-proto-id="paper-answer" aria-label="作答页">
+        <div class="paper-inner">
+          <span class="score-chip" style="top:4px;right:12px">得分：3</span>
+
+          <div class="q" style="margin-top:22px">
+            <span class="qn">11.</span>如图所示，利用培养皿探究 SO₂ 的性质。实验时向 Na₂S 固体上滴几滴浓硫酸，立即用另一表面皿盖上。下表中对实验现象的描述或所做的解释错误的是（　　）
+
+            <div class="figure">
+              <div class="dish-row">
+                <div class="dish"><span class="inner">Na₂S 固体<br>+ 浓硫酸</span></div>
+                <div class="dish small"><span class="inner">品红溶液</span></div>
+              </div>
+              <div class="label-row"><span>甲　培养皿</span><span>乙　表面皿</span></div>
+              <span class="ink-note" style="right:6px;top:4px;font-size:8px;color:#d92b1c">SO₂ 密度大于空气</span>
+            </div>
+
+            <table class="p-table">
+              <thead><tr><th style="width:15%">选项</th><th style="width:30%">实验现象</th><th>解释</th></tr></thead>
+              <tbody>
+                <tr><td>A</td><td>酸性 KMnO₄ 溶液褪色</td><td>SO₂ 具有还原性</td></tr>
+                <tr><td>B</td><td>品红溶液褪色</td><td>SO₂ 具有漂白性</td></tr>
+                <tr><td>C</td><td>Na₂S 溶液变浑浊</td><td>SO₂ 与 Na₂S 反应生成 S</td></tr>
+                <tr><td>D</td><td>BaCl₂ 溶液变浑浊</td><td>SO₂ 与 BaCl₂ 反应生成 BaSO₃</td></tr>
+              </tbody>
+            </table>
+
+
+          </div>
+
+          <div class="q">
+            <span class="qn">12.</span>已知 2FeSO₄ <span class="cond">△</span> Fe₂O₃ + SO₂↑ + SO₃↑，某同学设计利用下图装置分别检验产物中的气体，下列说法错误的是（　　）
+
+            <div class="figure" style="padding:5px 6px">
+              <div class="tubes">
+                <div class="tube"><span class="glass"></span><span>甲 FeSO₄</span></div>
+                <div class="tube"><span class="glass"></span><span>乙 BaCl₂</span></div>
+                <div class="tube"><span class="glass"></span><span>丙 品红</span></div>
+                <div class="tube"><span class="glass"></span><span>丁 NaOH</span></div>
+              </div>
+            </div>
+
+            <div class="opts one">
+              <div class="opt">A．甲中加热前应先通一段时间 N₂，排尽装置内空气</div>
+              <div class="opt">B．乙中溶液变浑浊，说明气体产物中含有 SO₃</div>
+              <div class="opt">C．丙中品红溶液不褪色，无法检验 SO₂ 是否存在</div>
+              <div class="opt">D．丁中 NaOH 溶液用于吸收尾气，避免污染环境</div>
+            </div>
+            <svg class="mark cross" style="left:0;top:84px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            <svg class="mark" style="left:0;top:100px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M4 13l5 5L20 5"/></svg>
+          </div>
+
+          <div class="q">
+            <span class="qn">13.</span>（8 分）兴趣小组同学设计如图装置验证 SO₂ 的化学性质。
+
+            <div class="figure" style="padding:5px 6px">
+              <div class="tubes">
+                <div class="tube"><span class="glass"></span><span>甲 Na₂S</span></div>
+                <div class="tube"><span class="glass"></span><span>乙 KMnO₄</span></div>
+                <div class="tube"><span class="glass"></span><span>丙 品红</span></div>
+                <div class="tube"><span class="glass"></span><span>丁 NaOH</span></div>
+              </div>
+              <div style="text-align:center;font-family:'Microsoft YaHei',sans-serif;font-size:7px;color:#444;margin-top:2px">足量 SO₂ →　依次通过</div>
+            </div>
+
+            <div>（1）装置甲中发生反应的化学方程式为 <span class="hand-ans">SO₂ + 2Na₂S + 2H₂O = 3S↓ + 4NaOH</span></div>
+            <div style="margin-top:2px">（2）装置乙中溶液紫色褪去，说明 SO₂ 具有 <span class="hand-ans">还原</span> 性。</div>
+            <div style="margin-top:2px">（3）装置丙中品红褪色，加热后恢复红色，说明 SO₂ 的漂白具有 <span class="hand-ans">可逆</span> 性。</div>
+            <div style="margin-top:2px">（4）装置丁中 NaOH 溶液的作用是 <span class="hand-ans">吸收尾气，防止污染</span>。</div>
+          </div>
+
+          <div class="q">
+            <span class="score-chip" style="top:-2px;right:8px">得分：20</span>
+            <span class="qn">14.</span>（20 分）SO₂ 是常见的大气污染物，研究其转化与吸收有重要意义。
+            <div style="margin-top:2px">（1）SO₂ 与 H₂S 混合生成淡黄色沉淀，化学方程式为 <span class="hand-ans">2H₂S + SO₂ = 3S↓ + 2H₂O</span></div>
+            <div style="margin-top:2px">（2）SO₂ 通入溴水溶液褪色，离子方程式为 <span class="hand-ans blue" style="font-size:8.2px">SO₂ + Br₂ + 2H₂O = SO₄²⁻ + 2Br⁻ + 4H⁺</span></div>
+            <div style="margin-top:2px">（3）用氨水吸收 SO₂ 可得化肥，产物为 <span class="hand-ans">(NH₄)₂SO₃ / NH₄HSO₃</span>。</div>
+
+            <svg class="mark blue" style="right:12px;top:22px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M4 13l5 5L20 5"/></svg>
+          </div>
+
+          <div style="margin-top:auto;font-size:7.6px;color:#555;display:flex;align-items:center;gap:6px">
+            <span>如需老师讲解，可在对应题号下打“√”</span>
+            <span style="flex:1;border-bottom:1px dashed #bbb;height:8px"></span>
+            <span class="ink-note" style="position:static;transform:rotate(-2deg);font-size:9px">3 4 5 6 7 8 9 10 11 12 13 14</span>
+          </div>
+
+          <div class="p-foot">
+            <span>第五章　作业1</span>
+            <span>25-26 化学 必修第二册 R13</span>
+            <span class="pg">2</span>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <button class="stage-next" title="下一页" aria-label="下一页">›</button>
+
+    <div class="stage-tools">
+      <footer class="bottom-bar">
+  <div class="seg">
+    <button class="active" id="viewDouble" aria-pressed="true">双页</button>
+    <button id="viewSingle" aria-pressed="false">单页</button>
+  </div>
+
+  <span class="tb-divider"></span>
+
+  <button class="tool-btn" title="上一页" aria-label="上一页">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 2L4 7l5 5"/></svg>
+  </button>
+  <button class="tool-btn" title="下一页" aria-label="下一页">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 2l5 5-5 5"/></svg>
+  </button>
+
+  <span class="tb-divider"></span>
+
+  <button class="tool-btn" title="缩小" aria-label="缩小">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+      <circle cx="11" cy="11" r="7.5"/><path d="M20.5 20.5L16 16"/><path d="M8 11h6"/>
+    </svg>
+  </button>
+  <button class="tool-btn" title="放大" aria-label="放大">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+      <circle cx="11" cy="11" r="7.5"/><path d="M20.5 20.5L16 16"/><path d="M8 11h6"/><path d="M11 8v6"/>
+    </svg>
+  </button>
+
+  <span class="tb-divider"></span>
+
+  <button class="tool-btn" title="适应页面" aria-label="适应页面">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+    </svg>
+  </button>
+  <button class="tool-btn" title="全屏" aria-label="全屏">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+    </svg>
+  </button>
+      </footer>
+
+      <div class="trace">
+        <span>批阅足迹</span>
+        <button class="switch" id="traceSwitch" role="switch" aria-checked="true" aria-label="批阅足迹"></button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  /* ═════════ 目录数据（第五章 · 化学） ═════════ */
+  const CLS = [
+    { code: '章末复习', stage: '', title: '硫及其化合物 知识网络', rate: 100, score: 90 },
+    { code: '错题重练', stage: '', title: '硫及其化合物错题重组', rate: 100, score: 74 },
+    { code: '周测1', stage: '', title: '第五章 单元检测', rate: 100, score: 78 },
+    { code: '实验2', stage: '实验活动', title: '不同价态含硫物质的转化', rate: 100, score: 92 },
+    { code: '作业3', stage: '', title: '不同价态含硫物质的转化', rate: 100, score: 76 },
+    { code: '笔记3', stage: '第一节　课时3', title: '不同价态含硫物质的转化', rate: 100, score: 84 },
+    { code: '作业2', stage: '', title: '硫酸　硫酸根离子的检验', rate: 100, score: 68 },
+    { code: '笔记2', stage: '第一节　课时2', title: '硫酸', rate: 100, score: 81 },
+    { code: '作业1', stage: '', title: '硫和二氧化硫', rate: 100, score: 89 },
+    { code: '笔记1', stage: '第一节　课时1', title: '硫和二氧化硫', rate: 62, score: 52 },
+    { code: '作业0', stage: '', title: '衔接练习 硫的氧化物', rate: 100, score: 95 },
+    { code: '笔记0', stage: '衔接', title: '硫的氧化物与酸雨', rate: 100, score: 88 }
+  ];
+
+  const STORE_KEY = 'dz.dir.open';
+
+  const dirSide = document.getElementById('dirSide');
+  const dirList = document.getElementById('dirList');
+  const dirCount = document.getElementById('dirCount');
+  const dirTab = document.getElementById('dirTab');
+  const paperRow = document.getElementById('paperRow');
+  const hdrScore = document.getElementById('hdrScore');
+  const curItemText = document.getElementById('curItemText');
+
+  let current = 8;
+
+  function dirLabel(item) {
+    return item.stage
+      ? `第五章　${item.code}　${item.stage}　${item.title}`
+      : `第五章　${item.code}　${item.title}`;
+  }
+
+  /* ── 渲染目录（与原来的目录浮层同构：单行 = 章节 + 项 + 标题） ── */
+  function renderDir() {
+    dirList.innerHTML = CLS.map((item, i) => `
+        <button class="dir-item${i === current ? ' active' : ''}" data-i="${i}" aria-current="${i === current ? 'true' : 'false'}" title="${dirLabel(item)}">
+          <span class="di-text">${dirLabel(item)}</span>
+        </button>`).join('');
+
+    dirCount.textContent = String(CLS.length);
+    curItemText.textContent = dirLabel(CLS[current]);
+  }
+
+  /* ── 切换目录项 ── */
+  function selectItem(i) {
+    if (i === current) return;
+    current = i;
+    const item = CLS[i];
+    renderDir();
+
+    hdrScore.textContent = item.score;
+
+    paperRow.classList.add('fading');
+    window.setTimeout(() => paperRow.classList.remove('fading'), 170);
+  }
+
+  dirList.addEventListener('click', (e) => {
+    const item = e.target.closest('.dir-item');
+    if (item) selectItem(Number(item.dataset.i));
+  });
+
+  dirTab.addEventListener('click', () => setDir(true));
+
+  /* ── 收起 / 展开 ── */
+  function setDir(open, remember = true) {
+    dirSide.classList.toggle('collapsed', !open);
+    dirTab.setAttribute('aria-expanded', String(open));
+    document.documentElement.dataset.protoState = open ? 'default' : 'collapsed';
+    if (remember) localStorage.setItem(STORE_KEY, open ? '1' : '0');
+    window.requestAnimationFrame(fitPapers);
+  }
+
+  ['dirCollapse'].forEach((id) => {
+    document.getElementById(id).addEventListener('click', () => {
+      setDir(dirSide.classList.contains('collapsed'));
+    });
+  });
+
+  /* 窄屏抽屉：点击舞台收起 */
+  document.querySelector('.stage').addEventListener('click', () => {
+    if (window.matchMedia('(max-width: 760px)').matches && !dirSide.classList.contains('collapsed')) {
+      setDir(false);
+    }
+  });
+
+  /* ── 双页 / 单页 ── */
+  const vDouble = document.getElementById('viewDouble');
+  const vSingle = document.getElementById('viewSingle');
+
+  function setView(mode) {
+    const single = mode === 'single';
+    document.body.classList.toggle('single', single);
+    vDouble.classList.toggle('active', !single);
+    vSingle.classList.toggle('active', single);
+    vDouble.setAttribute('aria-pressed', String(!single));
+    vSingle.setAttribute('aria-pressed', String(single));
+    window.requestAnimationFrame(fitPapers);
+  }
+  vDouble.addEventListener('click', () => setView('double'));
+  vSingle.addEventListener('click', () => setView('single'));
+
+  /* ── 批阅足迹开关 ── */
+  const traceSwitch = document.getElementById('traceSwitch');
+  traceSwitch.addEventListener('click', () => {
+    const on = traceSwitch.getAttribute('aria-checked') !== 'true';
+    traceSwitch.setAttribute('aria-checked', String(on));
+  });
+
+  /* ── 纸张自适应 ── */
+  function fitPapers() {
+    const row = paperRow;
+    const W = row.clientWidth;
+    const H = row.clientHeight;
+    const gap = 16;
+    if (!W || !H) return;
+
+    let w = H * 0.82 * (210 / 297);
+    const need = document.body.classList.contains('single') ? w : w * 2 + gap;
+    if (need > W) {
+      w = document.body.classList.contains('single') ? W : (W - gap) / 2;
+    }
+    w = Math.floor(w);
+    document.documentElement.style.setProperty('--paper-w', `${w}px`);
+    document.documentElement.style.setProperty('--paper-scale', (w / 459).toFixed(4));
+  }
+
+  new ResizeObserver(fitPapers).observe(paperRow);
+  window.addEventListener('resize', fitPapers);
+
+  /* ── 快捷键 ── */
+  document.addEventListener('keydown', (e) => {
+    const tag = document.activeElement && document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+    if (e.key === '[') {
+      e.preventDefault();
+      setDir(dirSide.classList.contains('collapsed'));
+    }
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+      e.preventDefault();
+      setDir(dirSide.classList.contains('collapsed'));
+    }
+    if (e.key === 'ArrowLeft' && document.activeElement === document.body) {
+      e.preventDefault();
+      selectItem(Math.max(0, current - 1));
+    }
+    if (e.key === 'ArrowRight' && document.activeElement === document.body) {
+      e.preventDefault();
+      selectItem(Math.min(CLS.length - 1, current + 1));
+    }
+  });
+
+  /* ── 初始化 ── */
+  (function init() {
+    renderDir();
+
+    const saved = localStorage.getItem(STORE_KEY);
+    const narrow = window.matchMedia('(max-width: 1180px)').matches;
+    setDir(saved === null ? !narrow : saved === '1', false);
+    /* 窄屏默认单页，避免双页缩小到不可读 */
+    if (window.matchMedia('(max-width: 760px)').matches) setView('single');
+    fitPapers();
+  })();
+
+  /* ── 原型标注状态桥：default（目录展开）/ collapsed（目录收起） ── */
+  window.PrototypeBridge = {
+    getState() {
+      return dirSide.classList.contains('collapsed') ? 'collapsed' : 'default';
+    },
+    async enter(stateId) {
+      if (!['default', 'collapsed'].includes(stateId)) return false;
+      setDir(stateId === 'default', false);
+      return true;
+    }
+  };
+</script>
+<!-- proto-review-bundle -->
+<script data-proto-review="navigation-config">window.__PROTO_NAVIGATION__={"pageId": "home", "aiNavigation": null, "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": ["dir-collapse"]}}, {"id": "collapsed", "title": "目录已收起", "kind": "adapter", "interactionHints": {"mode": "targets", "protoIds": ["dir-tab"]}}]};</script>
+<script data-proto-review="navigation">
+/* 页面状态同步与旧单页适配；工作台和静态评审壳共用。 */
+(() => {
+    'use strict';
+    if (window.ProtoNavigation) return;
+    let active = null;
+
+    function init(config = {}) {
+        active?.destroy();
+        active = null;
+        const states = Array.isArray(config.states) ? config.states : [];
+        const root = document.documentElement;
+        const originalBridge = window.PrototypeBridge;
+        if (typeof originalBridge?.getState === 'function') {
+            const known = new Set(states.map(state => state.id));
+            let destroyed = false;
+            function sync() {
+                if (destroyed) return;
+                try {
+                    const id = window.PrototypeBridge?.getState?.();
+                    if (typeof id !== 'string' || !known.has(id)) return;
+                    if (config.pageId) root.dataset.protoPage = config.pageId;
+                    if (root.dataset.protoState !== id) root.dataset.protoState = id;
+                } catch (_) { /* 页面加载 / 切换中，保留最后一个已确认状态。 */ }
+            }
+            const refresh = () => { Promise.resolve().then(sync); };
+            for (const type of ['click', 'input', 'change']) document.addEventListener(type, refresh);
+            for (const type of ['hashchange', 'popstate']) window.addEventListener(type, refresh);
+            // 兼容异步流程及代码切换；只读取已声明状态，不调用 enter 或猜测业务状态。
+            const timer = window.setInterval(sync, 100);
+            active = { sync, destroy() {
+                destroyed = true;
+                window.clearInterval(timer);
+                for (const type of ['click', 'input', 'change']) document.removeEventListener(type, refresh);
+                for (const type of ['hashchange', 'popstate']) window.removeEventListener(type, refresh);
+            } };
+            sync();
+            return active;
+        }
+        if (config.aiNavigation !== 'legacy' || !states.some(s => s.legacyPage || s.legacyType)) return null;
+        if (typeof originalBridge?.enter === 'function') return originalBridge;
+        let destroyed = false, timer = null, unwatch = null;
+        const hasDefault = states.some(s => s.id === 'default' && !s.legacyPage);
+        let defaultSelected = false;
+        let defaultTarget = null;
+
+        function vueInstance() {
+            const app = document.getElementById('app');
+            return app?._vnode?.component || app?.__vue_app__?._instance || app?.firstElementChild?.__vueParentComponent || null;
+        }
+        function router() {
+            const app = document.getElementById('app')?.__vue_app__;
+            return window.__vueRouter__ || app?.config?.globalProperties?.$router || vueInstance()?.proxy?.$router || null;
+        }
+        function pageSource() {
+            if (window.currentPage !== undefined) return { owner: window, key: 'currentPage' };
+            const instance = vueInstance();
+            for (const owner of [instance?.setupState, instance?.proxy, instance?.data, instance?.ctx]) {
+                if (owner && owner.currentPage !== undefined) return { owner, key: 'currentPage' };
+            }
+            return null;
+        }
+        function valueOf(source) {
+            const value = source?.owner[source.key];
+            return value && typeof value === 'object' && 'value' in value ? value.value : value;
+        }
+        function currentState() {
+            const route = router()?.currentRoute;
+            const routePath = route?.value?.path || route?.path || window.location.hash.replace(/^#/, '') || '/';
+            const routed = states.find(s => s.legacyType === 'router' && s.routePath === routePath);
+            if (routed) return routed;
+            const page = valueOf(pageSource());
+            return states.find(s => s.legacyPage === page) || null;
+        }
+        function sync() {
+            if (destroyed) return;
+            const state = currentState();
+            if (!state) return;
+            if (state.id !== defaultTarget?.id) defaultSelected = false;
+            if (config.pageId) root.dataset.protoPage = config.pageId;
+            const id = defaultSelected ? 'default' : state.id;
+            if (root.dataset.protoState !== id) root.dataset.protoState = id;
+        }
+        async function enter(stateId) {
+            const state = stateId === 'default' && hasDefault ? defaultTarget : states.find(s => s.id === stateId);
+            if (!state || !(state.legacyPage || state.legacyType)) return originalBridge?.enter?.(stateId);
+            if (state.legacyType === 'router' && state.routePath) {
+                const r = router();
+                if (r?.push) await r.push(state.routePath);
+                else window.location.hash = '#' + state.routePath;
+            } else {
+                const source = pageSource();
+                if (!source) return originalBridge?.enter?.(stateId);
+                const value = source.owner[source.key];
+                if (value && typeof value === 'object' && 'value' in value) value.value = state.legacyPage;
+                else source.owner[source.key] = state.legacyPage;
+            }
+            await Promise.resolve();
+            defaultSelected = stateId === 'default' && hasDefault;
+            sync();
+            return root.dataset.protoState === stateId;
+        }
+        defaultTarget = currentState() || states.find(s => s.legacyPage || s.legacyType) || null;
+        const bridge = { ...originalBridge, enter };
+        window.PrototypeBridge = bridge;
+        const onRouteChange = () => sync();
+        window.addEventListener('hashchange', onRouteChange);
+        const r = router();
+        if (r?.afterEach) unwatch = r.afterEach(onRouteChange);
+        timer = window.setInterval(sync, 100);
+        sync();
+        active = { enter, sync, destroy() {
+            destroyed = true;
+            window.clearInterval(timer);
+            window.removeEventListener('hashchange', onRouteChange);
+            if (typeof unwatch === 'function') unwatch();
+            if (window.PrototypeBridge === bridge) {
+                if (originalBridge) window.PrototypeBridge = originalBridge;
+                else delete window.PrototypeBridge;
+            }
+        } };
+        return active;
+    }
+    window.ProtoNavigation = { init };
+    if (window.__PROTO_NAVIGATION__) init(window.__PROTO_NAVIGATION__);
+})();
+
+</script>
+
+<script data-proto-review="appearance">
+/* PRD 内容色板与序号外观；编辑、导出和发布共用。 */
+(() => {
+    'use strict';
+    const TEXT_COLORS = [
+        ['#191919', '黑色'], ['#1684fc', '蓝色'], ['#8a38f5', '紫色'], ['#666666', '灰色'],
+        ['#fbfbfb', '白色'], ['#ec4954', '红色'], ['#ff9f29', '橙色']
+    ];
+    const DEFAULT_PIN = '#2563eb', INK = '#191919', STROKE = '#4e5560', ON_BLUE = '#ffffff';
+    const PIN_COLORS = [
+        [DEFAULT_PIN, '默认蓝色'],
+        ['#acbcd1', '灰蓝'], ['#ff9e93', '珊瑚'], ['#ff9e47', '橙色'], ['#fdd143', '黄色'], ['#9dc4ff', '浅蓝'],
+        ['#38cde7', '青色'], ['#54d691', '绿色'], ['#daa3ff', '紫色'], ['#ff94e4', '粉色']
+    ];
+    const LEGACY_PIN_COLORS = ['#e6e6e6'];
+    function pinColor(note) {
+        const color = String(note?.color || '').toLowerCase();
+        return PIN_COLORS.some(([hex]) => hex === color) || LEGACY_PIN_COLORS.includes(color) ? color : DEFAULT_PIN;
+    }
+    function applyPin(element, note) {
+        const color = pinColor(note), custom = color !== DEFAULT_PIN;
+        element.style.setProperty('--pin-fill', color);
+        element.style.setProperty('--pin-ink', custom ? INK : ON_BLUE);
+        element.style.setProperty('--pin-stroke', custom ? STROKE : ON_BLUE);
+    }
+    window.ProtoAppearance = { TEXT_COLORS, PIN_COLORS, DEFAULT_PIN, pinColor, applyPin };
+})();
+
+</script>
+<script data-proto-review="anchors">
+/* 稳定锚点与可见元素选择；不向业务 DOM 注入高亮 class。
+   基线复用自「原型生成全流程」extension/content/anchors.js；标注工作台增补折叠引导、条件显现路径与响应式落点。
+   全流程已于 2026-09-26 归档至 独立项目\_归档\原型生成全流程\。 */
+(() => {
+    'use strict';
+    if (globalThis.ProtoAnchors) return;
+    const owned = (el) => !!el?.closest?.('[data-prototype-owned]');
+    const text = (el) => (el?.innerText || el?.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 400);
+    const loose = (s) => (s || '').replace(/\s+/g, '');
+    const grams = (s) => { const set = new Set(); for (let i = 0; i + 1 < s.length; i++) set.add(s.slice(i, i + 2)); return set; };
+    /* 文本身份校验：短文本（按钮、标签、单元格）必须逐字相同；长文本（面板、表格、整个筛选区）只要求字符二元组包含率 ≥ .75。
+       容器的 innerText 会随条件行显隐、计数、日期等动态内容变化，逐字比对会把整块面板判成「目标变化」，序号全部消失。
+       隐藏子树的 innerText 退化为 textContent 丢掉 span 间空格，故两侧先去掉全部空白再比。 */
+    function sameText(el, expected) {
+        if (!expected) return true;
+        const a = loose(text(el)), b = loose(expected);
+        if (a === b) return true;
+        if (Math.min(a.length, b.length) < 24) return false;
+        const ga = grams(a), gb = grams(b);
+        let hit = 0;
+        for (const g of ga) if (gb.has(g)) hit++;
+        return hit / Math.min(ga.size, gb.size) >= 0.75;
+    }
+    // 选择器就是页面唯一 id：id 本身即身份，文本变化（占位符→已选值、计数刷新）不视为目标变化。
+    const idBound = (anchor) => /^#[^\s>+~]+$/.test(anchor?.selector || '');
+    function hiddenRoot(el) {
+        if (!el) return null;
+        // 只依据标准 DOM / 渲染状态，不猜项目、路由名或框架的 active/on 类名。
+        for (let node = el; node; node = node.parentElement) {
+            const css = getComputedStyle(node);
+            if (node.hidden || node.inert || node.hasAttribute?.('hidden') || node.hasAttribute?.('inert') ||
+                node.getAttribute?.('aria-hidden')?.toLowerCase() === 'true' || node.tagName === 'DIALOG' && !node.open ||
+                css.display === 'none' || css.contentVisibility === 'hidden' || css.opacity !== undefined && css.opacity !== '' && Number(css.opacity) === 0) return node;
+        }
+        // visibility 可以被子节点显式覆盖，其他祖先隐藏条件则不可反向覆盖。
+        const state = getComputedStyle(el).visibility;
+        if (state === 'hidden' || state === 'collapse') {
+            let root = el;
+            while (root.parentElement && getComputedStyle(root.parentElement).visibility === state) root = root.parentElement;
+            return root;
+        }
+        return null;
+    }
+    const visible = el => !!el && !owned(el) && !hiddenRoot(el) && el.getClientRects().length > 0;
+    function paintedAt(el, x, y) {
+        if (typeof document.elementsFromPoint !== 'function') return true;
+        try {
+            const top = document.elementsFromPoint(x, y).find(node => visible(node));
+            return !top || top === el || !!el.contains?.(top) || !!top.contains?.(el);
+        } catch (_) { return true; }
+    }
+    function selector(el) {
+        if (el.id && document.querySelectorAll('#' + CSS.escape(el.id)).length === 1)
+            return '#' + CSS.escape(el.id);
+        const path = [];
+        for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
+            let part = n.tagName.toLowerCase();
+            if (n.id && document.querySelectorAll('#' + CSS.escape(n.id)).length === 1) {
+                path.unshift('#' + CSS.escape(n.id));
+                break;
+            }
+            const same = n.parentElement
+                ? [...n.parentElement.children].filter((x) => x.tagName === n.tagName)
+                : [];
+            if (same.length > 1) part += `:nth-of-type(${same.indexOf(n) + 1})`;
+            path.unshift(part);
+        }
+        return path.join(' > ');
+    }
+    function controlLabel(el) {
+        if (!el) return '';
+        const byFor = el.id ? document.querySelector(`label[for="${CSS.escape(el.id)}"]`) : null;
+        const label = el.labels?.[0] || byFor || el.closest('label') || el.closest('.f-item,.form-item,.form-group,.field')?.querySelector('label');
+        return text(label).replace(/[：:]$/, '').slice(0, 80);
+    }
+    function conditionRow(el, kind, value, option, targetRect, explicit = false, label = '') {
+        if (!el || owned(el) || !visible(el) || el.disabled || el.getAttribute?.('aria-disabled') === 'true') return null;
+        const r = el.getBoundingClientRect();
+        const dx = r.left + r.width / 2 - (targetRect.left + targetRect.width / 2);
+        const dy = r.top + r.height / 2 - (targetRect.top + targetRect.height / 2);
+        return { selector: selector(el), kind, value, option: String(option || '').slice(0, 80),
+            label: String(label || controlLabel(el)).slice(0, 80), explicit, distance: explicit ? -1 : Math.hypot(dx, dy) };
+    }
+    function captureConditions(target, targetRect) {
+        /* 通用“显现路径”：记录创建标注时使目标可见的状态控件，目标日后 display:none 或被动态移出 DOM，
+           仍能把引导挂回条件控件并恢复当时状态。自动覆盖 native select/checkbox/radio 与常见 ARIA 控件；
+           任意自定义 JS 控件用祖先 data-proto-reveal-by/value/label 显式声明，避免靠文案猜业务动作。 */
+        const rows = [], seen = new Set();
+        const add = row => {
+            if (!row) return;
+            const key = `${row.selector}\n${row.kind}\n${row.value}`;
+            if (!seen.has(key)) { seen.add(key); rows.push(row); }
+        };
+        for (let n = target; n && n !== document.documentElement; n = n.parentElement) {
+            const by = n.getAttribute?.('data-proto-reveal-by');
+            if (!by) continue;
+            let control = null;
+            try { control = document.querySelector(by); } catch (_) { /* 声明选择器失效 */ }
+            if (!control) continue;
+            const raw = n.getAttribute('data-proto-reveal-value') ?? '';
+            const kind = control.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control.type) ? control.type : 'click';
+            const value = kind === 'select' ? raw : kind === 'click' ? raw || 'true' : raw === 'true';
+            add(conditionRow(control, kind, value, raw || text(control), targetRect, true, n.getAttribute('data-proto-reveal-label') || ''));
+        }
+        for (const el of document.querySelectorAll('select,input[type="checkbox"],input[type="radio"]')) {
+            if (!visible(el)) continue;
+            let kind, value, initial, option = '';
+            if (el.tagName === 'SELECT') {
+                kind = 'select'; value = el.value;
+                const def = [...el.options].find(o => o.defaultSelected) || el.options[0];
+                initial = def?.value ?? '';
+                option = el.selectedOptions?.[0]?.textContent?.trim() || value;
+                if (value === initial) continue;
+            } else {
+                kind = el.type; value = !!el.checked; initial = !!el.defaultChecked;
+                if (value === initial || (kind === 'radio' && !value)) continue;
+                // checkbox 同时记录「由默认勾选切为未勾选」；radio 只记录当前选中的新项，避免同组旧项制造反向条件。
+                option = el.value || controlLabel(el);
+            }
+            add(conditionRow(el, kind, value, option, targetRect));
+        }
+        const aria = '[role="tab"][aria-selected="true"],[aria-pressed="true"],[aria-expanded="true"][aria-controls],[role="radio"][aria-checked="true"],[role="checkbox"][aria-checked="true"]';
+        for (const el of document.querySelectorAll(aria)) {
+            const kind = el.matches('[role="tab"]') ? 'aria-selected' : el.hasAttribute('aria-pressed') ? 'aria-pressed' :
+                el.hasAttribute('aria-expanded') ? 'aria-expanded' : 'aria-checked';
+            add(conditionRow(el, kind, 'true', text(el) || controlLabel(el), targetRect));
+        }
+        return rows.sort((a, b) => a.distance - b.distance).slice(0, 12).map(({ distance, ...row }) => row);
+    }
+    function serialize(el) {
+        const r = el.getBoundingClientRect();
+        const clean = el.cloneNode(true);
+        clean.querySelectorAll('[data-prototype-owned],script').forEach((n) => n.remove());
+        const conditions = captureConditions(el, r);
+        const anchor = {
+            protoId: el.getAttribute('data-proto-id') || '',
+            selector: selector(el),
+            tag: el.tagName.toLowerCase(),
+            text: text(el),
+            parentText: text(el.parentElement),
+            htmlSnippet: clean.outerHTML.slice(0, 1800),
+            rect: {
+                x: Math.round(r.x + scrollX),
+                y: Math.round(r.y + scrollY),
+                width: Math.round(r.width),
+                height: Math.round(r.height),
+            },
+        };
+        if (conditions.length) anchor.conditions = conditions;
+        return anchor;
+    }
+    function resolve(anchor) {
+        if (!anchor) return { element: null, reason: '尚未绑定元素' };
+        if (anchor.protoId) {
+            const list = [
+                ...document.querySelectorAll(`[data-proto-id="${CSS.escape(anchor.protoId)}"]`),
+            ].filter(visible);
+            if (list.length === 1 && (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag))
+                return { element: list[0] };
+            return {
+                element: null,
+                reason: list.length > 1 ? '稳定 ID 重复，请重新绑定' : '目标已移除或当前状态不可见',
+            };
+        }
+        try {
+            const list = [...document.querySelectorAll(anchor.selector || ':not(*)')].filter(visible);
+            if (
+                list.length === 1 &&
+                (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag) &&
+                (idBound(anchor) || sameText(list[0], anchor.text))
+            )
+                return { element: list[0] };
+        } catch (_) {
+            /* 旧选择器可能失效，继续尝试唯一文本。 */
+        }
+        if (anchor.text && /^[a-z][a-z0-9-]*$/i.test(anchor.tag || '')) {
+            const candidates = [...document.querySelectorAll(anchor.tag)].filter(
+                (el) =>
+                    visible(el) &&
+                    sameText(el, anchor.text) &&
+                    sameText(el.parentElement, anchor.parentText),
+            );
+            if (candidates.length === 1) return { element: candidates[0] };
+            if (candidates.length > 1) return { element: null, reason: '存在多个同名目标，请重新绑定' };
+        }
+        return { element: null, reason: '目标变化，等待重新定位' };
+    }
+    function at(x, y) {
+        // 截图标注始终绑定图片自身；覆盖其上的热区可随时移动、删除。
+        const image = document.querySelector('html[data-proto-screenshot="true"] #screenshot-image');
+        if (image) {
+            const bounds = image.getBoundingClientRect();
+            if (x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom) return image;
+        }
+        return (
+            document
+                .elementsFromPoint(x, y)
+                .find((el) => !owned(el) && !['HTML', 'BODY'].includes(el.tagName)) || null
+        );
+    }
+    /* 元素的可见矩形：被视口与各级 overflow 祖先裁剪后的区域。
+       reach 记录被裁掉的每一侧「用户滚动能否把它露出来」：裁剪者是滚动容器 / 视口且尚未滚到尽头 → 能；
+       overflow:hidden|clip、滚到尽头、或视口比元素窄导致的负向溢出（flex 居中的手机壳左缘在 x<0）→ 不能。 */
+    function rect(el, fullDocument = false) {
+        const r = el.getBoundingClientRect(), doc = document.documentElement;
+        const vp = fullDocument
+            ? { left: -scrollX, top: -scrollY, right: doc.scrollWidth - scrollX, bottom: doc.scrollHeight - scrollY }
+            : { left: 0, top: 0, right: innerWidth, bottom: innerHeight };
+        const clip = { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+        const by = {};   // 每侧由谁裁掉（裁到同一坐标的全部记下）：null = 视口 / 文档边界，否则为滚动容器节点；未被裁为 undefined
+        const cut = (k, v, node, tighter) => {
+            if (tighter(v, clip[k])) { clip[k] = v; by[k] = [node]; }
+            else if (by[k] && Math.abs(v - clip[k]) < 0.5) by[k].push(node);   // 视口与滚动容器边缘重合：任一能滚即算滚得出来
+        };
+        const gt = (a, b) => a > b, lt = (a, b) => a < b;
+        cut('left', vp.left, null, gt); cut('top', vp.top, null, gt);
+        cut('right', vp.right, null, lt); cut('bottom', vp.bottom, null, lt);
+        for (let n = el.parentElement; n; n = n.parentElement) {
+            if (fullDocument && n === document.scrollingElement) continue;
+            const s = getComputedStyle(n), p = n.getBoundingClientRect();
+            if (/(auto|scroll|hidden|clip)/.test(s.overflowX)) {
+                cut('left', p.left + n.clientLeft, n, gt);
+                cut('right', p.left + n.clientLeft + n.clientWidth, n, lt);
+            }
+            if (/(auto|scroll|hidden|clip)/.test(s.overflowY)) {
+                cut('top', p.top + n.clientTop, n, gt);
+                cut('bottom', p.top + n.clientTop + n.clientHeight, n, lt);
+            }
+        }
+        const scrollable = (n, axis) => n === null ? !fullDocument : /(auto|scroll)/.test(getComputedStyle(n)['overflow' + axis]);
+        const canScroll = (n, axis, before) => {
+            if (!scrollable(n, axis)) return false;
+            const pos = n ? (axis === 'X' ? n.scrollLeft : n.scrollTop) : (axis === 'X' ? scrollX : scrollY);
+            if (before) return pos > 0.5;
+            const size = n ? (axis === 'X' ? n.clientWidth : n.clientHeight) : (axis === 'X' ? innerWidth : innerHeight);
+            const total = n ? (axis === 'X' ? n.scrollWidth : n.scrollHeight) : (axis === 'X' ? doc.scrollWidth : doc.scrollHeight);
+            return pos + size < total - 0.5;
+        };
+        const reachable = (k, axis, before) => !by[k] || by[k].some((n) => canScroll(n, axis, before));
+        const reach = { left: reachable('left', 'X', true), right: reachable('right', 'X', false),
+            top: reachable('top', 'Y', true), bottom: reachable('bottom', 'Y', false) };
+        return { x: clip.left, y: clip.top, width: Math.max(0, clip.right - clip.left), height: Math.max(0, clip.bottom - clip.top),
+            visible: clip.right > clip.left && clip.bottom > clip.top, reach };
+    }
+    function placement(el, x, y) {
+        if (!el) return { kind: 'document', x: x + scrollX, y: y + scrollY };
+        const r = el.getBoundingClientRect(), px = x - r.left + el.scrollLeft, py = y - r.top + el.scrollTop;
+        // 同存绝对偏移与比例：绝对值保持旧行为，rx/ry 让响应式控件变窄/变高后仍能落在同一相对位置。
+        return { kind: 'element', x: px, y: py,
+            rx: r.width > 0 ? Math.max(0, Math.min(1, px / r.width)) : 0,
+            ry: r.height > 0 ? Math.max(0, Math.min(1, py / r.height)) : 0 };
+    }
+    function point(note, fullDocument = false) {
+        const p = note.placement;
+        if (p?.kind === 'document') {
+            const x = p.x - scrollX, y = p.y - scrollY;
+            if (p.x > document.documentElement.scrollWidth || p.y > document.documentElement.scrollHeight)
+                return { reason: '页面尺寸已变化，请重新定位', point: null, rect: null };
+            const visible = fullDocument || (x >= 0 && y >= 0 && x < innerWidth && y < innerHeight);
+            return { point: { x, y, visible }, rect: { x, y, width: 0, height: 0, visible } };
+        }
+        let found = resolve(note.anchor);
+        // 排序使用逻辑坐标：隐藏但仍保留布局时按原落点测量，不能退回容器左上角。
+        // display:none 等无布局目标继续由 ProtoOrder 使用展开入口代位。
+        if (fullDocument && !found.element) {
+            const element = resolveHidden(note.anchor);
+            if (element?.getClientRects().length) found = { element };
+        }
+        if (!found.element) return { reason: found.reason, point: null, rect: null };
+        const element = found.element, r = element.getBoundingClientRect(), clip = rect(element, fullDocument);
+        if (!p) return { element, rect: clip, point: { x: clip.x, y: clip.y, visible: clip.visible && (fullDocument || paintedAt(element, clip.x, clip.y)) }, legacy: true };
+        const ew = Math.max(r.width, element.scrollWidth), eh = Math.max(r.height, element.scrollHeight);
+        let px = p.x, py = p.y;
+        if (Number.isFinite(p.rx) && Number.isFinite(p.ry)) {
+            // placement 的比例以边框矩形归一化，复原必须使用同一尺寸。
+            // tooltip / 绝对定位子节点可撑大 scrollWidth/Height，却没有改变控件本身。
+            px = p.rx * r.width; py = p.ry * r.height;
+        } else {
+            // 旧锚点无 rx/ry：仅当当前响应式尺寸缩小导致绝对偏移越界、且偏移在创建时 rect 内时，按原尺寸比例回退。
+            const base = note.anchor?.rect;
+            if (px > ew && base?.width > 0 && px <= base.width) px = px / base.width * ew;
+            if (py > eh && base?.height > 0 && py <= base.height) py = py / base.height * eh;
+        }
+        if (px > ew || py > eh)
+            return { element, reason: '落点超出目标范围，请重新定位', rect: clip, point: null };
+        let x = r.left + px - element.scrollLeft, y = r.top + py - element.scrollTop;
+        // 元素本身可见、落点却落在被裁掉的那一侧，且那一侧再怎么滚也露不出来（视口比元素窄、overflow:hidden、已滚到尽头）：
+        // 把落点夹回可见区边缘，否则整宽元素左缘的序号在窄视口里永远不出现。还能滚出来的照旧隐藏，等用户滚过来。
+        if (clip.visible && clip.reach) {
+            const right = clip.x + clip.width, bottom = clip.y + clip.height;
+            if (x < clip.x && !clip.reach.left) x = clip.x;
+            if (x > right && !clip.reach.right) x = right;
+            if (y < clip.y && !clip.reach.top) y = clip.y;
+            if (y > bottom && !clip.reach.bottom) y = bottom;
+        }
+        const visible = clip.visible && x >= clip.x && x <= clip.x + clip.width && y >= clip.y && y <= clip.y + clip.height && (fullDocument || paintedAt(element, x, y));
+        return { element, rect: clip, point: { x, y, visible } };
+    }
+    function pinPosition(x, y, width, height, occupied, viewportWidth = innerWidth, viewportHeight = innerHeight) {
+        const gap = 4, clamp = (value, min, max) => Math.max(min, Math.min(value, Math.max(min, max)));
+        const position = (left, bottom) => ({ x: clamp(left, gap, viewportWidth - width - gap), y: clamp(bottom, height + gap, viewportHeight - gap) });
+        const base = position(x, y);
+        const available = p => occupied.every(r => p.x + width + gap <= r.left || p.x >= r.right + gap || p.y + gap <= r.top || p.y - height >= r.bottom + gap);
+        let placed = base;
+        const limit = Math.min(occupied.length + 1, Math.ceil(viewportWidth / (width + gap)) + Math.ceil(viewportHeight / (height + gap)));
+        search: for (let distance = 0; distance <= limit; distance++) {
+            const candidates = distance ? [position(base.x + distance * (width + gap), base.y), position(base.x - distance * (width + gap), base.y),
+                position(base.x, base.y + distance * (height + gap)), position(base.x, base.y - distance * (height + gap))] : [base];
+            for (const candidate of candidates) if (available(candidate)) { placed = candidate; break search; }
+        }
+        occupied.push({ left: placed.x, right: placed.x + width, top: placed.y - height, bottom: placed.y });
+        return placed;
+    }
+    function inBox(box) {
+        const nodes = [
+            ...document.querySelectorAll(
+                'button,input,img,a,p,h1,h2,h3,h4,li,label,select,textarea,[data-proto-id]',
+            ),
+        ].filter((el) => {
+            if (!visible(el)) return false;
+            const r = el.getBoundingClientRect();
+            return (
+                r.width &&
+                r.height &&
+                r.left < box.right &&
+                r.right > box.left &&
+                r.top < box.bottom &&
+                r.bottom > box.top &&
+                [[.5,.5],[.1,.1],[.9,.1],[.1,.9],[.9,.9]].some(([u,v]) => {
+                    const hit = at(r.left + r.width * u, r.top + r.height * v);
+                    return hit === el || (hit && el.contains(hit));
+                })
+            );
+        });
+        return nodes.filter((el) => !nodes.some((other) => other !== el && other.contains(el))).slice(0, 100);
+    }
+    function currentIds() {
+        return {
+            pageId: document.documentElement.dataset.protoPage || 'main',
+            stateId: document.documentElement.dataset.protoState || 'default',
+        };
+    }
+    async function enterState(stateId) {
+        if (typeof window.PrototypeBridge?.enter === 'function') await window.PrototypeBridge.enter(stateId);
+        return currentIds();
+    }
+    // ---------- 折叠区展开 / 引导（标注工作台“点序号联动展开”与“点击引导”复用；全流程已归档，此为标注侧增补） ----------
+    function hidden(el) {
+        return !el || !!hiddenRoot(el) || el.getClientRects().length === 0;
+    }
+    function resolveHidden(anchor) {
+        // 与 resolve 同规则但不过滤可见性：定位被折叠/隐藏的目标元素
+        if (!anchor) return null;
+        const all = (sel) => { try { return [...document.querySelectorAll(sel)].filter((el) => !owned(el)); } catch (_) { return []; } };
+        if (anchor.protoId) {
+            const list = all(`[data-proto-id="${CSS.escape(anchor.protoId)}"]`);
+            return list.length === 1 && (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag) ? list[0] : null;
+        }
+        const list = all(anchor.selector || ':not(*)');
+        if (list.length === 1 && (!anchor.tag || list[0].tagName.toLowerCase() === anchor.tag) && (idBound(anchor) || sameText(list[0], anchor.text))) return list[0];
+        if (anchor.text && /^[a-z][a-z0-9-]*$/i.test(anchor.tag || '')) {
+            const c = all(anchor.tag).filter((el) => sameText(el, anchor.text) && sameText(el.parentElement, anchor.parentText));
+            if (c.length === 1) return c[0];
+        }
+        return null;
+    }
+    function conditionValue(el, condition) {
+        if (condition.kind === 'select') return el.value;
+        if (condition.kind === 'checkbox' || condition.kind === 'radio') return !!el.checked;
+        if (condition.kind.startsWith('aria-')) return el.getAttribute(condition.kind);
+        return null;
+    }
+    function conditionGuideLabel(condition) {
+        const value = condition.option || condition.value || condition.label || '条件';
+        if (condition.kind === 'select') return `选择 ${value}`;
+        if (condition.kind === 'aria-selected') return `切换到 ${value}`;
+        if (condition.kind === 'aria-expanded') return `展开 ${condition.label || value}`;
+        return `开启 ${condition.label || value}`;
+    }
+    function conditionTrigger(anchor) {
+        const rows = Array.isArray(anchor?.conditions) ? anchor.conditions : [];
+        let fallback = null;
+        for (const condition of rows) {
+            let el = null;
+            try { el = document.querySelector(condition.selector || ':not(*)'); } catch (_) { /* 旧条件选择器失效 */ }
+            if (!el || owned(el) || !visible(el)) continue;
+            const hit = { element: el, condition, label: conditionGuideLabel(condition) };
+            if (conditionValue(el, condition) !== condition.value) return hit;
+            // 条件已满足却仍不可见：原生 change 与显式声明允许重放同值事件兜底（satisfied 标记，排在折叠触发器之后）；
+            // ARIA 同值点击可能反向关闭，不作为 fallback。
+            if (!fallback && (condition.explicit || ['select', 'checkbox', 'radio'].includes(condition.kind))) fallback = { ...hit, satisfied: true };
+        }
+        return fallback;
+    }
+    function manualCondition(anchor, attempted = new Set()) {
+        const steps = anchor?.revealSteps || [];
+        const controls = steps.map(step => {
+            let matches = [];
+            try { matches = [...document.querySelectorAll(step.protoId ? `[data-proto-id="${CSS.escape(step.protoId)}"]` : step.selector || ':not(*)')]; } catch (_) { /* invalid locator */ }
+            return matches.length === 1 && !owned(matches[0]) && visible(matches[0]) && !matches[0].disabled && matches[0].getAttribute('aria-disabled') !== 'true' ? matches[0] : null;
+        });
+        for (let i = 0; i < steps.length; i++) {
+            const condition = steps[i], element = controls[i];
+            if (!element || attempted.has(element)) continue;
+            if (condition.kind === 'click' && controls.slice(i + 1).some(next => {
+                if (!next) return false;
+                const controlled = (element.getAttribute('aria-controls') || '').split(/\s+/).filter(Boolean);
+                for (let branch = next; branch && branch !== document.body; branch = branch.parentElement) {
+                    if (controlled.includes(branch.id) || branch.getAttribute('data-proto-reveal-by') === condition.selector) return true;
+                }
+                return false;
+            })) continue;
+            if (condition.kind !== 'click' && conditionValue(element, condition) === condition.value) continue;
+            return { element, condition, label: condition.label || conditionGuideLabel(condition) };
+        }
+        return null;
+    }
+    function applyCondition(hit) {
+        if (!hit?.element) return false;
+        const { element, condition } = hit;
+        if (condition.kind === 'select') element.value = condition.value;
+        else if (condition.kind === 'checkbox' || condition.kind === 'radio') element.checked = !!condition.value;
+        else { element.click(); return true; }
+        element.dispatchEvent(new Event('input', { bubbles: true }));
+        element.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+    }
+    const failedRevealTriggers = new WeakMap();
+    const DISCLOSURE_WORDS = /(?:展开|更多|显示|查看|收起|高级|筛选|折叠|expand|more|show|toggle)/i;
+    function revealFailed(el, trigger) {
+        return !!el && !!trigger && !!failedRevealTriggers.get(el)?.has(trigger);
+    }
+    function markRevealFailed(el, trigger) {
+        if (!el || !trigger) return;
+        let failed = failedRevealTriggers.get(el);
+        if (!failed) failedRevealTriggers.set(el, (failed = new WeakSet()));
+        failed.add(trigger);
+    }
+    function neighboringBranch(hiddenNode, trigger) {
+        const parent = hiddenNode?.parentElement;
+        if (!parent || !trigger) return false;
+        let branch = trigger;
+        while (branch && branch.parentElement !== parent) branch = branch.parentElement;
+        return !!branch && (branch === hiddenNode.previousElementSibling || branch === hiddenNode.nextElementSibling);
+    }
+    function weakRevealCandidate(target, hiddenNode, trigger) {
+        if (!trigger || owned(trigger) || hiddenNode.contains(trigger) || !visible(trigger) || revealFailed(target, trigger)) return false;
+        // 旧锚点没有 aria-controls 时，只接受隐藏分支相邻区域中的明确展开语义；不能把同容器内任意“导出/新建”按钮猜成触发器。
+        if (!neighboringBranch(hiddenNode, trigger)) return false;
+        if (trigger.tagName === 'SUMMARY' || trigger.getAttribute?.('aria-expanded') === 'false') return true;
+        const role = trigger.getAttribute?.('role');
+        if (trigger.tagName !== 'BUTTON' && role !== 'button') return false;
+        const label = `${text(trigger)} ${trigger.getAttribute?.('aria-label') || ''} ${trigger.getAttribute?.('title') || ''}`;
+        return DISCLOSURE_WORDS.test(label);
+    }
+    function revealTrigger(el, strongOnly = false) {
+        // 找到能让 el 显现的折叠触发器：原生 details / aria-controls 是强关联；相邻且有展开语义的按钮仅作旧锚点退路
+        for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+            if (n.tagName === 'DETAILS' && !n.open && !revealFailed(el, n)) return n;
+            if (n.id) {
+                const ctrls = [...document.querySelectorAll('[aria-controls]')].filter((c) =>
+                    !owned(c) && !revealFailed(el, c) && (c.getAttribute('aria-controls') || '').split(/\s+/).includes(n.id));
+                const hit = ctrls.find((c) => c.getAttribute('aria-expanded') === 'false') || ctrls.find((c) => visible(c));
+                if (hit && visible(hit)) return hit;
+            }
+        }
+        if (strongOnly) return null;
+        for (let n = el; n && n !== document.body; n = n.parentElement) {
+            if (!hidden(n)) continue;
+            const scope = n.parentElement || document;
+            const cand = [...scope.querySelectorAll('[aria-expanded="false"], summary, button, [role="button"]')]
+                .find((t) => weakRevealCandidate(el, n, t));
+            if (cand) return cand;
+        }
+        return null;
+    }
+    function declaredCondition(el) {
+        // 从外向内找当前可用的入口；导入标注没有 conditions 时也读取页面上的显现声明。
+        const chain = [];
+        for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) chain.unshift(n);
+        for (const node of chain) {
+            const by = node.getAttribute?.('data-proto-reveal-by');
+            if (!by || !hidden(node)) continue;
+            let controls = [];
+            try { controls = [...document.querySelectorAll(by)]; } catch (_) { continue; }
+            if (controls.length !== 1) continue;
+            const control = controls[0];
+            if (owned(control) || !visible(control) || control.disabled || control.getAttribute('aria-disabled') === 'true' || revealFailed(el, control)) continue;
+            const raw = node.getAttribute('data-proto-reveal-value') ?? 'true';
+            const kind = control.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control.type) ? control.type : 'click';
+            const condition = { selector: by, kind, value: kind === 'select' ? raw : kind === 'click' ? raw : raw === 'true', explicit: true,
+                label: node.getAttribute('data-proto-reveal-label') || controlLabel(control), option: raw };
+            return { element: control, condition, label: node.getAttribute('data-proto-reveal-label') || conditionGuideLabel(condition) };
+        }
+        return null;
+    }
+    let revealNotes = [];
+    function setRevealNotes(notes) { revealNotes = Array.isArray(notes) ? notes : []; }
+    const revealPathKey = steps => JSON.stringify(steps.map(s => [s.protoId || s.selector, s.kind, s.value]));
+    function hiddenContainer(el) {
+        const root = hiddenRoot(el);
+        if (root) return root === document.body || root === document.documentElement ? null : root;
+        for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+            if (n.tagName === 'DETAILS' && !n.open) return n;
+        }
+        return null;
+    }
+    function sharedReveal(anchor, el = resolveHidden(anchor)) {
+        if (!el || !hidden(el) || anchor?.revealSteps?.length || declaredCondition(el) || revealTrigger(el, true) || conditionTrigger(anchor)) return null;
+        const container = hiddenContainer(el); if (!container) return null;
+        const paths = new Map();
+        for (const note of revealNotes) {
+            const steps = note.anchor?.revealSteps;
+            if (!steps?.length || steps.some(s => s.kind === 'click' && /删除|清空|提交|支付|发布|导出|确定|保存|下单/.test(s.label || ''))) continue;
+            const peer = resolveHidden(note.anchor);
+            if (!peer || peer === el || hiddenContainer(peer) !== container) continue;
+            const key = revealPathKey(steps);
+            if (!paths.has(key)) paths.set(key, { steps, sourceNoteIds: [], container });
+            paths.get(key).sourceNoteIds.push(note.id);
+        }
+        if (paths.size !== 1) return null;
+        const shared = paths.values().next().value;
+        return manualCondition({ revealSteps: shared.steps }) ? shared : null;
+    }
+    // 编辑器只读检查：不点击、不改条件，也能在弹窗已打开时展示识别到的完整路径。
+    function inspectReveal(anchor) {
+        const el = resolveHidden(anchor), shown = !!el && !hidden(el);
+        const result = (state, reason, steps = [], extra = {}) => ({ state, reason, steps, visible: shown, rendered: !!el, ...extra });
+        const find = locator => {
+            try { return [...document.querySelectorAll(locator || ':not(*)')].filter(n => !owned(n)); } catch (_) { return []; }
+        };
+        const inspectStep = step => {
+            const matches = find(step.protoId ? `[data-proto-id="${CSS.escape(step.protoId)}"]` : step.selector);
+            const control = matches.length === 1 ? matches[0] : null;
+            return { ...step, label: step.label || text(control) || controlLabel(control) || '展开',
+                status: matches.length > 1 ? 'duplicate' : !control ? 'missing' : control.disabled || control.getAttribute('aria-disabled') === 'true' ? 'disabled' : visible(control) ? 'ready' : 'hidden' };
+        };
+        if (anchor?.revealSteps?.length) {
+            const rows = anchor.revealSteps.map(inspectStep), broken = rows.some(s => ['missing', 'duplicate', 'disabled'].includes(s.status)) || !shown && rows.every(s => s.status === 'hidden');
+            return result(broken ? 'needed' : 'manual', broken ? '手动路径当前不可用，请检查入口或补充上层步骤' : !el ? '目标当前未渲染，可测试手动路径后检查定位' : '按手动配置的顺序展开', rows, { source: '手动配置' });
+        }
+        if (!el) return result('missing', '标注目标未找到，请先检查页面状态或重新绑定序号');
+        const chain = [];
+        for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) chain.unshift(n);
+        const steps = [], seen = new Set(); let problem = '';
+        const add = step => { const key = JSON.stringify([step.selector, step.kind, step.value]); if (!seen.has(key)) { seen.add(key); steps.push(inspectStep(step)); } };
+        const ariaControls = [...document.querySelectorAll('[aria-controls]')].filter(c => !owned(c));
+        for (const node of chain) {
+            const by = node.getAttribute('data-proto-reveal-by');
+            if (by) {
+                const matches = find(by), control = matches.length === 1 ? matches[0] : null;
+                const raw = node.getAttribute('data-proto-reveal-value') ?? 'true';
+                const kind = control?.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control?.type) ? control.type : 'click';
+                add({ selector: by, kind, value: kind === 'select' || kind === 'click' ? raw : raw === 'true',
+                    label: node.getAttribute('data-proto-reveal-label') || text(control) || controlLabel(control) || '展开' });
+            } else if (node.tagName === 'DETAILS') {
+                const summary = node.querySelector('summary');
+                if (summary) add({ selector: selector(summary), kind: 'click', value: 'true', label: text(summary) || '展开折叠区' });
+                else problem = '折叠区缺少展开入口，请手动补充';
+            } else if (node.id) {
+                const controls = ariaControls.filter(c => (c.getAttribute('aria-controls') || '').split(/\s+/).includes(node.id));
+                if (controls.length === 1) add({ selector: selector(controls[0]), kind: 'click', value: 'true', label: text(controls[0]) || controlLabel(controls[0]) || '展开' });
+                else if (controls.length > 1) problem = '发现多个不同入口，请选择实际使用的展开路径';
+            }
+        }
+        const report = (rows, reason, extra = {}) => {
+            const broken = rows.find(s => ['missing', 'duplicate', 'disabled'].includes(s.status));
+            const message = broken ? `入口“${broken.label}”${{ missing: '未找到', duplicate: '定位不唯一', disabled: '当前禁用' }[broken.status]}，请检查或手动调整` : problem || (!shown && rows.every(s => s.status === 'hidden') ? '所有入口当前均隐藏，请先展开其所在区域或补充上层入口' : '');
+            return result(message ? 'needed' : 'automatic', message || reason, rows, extra);
+        };
+        if (steps.length) return report(steps, '根据页面展开关系识别，无需重复添加', { source: '页面关联' });
+        if (problem) return result('needed', problem);
+        if (!shown) {
+            // 与运行时优先级一致：显式关系和当前记录条件优先于共用推断。
+            const hint = revealHint(anchor, el);
+            if (hint) {
+                const condition = conditionTrigger(anchor);
+                const rows = hint.sourceNoteIds?.length ? hint.target.revealSteps.map(inspectStep) : [inspectStep(condition?.element === hint.trigger ? { ...condition.condition, label: hint.label } : { selector: selector(hint.trigger), kind: 'click', label: hint.label, value: 'true' })];
+                return report(rows, hint.sourceNoteIds?.length ? '自动共用同一区域的展开路径，无需重复添加' : '已找到当前可用入口，可测试展开确认后续步骤', { source: '当前入口', sourceNoteIds: hint.sourceNoteIds });
+            }
+        }
+        const semantic = chain.slice().reverse().find(n => n.tagName === 'DIALOG' || n.tagName === 'DETAILS' || ['dialog', 'tabpanel'].includes(n.getAttribute('role')) || n.getAttribute('aria-modal') === 'true');
+        const boundary = hiddenContainer(el) || semantic;
+        if (boundary) {
+            const paths = new Map();
+            for (const note of revealNotes) {
+                const path = note.anchor?.revealSteps, peer = resolveHidden(note.anchor);
+                if (!peer || peer === el || !boundary.contains(peer) || (hiddenContainer(el) && hiddenContainer(peer) !== boundary) || !path?.length || path.some(s => s.kind === 'click' && /删除|清空|提交|支付|发布|导出|确定|保存|下单/.test(s.label || ''))) continue;
+                const key = revealPathKey(path);
+                if (!paths.has(key)) paths.set(key, { steps: path, sourceNoteIds: [] });
+                paths.get(key).sourceNoteIds.push(note.id);
+            }
+            if (paths.size > 1) return result('needed', '同一区域有不同展开路径，请选择复用或手动添加');
+            if (paths.size === 1) {
+                const shared = paths.values().next().value;
+                return report(shared.steps.map(inspectStep), '自动共用同一区域的展开路径，无需重复添加', { source: '共用路径', sourceNoteIds: shared.sourceNoteIds });
+            }
+        }
+        return shown && !semantic ? result('visible', '目标当前直接可见，无需添加展开入口') : result('needed', shown ? '目标位于可收起区域，尚未识别打开入口' : '目标已隐藏，尚未识别展开入口');
+    }
+    function revealHint(anchor, el = resolveHidden(anchor)) {
+        if (el && !hidden(el)) return null; // 目标已显现；若落点异常应走失锚/响应式回退，不能继续显示条件引导
+        if (anchor?.revealSteps?.length) {
+            const manual = manualCondition(anchor);
+            return manual ? { trigger: manual.element, target: anchor, label: manual.label, kind: 'condition' } : null;
+        }
+        const declared = el ? declaredCondition(el) : null;
+        if (declared) return { trigger: declared.element, target: anchor || el, label: declared.label, kind: 'condition' };
+        // 优先语义明确的 details / aria-controls；其次用创建标注时记录的、当前值确实不同的状态条件；
+        // 再用邻近按钮弱推断；条件值已满足却仍隐藏的同值重放排最后（否则弹层折叠时会误显「选择 智能体」）。
+        const direct = el ? revealTrigger(el, true) : null;
+        if (direct) return { trigger: direct, target: el, label: '展开', kind: 'disclosure' };
+        const condition = conditionTrigger(anchor);
+        const conditionHint = condition ? { trigger: condition.element, target: anchor, label: condition.label, kind: 'condition' } : null;
+        if (conditionHint && !condition.satisfied) return conditionHint;
+        const fallback = el ? revealTrigger(el) : null;
+        if (fallback) return { trigger: fallback, target: el, label: '展开', kind: 'disclosure' };
+        if (conditionHint) return conditionHint;
+        const shared = sharedReveal(anchor, el), manual = shared && manualCondition({ revealSteps: shared.steps });
+        return manual ? { trigger: manual.element, target: { ...anchor, revealSteps: shared.steps }, label: manual.label, kind: 'condition', sourceNoteIds: shared.sourceNoteIds } : null;
+    }
+    function reveal(target, attempted = new Set(), notify = true) {
+        const anchor = target && target.nodeType === 1 ? null : target;
+        let el = target && target.nodeType === 1 ? target : resolveHidden(target);
+        if (anchor?.revealSteps?.length) {
+            if (el && !hidden(el)) return el;
+            for (let i = 0; i < anchor.revealSteps.length; i++) {
+                const hit = manualCondition(anchor, attempted);
+                if (!hit) break;
+                attempted.add(hit.element);
+                applyCondition(hit);
+                el = resolveHidden(anchor);
+                if (el && !hidden(el)) return el;
+            }
+            return null;
+        }
+        const shared = anchor && sharedReveal(anchor, el);
+        if (shared && !revealTrigger(el)) return reveal({ ...anchor, revealSteps: shared.steps }, attempted, notify);
+        // 条件控件先恢复到创建标注时的值；change/click 处理器可同步显现，也可由 MutationObserver 在异步渲染后接力。
+        const condition = (el ? declaredCondition(el) : null) || (anchor ? conditionTrigger(anchor) : null);
+        if (condition && !condition.satisfied && !attempted.has(condition.element)) {
+            attempted.add(condition.element);
+            if (applyCondition(condition)) el = resolveHidden(anchor) || el;
+        }
+        // 同一触发器只点一次：Vue/React 类原型点击后 DOM 在 nextTick 才更新，同步判定仍为隐藏，
+        // 循环里重复点同一个按钮会把刚展开的区域再折回去（偶数次 = 没展开）。多层折叠靠后续重排接力。
+        const clicked = attempted;
+        let lastAttempt = null;
+        for (let g = 0; el && g < 10 && hidden(el); g++) {
+            const declared = declaredCondition(el);
+            const trig = declared?.element || revealTrigger(el);
+            if (!trig || clicked.has(trig)) break;
+            clicked.add(trig);
+            lastAttempt = { element: el, trigger: trig };
+            if (declared) applyCondition(declared);
+            else if (trig.tagName === 'DETAILS') trig.open = true; else trig.click();
+            if (anchor) el = resolveHidden(anchor) || el;
+        }
+        // 折叠触发器都试过仍不可见：最后才重放已满足的同值条件（select 的 change 处理器可能负责重建区域）。
+        if ((!el || hidden(el)) && condition?.satisfied && !attempted.has(condition.element)) {
+            attempted.add(condition.element);
+            if (applyCondition(condition)) el = resolveHidden(anchor) || el;
+        }
+        if ((!el || hidden(el)) && lastAttempt && notify) {
+            // 给 Vue/React 等异步渲染留出时间；仍未显现就记住这组无效关联，并通知两种标注层移除假引导。
+            setTimeout(() => {
+                const current = anchor ? resolveHidden(anchor) : lastAttempt.element;
+                if (current && hidden(current)) {
+                    markRevealFailed(current, lastAttempt.trigger);
+                    document.dispatchEvent(new CustomEvent('proto-anchors:reveal-failed', { detail: { target: current, trigger: lastAttempt.trigger } }));
+                }
+            }, 450);
+        }
+        return !el || hidden(el) ? null : el;
+    }
+    const pendingReveals = new Map();
+    const pendingContainerReveals = new WeakMap();
+    function revealAndWait(target) {
+        const key = target?.nodeType === 1 ? target : `${target?.protoId || ''}\n${target?.selector || ''}`;
+        if (pendingReveals.has(key)) return pendingReveals.get(key);
+        const element = target?.nodeType === 1 ? target : resolveHidden(target);
+        const steps = target?.revealSteps?.length ? target.revealSteps : sharedReveal(target, element)?.steps;
+        const container = steps?.length && hiddenContainer(element), pathKey = steps?.length && revealPathKey(steps);
+        const sharedOperation = container && pendingContainerReveals.get(container)?.get(pathKey);
+        if (sharedOperation) return sharedOperation.then(() => {
+            const current = target?.nodeType === 1 ? target : resolveHidden(target);
+            return current && !hidden(current) ? current : null;
+        });
+        const operation = (async () => {
+            const attempted = new Set(), deadline = Date.now() + 1800;
+            do {
+                const el = reveal(target, attempted, false);
+                if (el) return el;
+                if (!attempted.size) return null;
+                await new Promise(resolve => setTimeout(resolve, 32));
+            } while (Date.now() < deadline);
+            const current = target?.nodeType === 1 ? target : resolveHidden(target);
+            if (current && !hidden(current)) return current;
+            if (current) for (const trigger of attempted) markRevealFailed(current, trigger);
+            document.dispatchEvent(new CustomEvent('proto-anchors:reveal-failed', { detail: { target: current } }));
+            return null;
+        })();
+        pendingReveals.set(key, operation);
+        if (container) {
+            if (!pendingContainerReveals.has(container)) pendingContainerReveals.set(container, new Map());
+            pendingContainerReveals.get(container).set(pathKey, operation);
+        }
+        operation.finally(() => {
+            if (pendingReveals.get(key) === operation) pendingReveals.delete(key);
+            const paths = container && pendingContainerReveals.get(container);
+            if (paths?.get(pathKey) === operation) paths.delete(pathKey);
+            if (paths && !paths.size) pendingContainerReveals.delete(container);
+        }).catch(() => {});
+        return operation;
+    }
+    globalThis.ProtoAnchors = {
+        owned,
+        text,
+        visible,
+        hidden,
+        selector,
+        serialize,
+        resolve,
+        resolveHidden,
+        revealTrigger,
+        setRevealNotes,
+        sharedReveal,
+        inspectReveal,
+        revealHint,
+        reveal,
+        revealAndWait,
+        rect,
+        placement,
+        point,
+        pinPosition,
+        at,
+        inBox,
+        currentIds,
+        enterState,
+    };
+})();
+
+</script>
+<script data-proto-review="order">
+/* 展示编号投影：不改元数据 number，所有定位与编辑始终使用稳定 id。
+   排序键是页面逻辑坐标（视口坐标加回各级滚动偏移），从上到下、从左到右。
+   目标当前不可见、但能在主页面流里靠「展开 / 选中 / 点击」显现的标注（折叠区、条件行、页签），
+   用它的显现触发器位置代位参与主序，编号在展开前后保持一致，而不是被甩到末尾；
+   落在弹窗 / 抽屉 / 提示等分支容器里的目标整体排在主页序号之后再自然排序；彻底失锚的排最后。 */
+(() => {
+    'use strict';
+    const stable = (a, b) => String(a.id).localeCompare(String(b.id), 'en');
+    function logicalPoint(found, win) {
+        if (!found?.point) return null;
+        const { element, legacy } = found;
+        const point = legacy && element ? element.getBoundingClientRect() : found.point;
+        let x = point.x + win.scrollX, y = point.y + win.scrollY;
+        for (let node = legacy ? element?.parentElement : element; node && node !== win.document.scrollingElement; node = node.parentElement) {
+            x += node.scrollLeft || 0;
+            y += node.scrollTop || 0;
+        }
+        return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;
+    }
+    /* 分支容器判定：目标所在的祖先链里有对话框 / 抽屉 / 提示 / 下拉等「离开主页面流」的容器。
+       语义属性（<dialog>、role、aria-modal、popover）直接判定；类名只作弱线索，且要求容器本身是 fixed / absolute 定位，
+       否则页面主流里的 notification-list、message-item 之类命名会被误判。
+       原型可用 data-proto-branch="true|false" 在任意祖先上显式声明，覆盖自动推断。 */
+    const BRANCH_ROLE = /^(dialog|alertdialog|tooltip|menu)$/;
+    const BRANCH_CLASS = /(^|[^a-z])(modal|dialog|drawer|popover|popup|toast|tooltip|dropdown|sheet|snackbar|notification|message)(?![a-z])/i;
+    function inBranch(el, win) {
+        const doc = win.document;
+        for (let n = el; n && n !== doc.body && n !== doc.documentElement; n = n.parentElement) {
+            if (n.hasAttribute('data-proto-branch')) return n.getAttribute('data-proto-branch') !== 'false';
+            if (n.tagName === 'DIALOG' || n.hasAttribute('popover') || n.getAttribute('aria-modal') === 'true' || BRANCH_ROLE.test(n.getAttribute('role') || '')) return true;
+            if (BRANCH_CLASS.test(n.getAttribute('class') || '') && /^(fixed|absolute)$/.test(win.getComputedStyle(n).position)) return true;
+        }
+        return false;
+    }
+    /* 目标不可见时的代位坐标：优先目标自身仍有的几何（visibility:hidden 一类），否则取显现触发器的下缘——
+       紧跟触发器所在行之后，在其下方显现的内容也就落在正确的行序里。无触发器（真失锚）返回 null。 */
+    function proxyPoint(note, el, win) {
+        const PA = win.ProtoAnchors;
+        if (el && !PA.hidden?.(el)) return null;                         // 元素可见却定不到落点：落点失效，按失锚置底
+        if (el && el.getClientRects().length) return logicalPoint({ element: el, point: el.getBoundingClientRect(), legacy: true }, win);
+        let hint = null;
+        try {
+            hint = PA.revealHint?.(note.anchor, el) ||
+                (el && PA.revealTrigger?.(el) ? { trigger: PA.revealTrigger(el) } : null);
+        } catch (_) { /* 条件选择器失效等同无触发器 */ }
+        const trigger = hint?.trigger;
+        if (!trigger || !trigger.getClientRects?.().length) return null;
+        const p = logicalPoint({ element: trigger, point: {}, legacy: true }, win);
+        return p && { x: p.x, y: p.y + trigger.getBoundingClientRect().height };
+    }
+    function rows(list) {
+        const sorted = list.slice().sort((a, b) => a.point.y - b.point.y || a.point.x - b.point.x || stable(a.note, b.note));
+        const result = [];
+        for (let i = 0; i < sorted.length;) {
+            const top = sorted[i].point.y, row = [];
+            while (i < sorted.length && sorted[i].point.y - top <= 12) row.push(sorted[i++]);
+            row.sort((a, b) => a.point.x - b.point.x || a.point.y - b.point.y || stable(a.note, b.note));
+            result.push(...row);
+        }
+        return result;
+    }
+    /* records: { note, point, group }。group 0 = 主页面流，1 = 分支容器；同组内按行序，组间主页面流在前；无 point 的失锚置底。 */
+    function arrange(records) {
+        const placed = records.filter(r => r.point);
+        const result = [
+            ...rows(placed.filter(r => !r.group)),
+            ...rows(placed.filter(r => r.group)),
+            ...records.filter(r => !r.point).sort((a, b) => stable(a.note, b.note)),
+        ];
+        return result.map((r, i) => ({ ...r.note, displayNumber: i + 1 }));
+    }
+    function classify(note, win) {
+        const PA = win.ProtoAnchors;
+        let found = null;
+        try { found = PA.point(note, true); } catch (_) { /* 未就绪或失效锚点 */ }
+        let point = logicalPoint(found, win), el = found?.element || null;
+        if (!el && note.anchor) { try { el = PA.resolveHidden?.(note.anchor) || null; } catch (_) { /* 旧选择器失效 */ } }
+        if (!point && note.anchor) { try { point = proxyPoint(note, el, win); } catch (_) { /* 代位失败按失锚处理 */ } }
+        const group = el && inBranch(el, win) ? 1 : 0;
+        return { note, point, group };
+    }
+    function project(notes, win, pending = null) {
+        const records = notes.map(note => classify(note, win));
+        if (pending?.point) records.push({ note: { id: '~pending' }, point: pending.point, group: pending.group || 0 });
+        return arrange(records);
+    }
+    function previewNumber(notes, win, x, y) {
+        const element = win.ProtoAnchors.at(x, y);
+        const point = logicalPoint({ element, point: { x, y } }, win);
+        const group = element && inBranch(element, win) ? 1 : 0;
+        return project(notes, win, { point, group }).find(n => n.id === '~pending')?.displayNumber || notes.length + 1;
+    }
+    globalThis.ProtoOrder = { arrange, project, previewNumber, logicalPoint, inBranch };
+})();
+
+</script>
+<script data-proto-review="changes">
+/* 更新说明的位置定位；复用锚点与展开，不生成序号或改写 PRD。 */
+(() => {
+    'use strict';
+    let overlay=null, stop=null, generation=0;
+    async function locate(target, notes=[]) {
+        const token=++generation;
+        const A=window.ProtoAnchors;
+        if (!A || !target || target.deleted) return {ok:false,message:target?.deleted?'该内容已删除，请查看变更详情':'当前页面尚未准备好'};
+        try {
+            if (target.stateId) await A.enterState(target.stateId);
+            const note=target.noteId && notes.find(n=>n.id===target.noteId);
+            const anchor=note?.anchor || target.anchor;
+            if (!anchor) return {ok:true,level:'page',message:'已打开对应页面'};
+            let element;
+            if (anchor.textRule) {
+                const canonical=value=>JSON.stringify(value && typeof value==='object' ? Array.isArray(value)?value.map(v=>JSON.parse(canonical(v))):Object.fromEntries(Object.keys(value).sort().map(k=>[k,JSON.parse(canonical(value[k]))])):value);
+                const rules=JSON.parse(document.getElementById('proto-text-edits-data')?.textContent || '[]');
+                const rule=rules.find(r=>canonical(r.binding)===anchor.textRule);
+                if(rule)element=window.ProtoTextRuntime?.locate(document,rule.binding);
+            } else {
+                element=A.resolve(anchor)?.element;
+                if (!element || A.hidden(element)) element=await A.revealAndWait(anchor);
+            }
+            if(token!==generation)return {ok:false,cancelled:true};
+            if (!element || A.hidden(element)) return {ok:false,message:'目标暂时无法定位，已打开所属页面'};
+            element.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+            if (stop) stop();
+            overlay=document.createElement('div'); overlay.setAttribute('data-prototype-owned','');
+            Object.assign(overlay.style,{position:'fixed',pointerEvents:'none',zIndex:'2147483630',border:'3px solid #2563eb',
+                borderRadius:'5px',boxShadow:'0 0 0 4px #2563eb25',boxSizing:'border-box'});
+            document.documentElement.append(overlay);
+            const paint=()=>{const r=element.getBoundingClientRect(); Object.assign(overlay.style,{left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'});};
+            paint(); window.addEventListener('scroll',paint,true); window.addEventListener('resize',paint);
+            const observer=new ResizeObserver(paint); observer.observe(element);
+            let timer;
+            stop=()=>{clearTimeout(timer); observer.disconnect();window.removeEventListener('scroll',paint,true);window.removeEventListener('resize',paint);overlay?.remove();overlay=null;stop=null;};
+            timer=setTimeout(stop,3000);
+            return {ok:true,level:'element',message:'已定位更新位置'};
+        } catch (_) { return {ok:false,message:'目标已变化，已打开所属页面'}; }
+    }
+    window.ProtoChangeLocator={locate};
+})();
+
+</script>
+<script data-proto-review="bridge">
+/* 评审壳 ↔ 原型页桥：随导出内嵌进每个原型 HTML，跑在 iframe 内。
+   壳与原型改用 postMessage 通信，不再由壳跨文档注入脚本——ZIP 解压后 file:// 直接打开时
+   每个 file 都是独立源，壳拿不到 iframe 的 document，旧注入方式静默失效（无序号、无引导、右栏乱序）。
+   加载顺序：proto-hotspots.js（先于业务脚本）→ proto-appearance.js → proto-anchors.js → proto-order.js → 本文件 → review-pins.js。
+   独立打开原型（不在壳内）时本文件不做任何事。 */
+(() => {
+    'use strict';
+    if (window.__reviewBridgeBoot) return;
+    window.__reviewBridgeBoot = true;
+    if (window.parent === window || !window.ProtoAnchors) return;
+
+    const post = (msg) => { try { window.parent.postMessage(Object.assign({ __review: 1 }, msg), '*'); } catch (_) { /* 壳未就绪 */ } };
+    const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    let asideOpen = true;
+    let hintScopes = [];
+
+    // review-pins.js 启动时读取的宿主对象：标注在 init 消息到达后填充，正文 HTML 由壳预渲染（气泡层无 Markdown 渲染器）。
+    window.__REVIEW__ = {
+        notes: [],
+        selectedNoteId: null,
+        asideOpen: () => asideOpen,
+        onSync: (map, state, stale) => post({ type: 'sync', map, state, stale }),
+        onFocus: (noteId) => post({ type: 'focus', noteId }),
+        onSelect: (noteId) => post({ type: 'selection', noteId }),
+        renderBody: (note) => note.bodyHtml || '<p>' + esc(note.body || '') + '</p>',
+    };
+    window.ProtoHotspots?.init({ scope: () => {
+        const state = window.ProtoAnchors.currentIds?.().stateId || 'default';
+        return hintScopes.find(item => item.id === state)?.interactionHints;
+    } });
+
+    // 气泡层在本文件之后加载；init 早到时等它就位再重排（最多等 5s）。
+    function relayout(tries) {
+        if (window.__reviewRelayout) { window.__reviewRelayout(); return; }
+        if ((tries || 0) < 50) setTimeout(() => relayout((tries || 0) + 1), 100);
+    }
+
+    async function reveal(note) {
+        const A = window.ProtoAnchors;
+        let found = null;
+        try { found = A.point(note); } catch (_) { /* 锚定异常 */ }
+        if (!found?.element && !found?.point) {
+            // 目标被折叠/隐藏：先联动展开对应折叠区，再重新定位与重排气泡
+            try { await (A.revealAndWait?.(note.anchor) ?? A.reveal?.(note.anchor)); } catch (_) { /* ignore */ }
+            try { window.__reviewRelayout?.(); } catch (_) { /* ignore */ }
+            try { found = A.point(note); } catch (_) { /* ignore */ }
+        }
+        if (found?.element?.id === 'screenshot-image' && found.point && document.documentElement.dataset.protoScreenshot === 'true')
+            window.scrollTo({ top: Math.max(0, found.point.y + window.scrollY - window.innerHeight / 2), behavior: 'smooth' });
+        else if (found?.element) found.element.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        else if (found?.point) window.scrollTo({ top: Math.max(0, found.point.y + window.scrollY - window.innerHeight / 2), behavior: 'smooth' });
+    }
+
+    window.addEventListener('message', (e) => {
+        if (e.source !== window.parent || !e.data || e.data.__review !== 1) return;
+        const m = e.data;
+        switch (m.type) {
+            case 'init':
+                hintScopes = Array.isArray(m.hintScopes) ? m.hintScopes : [];
+                window.ProtoHotspots?.hide();
+                document.documentElement.dataset.protoHost = 'review';
+                window.__REVIEW__.notes = Array.isArray(m.notes) ? m.notes : [];
+                window.__REVIEW__.selectedNoteId = m.selectedNoteId || null;
+                window.__reviewSelectNote?.(window.__REVIEW__.selectedNoteId);
+                asideOpen = m.asideOpen !== false;
+                if (m.enterState) { try { window.ProtoAnchors.enterState?.(m.enterState)?.catch?.(() => {}); } catch (_) { /* ignore */ } }
+                relayout();
+                break;
+            case 'aside':
+                asideOpen = !!m.open;
+                try { window.__reviewHidePop?.(); } catch (_) { /* ignore */ }
+                break;
+            case 'enterState':
+                try { window.ProtoAnchors.enterState?.(m.stateId)?.catch?.(() => {}); } catch (_) { /* ignore */ }
+                break;
+            case 'reveal':
+                if (m.note) { window.__REVIEW__.selectedNoteId = m.note.id; window.__reviewSelectNote?.(m.note.id); reveal(m.note); }
+                break;
+            case 'locateChange':
+                Promise.resolve(window.ProtoChangeLocator?.locate(m.target,window.__REVIEW__.notes)).then(result=>{
+                    post({type:'changeLocated',requestId:m.requestId,...(result || {ok:false,message:'定位功能暂不可用'})});
+                });
+                break;
+            case 'select':
+                window.__REVIEW__.selectedNoteId = m.noteId || null;
+                window.__reviewSelectNote?.(window.__REVIEW__.selectedNoteId);
+                break;
+            case 'hidePop':
+                try { window.__reviewHidePop?.(); } catch (_) { /* ignore */ }
+                break;
+            case 'showHotspots':
+                window.ProtoHotspots?.show();
+                break;
+            default:
+                break;
+        }
+    });
+
+    let ids = {};
+    try { ids = window.ProtoAnchors.currentIds?.() || {}; } catch (_) { /* ignore */ }
+    post({ type: 'ready', ids });
+})();
+
+</script>
+<script data-proto-review="pins">
+/* 评审壳只读气泡层：随导出内嵌进每个原型 HTML（review_export.inject_bundle），跑在被评审原型页面内。
+   依赖同页先加载的 proto-anchors.js / proto-order.js / review-bridge.js；通过 window.__REVIEW__（由 bridge 建立，内部走 postMessage）与壳父页通信。
+   只读：无编辑、无删除；正文浮窗支持移动与调整宽度。 */
+(() => {
+    'use strict';
+    if (window.__reviewPinsBoot) return;
+    window.__reviewPinsBoot = true;
+    const R = window.__REVIEW__;
+    if (!R || !window.ProtoAnchors || !window.ProtoOrder) return;
+
+    const style = document.createElement('style');
+    style.setAttribute('data-prototype-owned', '');
+    style.textContent = `
+.__review_pin{position:absolute;display:grid;place-items:center;min-width:36px;height:36px;padding:0 8px;border:3px solid #fff;border-radius:50% 50% 50% 2px;background:#2563eb;color:#fff;font:600 13px/1 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;box-shadow:0 8px 24px rgba(16,24,40,.24);transform:translateY(-100%);cursor:pointer;pointer-events:auto;}
+.__review_pin:hover{background:#1d4ed8;}
+.__review_pin:not(.__stale){background:var(--pin-fill);color:var(--pin-ink);border-color:var(--pin-stroke);}
+.__review_pin:not(.__stale):hover{background:var(--pin-fill);filter:brightness(.96);}
+.__review_pin.__stale{background:#626b78;cursor:default;}
+.__review_pin.__review_selected{outline:3px solid #2563eb;outline-offset:3px;z-index:2;}
+@media(prefers-color-scheme:dark){.__review_pin{border-color:#121519;}}
+.__review_pop{position:fixed;box-sizing:border-box;z-index:2147482001;width:min(360px,calc(100vw - 16px));max-width:calc(100vw - 16px);overflow:visible;border:1px solid #d8dee3;border-radius:10px;background:#fff;color:#1a1d23;font:14px/1.7 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;letter-spacing:.02em;box-shadow:0 8px 24px rgba(16,24,40,.24);display:none;}
+.__review_pop_body{box-sizing:border-box;max-height:calc(100vh - 36px);overflow:auto;overscroll-behavior:contain;padding:4px 14px 12px;border-radius:inherit;}
+.__review_pop_grip{box-sizing:border-box;display:grid;place-items:center;width:100%;height:18px;margin:0;padding:0;border:0;border-radius:9px 9px 0 0;background:transparent;color:inherit;cursor:grab;touch-action:none;user-select:none;}
+.__review_pop_grip::before{content:"";width:32px;height:4px;border-radius:2px;background:currentColor;opacity:.3;}
+.__review_pop_grip:focus-visible{outline:2px solid #2563eb;outline-offset:-3px;}
+.__review_pop.pop-moving{user-select:none;}
+.__review_pop.pop-moving,.__review_pop.pop-moving *{cursor:grabbing!important;}
+.__review_pop_resize{position:absolute;top:0;bottom:0;width:12px;cursor:ew-resize;touch-action:none;z-index:3;background:transparent;}
+/* 热区以浮窗真实边框为中心，不画独立蓝细条；视觉仍是浮窗自身边缘，命中区向内外各扩 6px。 */
+.__review_pop_resize_w{left:0;transform:translateX(-50%);}.__review_pop_resize_e{right:0;transform:translateX(50%);}
+.__review_pop.pop-resizing{user-select:none;}
+.__review_pop.pop-resizing,.__review_pop.pop-resizing *{cursor:ew-resize!important;}
+@media(prefers-color-scheme:dark){.__review_pop{background:#121519;color:#f2f4f7;border-color:#363c44;}}
+.__review_pop_body>:first-child{margin-top:0;}.__review_pop_body>:last-child{margin-bottom:0;}
+.__review_pop p{margin:0 0 10px;overflow-wrap:anywhere;}
+.__review_pop img{display:block;max-width:100%;height:auto;margin:8px 0;border-radius:6px;}
+.__review_pop h1{font-size:18px;}.__review_pop h2{font-size:16px;}.__review_pop h3,.__review_pop h4{font-size:14px;}
+.__review_pop ul,.__review_pop ol{padding-left:20px;margin:6px 0 10px;}.__review_pop li.task{list-style:none;margin-left:-18px;}
+.__review_pop code{font-family:ui-monospace,Consolas,monospace;font-size:13px;background:rgba(127,127,127,.16);padding:1px 5px;border-radius:4px;}
+.__review_pop pre{background:rgba(127,127,127,.14);padding:10px;border-radius:6px;white-space:pre-wrap;overflow-wrap:anywhere;}.__review_pop pre code{background:none;padding:0;}
+.__review_pop table{border-collapse:collapse;width:100%;}.__review_pop th,.__review_pop td{border:1px solid #d8dee3;padding:6px;text-align:left;}
+@media(prefers-color-scheme:dark){.__review_pop th,.__review_pop td{border-color:#363c44;}}
+.__review_pop blockquote{border-left:3px solid #d8dee3;margin:8px 0;padding:2px 12px;color:#4e5560;}.__review_pop a{color:#2563eb;}.__review_pop hr{border:0;border-top:1px solid #d8dee3;}
+/* 点击引导：与操作界面 .pa-guide 同式——亮黄色系，与蓝色水滴序号在 色相 / 形状 / 动效 三方面区分。
+   框 = 透明可点区：虚线、静态不呼吸；悬停转实线 + 加深底色 + 外环。标签 = 与框左上角拼成一体的选区式标签，只有标签呼吸。
+   偏离 DESIGN_MASTER --accent-amber #b45309（实看发褐）：框线 #d97706（白底 3.19:1），标签 #fbbf24 配深棕字 #5c3300（6.52:1）。
+   固定浅色、不随 prefers-color-scheme 切换：引导叠在原型页面上，颜色跟随页面而非系统。 */
+.__review_guide{--g-line:#d97706;--g-fill:#fbbf24;--g-ink:#5c3300;position:absolute;box-sizing:border-box;margin:0;padding:0;border:2px dashed var(--g-line);border-radius:0 8px 8px 8px;background:rgba(251,191,36,.10);cursor:pointer;pointer-events:auto;transition:background-color 150ms ease-out,box-shadow 150ms ease-out;}
+.__review_guide:hover{border-style:solid;background:rgba(251,191,36,.30);box-shadow:0 0 0 3px rgba(251,191,36,.38);}
+.__review_guide:active{background:rgba(251,191,36,.45);}
+.__review_guide:focus-visible{outline:2px solid var(--g-line);outline-offset:2px;}
+.__review_guide_tag{position:absolute;box-sizing:border-box;left:-2px;top:-2px;transform:translateY(-100%);display:inline-flex;align-items:center;gap:3px;height:18px;padding:0 7px 0 5px;border:1px solid var(--g-line);border-radius:6px 6px 6px 0;background:var(--g-fill);color:var(--g-ink);font:600 11px/1 "PingFang SC","Microsoft YaHei UI",system-ui,sans-serif;white-space:nowrap;pointer-events:none;animation:__rvGuideTag 1.8s ease-in-out infinite;animation-delay:var(--g-delay,0s);}
+.__review_guide_tag svg{width:10px;height:10px;animation:__rvGuideBob 1.8s ease-in-out infinite;animation-delay:var(--g-delay,0s);}
+.__review_guide:hover .__review_guide_tag{animation:none;box-shadow:0 0 0 3px rgba(251,191,36,.38);}
+.__review_guide.__review_guide_below{border-radius:8px 8px 8px 0;}
+.__review_guide.__review_guide_below .__review_guide_tag{top:auto;bottom:-2px;transform:translateY(100%);border-radius:0 6px 6px 6px;}
+.__review_guide.__review_guide_end{border-radius:8px 0 8px 8px;}
+.__review_guide.__review_guide_end .__review_guide_tag{left:auto;right:-2px;border-radius:6px 6px 0 6px;}
+.__review_guide.__review_guide_below.__review_guide_end{border-radius:8px 8px 0 8px;}
+.__review_guide.__review_guide_below.__review_guide_end .__review_guide_tag{border-radius:6px 0 6px 6px;}
+@keyframes __rvGuideTag{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0),0 1px 2px rgba(92,51,0,.18);}50%{box-shadow:0 0 0 4px rgba(251,191,36,.42),0 1px 2px rgba(92,51,0,.18);}}
+@keyframes __rvGuideBob{0%,100%{transform:translateY(-1px);}50%{transform:translateY(1px);}}
+@media(prefers-reduced-motion:reduce){.__review_guide_tag,.__review_guide_tag svg{animation:none;}}
+`;
+    (document.head || document.documentElement).appendChild(style);
+
+    const layer = document.createElement('div');
+    layer.setAttribute('data-prototype-owned', '');
+    layer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147482000;';
+    document.documentElement.appendChild(layer);
+    // 引导框独立图层，按触发器复用；序号按标注 ID 复用，保住悬停、聚焦与按下到松开的点击目标。
+    const glayer = document.createElement('div');
+    glayer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2147481999;';
+    glayer.setAttribute('data-prototype-owned', '');   // 引导框是 <button>，标记自有以免 revealTrigger 兜底搜索把它当成原型触发器
+    document.documentElement.appendChild(glayer);
+
+    // 收起态气泡：PRD 侧栏收起时，点序号在序号旁展示正文；正文独立滚动，左右边缘可拖宽。
+    let pop = null, popBody = null, popResizing = null, popNoteId = null;
+    let popMoving = null, popMoveCleanup = null;
+    const owned = el => !!(el?.closest?.('[data-prototype-owned]') || el?.parentElement?.closest?.('[data-prototype-owned]'));
+    let selectedNoteId = R.selectedNoteId || null;
+    function selectNote(noteId) {
+        selectedNoteId = (R.notes || []).some(n => n.id === noteId && n.stateId === stateOf()) ? noteId : null;
+        R.selectedNoteId = selectedNoteId;
+        for (const pin of layer.querySelectorAll('.__review_pin')) {
+            const selected = pin.dataset.noteId === selectedNoteId;
+            pin.classList.toggle('__review_selected', selected);
+            pin.setAttribute('aria-current', String(selected));
+        }
+    }
+    window.__reviewSelectNote = selectNote;
+    function setPinExpanded(noteId, expanded) {
+        if (!noteId) return;
+        layer.querySelector(`.__review_pin[data-note-id="${CSS.escape(noteId)}"]`)?.setAttribute('aria-expanded', String(expanded));
+    }
+    function hidePop() {
+        popMoveCleanup?.(true);
+        if (pop) pop.style.display = 'none';
+        setPinExpanded(popNoteId, false);
+        popNoteId = null;
+    }
+    function placePop(left, top) {
+        const r = pop.getBoundingClientRect();
+        pop.style.left = Math.max(8, Math.min(left, innerWidth - r.width - 8)) + 'px';
+        pop.style.top = Math.max(8, Math.min(top, innerHeight - r.height - 8)) + 'px';
+    }
+    function startPopMove(e, grip) {
+        if (!pop || pop.style.display !== 'block' || popResizing || popMoving || e.button !== 0) return;
+        e.preventDefault(); e.stopPropagation();
+        const r = pop.getBoundingClientRect(), root = document.documentElement;
+        const previous = { cursor: root.style.cursor, userSelect: root.style.userSelect };
+        const start = { x: e.clientX, y: e.clientY, left: r.left, top: r.top };
+        popMoving = { pointerId: e.pointerId, moved: false };
+        const move = ev => {
+            if (!popMoving || ev.pointerId !== e.pointerId) return;
+            const dx = ev.clientX - start.x, dy = ev.clientY - start.y;
+            if (!popMoving.moved && Math.hypot(dx, dy) < 5) return;
+            popMoving.moved = true;
+            ev.preventDefault();
+            pop.classList.add('pop-moving');
+            root.style.cursor = 'grabbing'; root.style.userSelect = 'none';
+            placePop(start.left + dx, start.top + dy);
+        };
+        const finish = (cancel = false) => {
+            if (!popMoving) return;
+            popMoving = null; popMoveCleanup = null;
+            if (cancel) { pop.style.left = start.left + 'px'; pop.style.top = start.top + 'px'; }
+            pop.classList.remove('pop-moving');
+            root.style.cursor = previous.cursor; root.style.userSelect = previous.userSelect;
+            window.removeEventListener('pointermove', move, true);
+            window.removeEventListener('pointerup', up, true);
+            window.removeEventListener('pointercancel', cancelPointer, true);
+            window.removeEventListener('blur', cancelMove, true);
+            window.removeEventListener('keydown', key, true);
+            try { if (grip.hasPointerCapture(e.pointerId)) grip.releasePointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+        };
+        const up = ev => { if (ev.pointerId === e.pointerId) finish(); };
+        const cancelPointer = ev => { if (ev.pointerId === e.pointerId) finish(true); };
+        const cancelMove = () => finish(true);
+        const key = ev => { if (ev.key === 'Escape') { ev.preventDefault(); ev.stopImmediatePropagation(); finish(true); } };
+        popMoveCleanup = finish;
+        try { grip.setPointerCapture(e.pointerId); } catch (_) { /* window 监听兜底 */ }
+        window.addEventListener('pointermove', move, { capture: true, passive: false });
+        window.addEventListener('pointerup', up, true);
+        window.addEventListener('pointercancel', cancelPointer, true);
+        window.addEventListener('blur', cancelMove, true);
+        window.addEventListener('keydown', key, true);
+    }
+    function startPopResize(e, handle, side) {
+        if (!pop || popMoving || e.button !== 0) return;
+        e.preventDefault(); e.stopPropagation();
+        const rect = pop.getBoundingClientRect(), startX = e.clientX, startW = rect.width, fixedRight = rect.right;
+        popResizing = { handle, side, pointerId: e.pointerId };
+        pop.classList.add('pop-resizing');
+        document.documentElement.style.cursor = 'ew-resize';
+        document.documentElement.style.userSelect = 'none';
+        // 指针按下后由 window 兜住整段拖动；不依赖鼠标始终停留在 12px 边缘热区，也不依赖 pointer capture 是否成功。
+        try { handle.setPointerCapture(e.pointerId); } catch (_) { /* 浏览器不支持时 window 监听仍可工作 */ }
+        const move = ev => {
+            if (!popResizing || ev.pointerId !== e.pointerId) return;
+            ev.preventDefault();
+            const raw = side === 'e' ? startW + (ev.clientX - startX) : startW - (ev.clientX - startX);
+            const minW = Math.min(280, innerWidth - 16), maxW = Math.max(minW, Math.min(720, innerWidth - 16));
+            const edgeMax = side === 'e' ? innerWidth - rect.left - 8 : fixedRight - 8;
+            const width = Math.max(minW, Math.min(Math.round(raw), maxW, edgeMax));
+            pop.style.width = width + 'px';
+            if (side === 'w') pop.style.left = Math.max(8, fixedRight - width) + 'px';
+        };
+        const up = ev => {
+            if (!popResizing || ev.pointerId !== e.pointerId) return;
+            popResizing = null; pop.classList.remove('pop-resizing');
+            document.documentElement.style.cursor = '';
+            document.documentElement.style.userSelect = '';
+            window.removeEventListener('pointermove', move, true); window.removeEventListener('pointerup', up, true); window.removeEventListener('pointercancel', up, true);
+            try { if (handle.hasPointerCapture(e.pointerId)) handle.releasePointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+        };
+        window.addEventListener('pointermove', move, { capture: true, passive: false });
+        window.addEventListener('pointerup', up, true);
+        window.addEventListener('pointercancel', up, true);
+    }
+    function ensurePop() {
+        if (pop) return;
+        pop = document.createElement('div');
+        pop.id = '__review_popover'; pop.className = '__review_pop';
+        pop.setAttribute('role', 'dialog');
+        pop.setAttribute('data-prototype-owned', '');
+        pop.addEventListener('click', e => e.stopPropagation());
+        const grip = document.createElement('button');
+        grip.type = 'button'; grip.className = '__review_pop_grip';
+        grip.setAttribute('aria-label', '移动标注浮窗');
+        grip.title = '拖动移动；方向键微调，Shift 加速';
+        grip.onpointerdown = e => startPopMove(e, grip);
+        grip.addEventListener('keydown', e => {
+            if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); hidePop(); return; }
+            const direction = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+            if (!direction || e.ctrlKey || e.altKey || e.metaKey) return;
+            e.preventDefault(); e.stopPropagation();
+            const r = pop.getBoundingClientRect(), step = e.shiftKey ? 40 : 10;
+            placePop(r.left + direction[0] * step, r.top + direction[1] * step);
+        });
+        pop.appendChild(grip);
+        popBody = document.createElement('div'); popBody.className = '__review_pop_body';
+        pop.appendChild(popBody);
+        for (const side of ['w', 'e']) {
+            const handle = document.createElement('span');
+            handle.className = `__review_pop_resize __review_pop_resize_${side}`;
+            handle.setAttribute('aria-hidden', 'true'); handle.title = '拖动调节宽度';
+            handle.onpointerdown = e => startPopResize(e, handle, side);
+            pop.appendChild(handle);
+        }
+        document.documentElement.appendChild(pop);
+    }
+    function showPop(note, pin) {
+        ensurePop();
+        popMoveCleanup?.();
+        setPinExpanded(popNoteId, false);
+        popNoteId = note.id;
+        pin.setAttribute('aria-expanded', 'true');
+        popBody.innerHTML = R.renderBody ? R.renderBody(note) : (note.body || '');
+        popBody.scrollTop = 0;
+        pop.style.display = 'block';
+        pop.style.visibility = 'hidden';
+        pop.style.left = '0px'; pop.style.top = '0px';
+        const pw = pop.offsetWidth, ph = pop.offsetHeight;
+        const px = parseFloat(pin.style.left) || 0, py = parseFloat(pin.style.top) || 0;
+        const W = innerWidth, H = innerHeight;
+        let left = px + 16, top = py - ph - 8;
+        if (left + pw > W - 8) left = px - pw - 16;
+        left = Math.max(8, Math.min(left, W - pw - 8));
+        if (top < 8) top = py + 8;
+        top = Math.max(8, Math.min(top, H - ph - 8));
+        pop.style.left = left + 'px'; pop.style.top = top + 'px';
+        pop.style.visibility = 'visible';
+    }
+    function togglePop(note, pin) {
+        if (pop && pop.style.display === 'block' && popNoteId === note.id) { hidePop(); return; }
+        showPop(note, pin);
+    }
+    window.__reviewHidePop = hidePop;
+    window.__reviewPopNoteId = () => (pop && pop.style.display === 'block' ? popNoteId : null);
+    window.__reviewRelayout = () => { try { layout(); } catch (_) { /* ignore */ } };
+    document.addEventListener('click', e => {
+        if (pop && pop.style.display === 'block' && !pop.contains(e.target) && !e.target.closest?.('.__review_pin')) hidePop();
+    }, true);
+    // scroll 监听用了 capture，气泡自身 overflow:auto 的滚动也会冒到 window；旧逻辑因此鼠标一滚正文就关气泡。
+    // 只在气泡外部（原型页面 / 其他滚动容器）发生滚动时关闭；气泡内部滚动保持打开。
+    window.addEventListener('scroll', e => {
+        if (pop && pop.style.display === 'block' && pop.contains(e.target)) return;
+        hidePop();
+        scheduleLayout();
+    }, { passive: true, capture: true });
+    window.addEventListener('resize', () => { hidePop(); scheduleLayout(); }, { passive: true });
+
+    let layoutFrame = 0;
+    function scheduleLayout() {
+        if (layoutFrame) return;
+        layoutFrame = requestAnimationFrame(() => { layoutFrame = 0; layout(); });
+    }
+
+    const stateOf = () => document.documentElement.dataset.protoState || 'default';
+    let lastState = '', lastX = -1, lastY = -1, lastW = 0, lastH = 0;
+    let lastOrder = '', lastStale = '';
+    const pinsById = new Map();
+
+    function layout() {
+        const state = stateOf();
+        if (state !== lastState) hidePop(); // 只在原型状态切换时关气泡；纯几何重排不关（避免侧栏收起引发的 reflow 误关刚弹出的气泡）
+        const notes = (R.notes || []).filter(n => n.stateId === state);
+        window.ProtoAnchors.setRevealNotes?.(notes);
+        if (selectedNoteId && !notes.some(n => n.id === selectedNoteId)) selectNote(null);
+        const arranged = window.ProtoOrder.project(notes, window);
+        const stale = [], noPoint = [];
+        const visibleIds = new Set(), occupied = [];
+        for (const n of arranged) {
+            let found = null;
+            try { found = window.ProtoAnchors.point(n); } catch (_) { /* 锚定异常按失效处理 */ }
+            if (!found?.point) { noPoint.push(n); continue; }
+            if (found.point.visible === false) continue; // 滚出嵌套容器的序号随锚点隐藏，不算失锚。
+            let pin = pinsById.get(n.id);
+            if (!pin) {
+                pin = document.createElement('button');
+                pin.type = 'button';
+                pin.className = '__review_pin';
+                pin.dataset.noteId = n.id;
+                pinsById.set(n.id, pin);
+                layer.appendChild(pin);
+            }
+            window.ProtoAppearance?.applyPin(pin, n);
+            pin.classList.toggle('__review_selected', n.id === selectedNoteId);
+            pin.setAttribute('aria-current', String(n.id === selectedNoteId));
+            if (pin.textContent !== String(n.displayNumber)) pin.textContent = n.displayNumber;
+            pin.setAttribute('aria-label', `标注 ${n.displayNumber}`);
+            pin.setAttribute('aria-haspopup', 'dialog');
+            pin.setAttribute('aria-controls', '__review_popover');
+            pin.setAttribute('aria-expanded', String(popNoteId === n.id && pop?.style.display === 'block'));
+            const placed = window.ProtoAnchors.pinPosition
+                ? window.ProtoAnchors.pinPosition(found.point.x, found.point.y, pin.offsetWidth || 36, pin.offsetHeight || 36, occupied)
+                : found.point;
+            pin.style.left = placed.x + 'px';
+            pin.style.top = placed.y + 'px';
+            pin.onclick = e => {
+                e.preventDefault(); e.stopPropagation();
+                selectNote(n.id);
+                R.onSelect?.(n.id);
+                // PRD 侧栏展开：定位到右栏对应内容；收起：就地弹气泡展示内容。
+                if (R.asideOpen && R.asideOpen()) { hidePop(); R.onFocus?.(n.id); }
+                else togglePop(n, pin);
+            };
+            visibleIds.add(n.id);
+        }
+        for (const [id, pin] of pinsById) {
+            if (!visibleIds.has(id)) { pin.remove(); pinsById.delete(id); }
+        }
+        if (popNoteId && !visibleIds.has(popNoteId)) hidePop();
+        // 无落点分流（Feature 1 引导 + 失锚判定）：元素还在且被折叠/隐藏 → 正常颜色，可展开的盖透明脉冲描边框引导；
+        // 元素真找不到、或可见但落点失效（目标变化）才算失锚（右栏灰显、置底、不可点）。
+        const groups = new Map();
+        for (const n of noPoint) {
+            let el = null; try { el = window.ProtoAnchors.resolveHidden(n.anchor); } catch (_) { /* ignore */ }
+            let hint = null;
+            try { hint = window.ProtoAnchors.revealHint?.(n.anchor, el); } catch (_) { /* ignore */ }
+            if (!hint && el && window.ProtoAnchors.hidden(el)) {
+                let trigger = null; try { trigger = window.ProtoAnchors.revealTrigger(el); } catch (_) { /* ignore */ }
+                if (trigger) hint = { trigger, target: el, label: '展开', kind: 'disclosure' };
+            }
+            if (!hint?.trigger) {
+                if (!el || !window.ProtoAnchors.hidden(el)) stale.push(n.id); // 元素仍在但隐藏、只是暂无可操作引导时也不算失锚
+                continue;
+            }
+            let g = groups.get(hint.trigger);
+            const actionKey = `${hint.kind}\n${hint.label}`;
+            if (!g) groups.set(hint.trigger, (g = { target: hint.target, label: hint.label, actionKey, notes: [] }));
+            if (g.actionKey === actionKey) g.notes.push(n);
+        }
+        const GICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+        const existing = [...glayer.querySelectorAll('.__review_guide')];
+        const alive = new Set();
+        let gi = existing.length;   // 新建引导错峰呼吸（与 proto-annotate.js 一致）：负 delay 立处不同相位
+        groups.forEach((g, trig) => {
+            const r = trig.getBoundingClientRect();
+            if (r.width === 0 && r.height === 0) return;
+            // 描边框套在触发器外 4px，小图标至少 22px 保证可点；裁到视口内，完全出视口就不画（与 proto-annotate.js layoutGuides 同算法）
+            const pad = 4, w = Math.max(r.width + pad * 2, 22), h = Math.max(r.height + pad * 2, 22);
+            let left = r.left + r.width / 2 - w / 2, top = r.top + r.height / 2 - h / 2;
+            const right = Math.min(innerWidth - 2, left + w), bottom = Math.min(innerHeight - 2, top + h);
+            left = Math.max(2, left); top = Math.max(2, top);
+            if (right - left < 8 || bottom - top < 8) return;
+            let guide = existing.find(x => x.__rvTrig === trig);
+            if (!guide) {
+                guide = document.createElement('button');
+                guide.type = 'button'; guide.className = '__review_guide';
+                guide.__rvTrig = trig;
+                guide.style.setProperty('--g-delay', (-(gi++ % 4) * 0.45) + 's');
+                guide.onclick = async e => { e.preventDefault(); e.stopPropagation(); try { await window.ProtoAnchors.revealAndWait(guide.__rvTarget); } catch (_) { /* ignore */ } layout(); };
+                glayer.appendChild(guide);
+            }
+            guide.__rvTarget = g.target;
+            const safeLabel = String(g.label).replace(/[&<>"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[char]);
+            const html = '<span class="__review_guide_tag">' + GICON + '<span>' + safeLabel + ' · ' + g.notes.length + '</span></span>';
+            if (guide.__rvHtml !== html) { guide.innerHTML = html; guide.__rvHtml = html; }
+            guide.title = '点击“' + g.label + '”以显示 ' + g.notes.length + ' 处标注（' + g.notes.map(n => n.displayNumber).join(' ') + '）';
+            guide.setAttribute('aria-label', guide.title);
+            guide.style.left = left + 'px'; guide.style.top = top + 'px';
+            guide.style.width = (right - left) + 'px'; guide.style.height = (bottom - top) + 'px';
+            guide.classList.toggle('__review_guide_below', top < 24);            // 贴顶时标签改挂底边，不被视口切掉
+            guide.classList.toggle('__review_guide_end', left + 84 > innerWidth); // 贴右时标签改挂右角
+            alive.add(guide);
+        });
+        existing.forEach(x => { if (!alive.has(x)) x.remove(); });
+        const orderKey = JSON.stringify(arranged.map(n => [n.id, n.displayNumber]));
+        const staleKey = JSON.stringify(stale);
+        if (orderKey !== lastOrder || staleKey !== lastStale || state !== lastState) {
+            lastOrder = orderKey; lastStale = staleKey; lastState = state;
+            R.onSync?.(Object.fromEntries(arranged.map(n => [n.id, n.displayNumber])), state, stale);
+        }
+    }
+
+    document.addEventListener('proto-anchors:reveal-failed', layout);
+
+    // 关闭弹窗和显示入口可能保持 HTML 字符数不变；监听真实 DOM 变化。
+    // 过滤自有层，避免重建序号 / 拖动浮窗时反过来触发无限重排。
+    if (typeof MutationObserver !== 'undefined') {
+        new MutationObserver(records => { if (records.some(record => !owned(record.target))) scheduleLayout(); })
+            .observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true,
+                attributeFilter: ['class', 'style', 'hidden', 'open', 'aria-expanded', 'aria-hidden', 'inert', 'data-proto-state'] });
+    }
+    for (const event of ['transitionend', 'animationend', 'load'])
+        document.addEventListener(event, e => { if (!owned(e.target)) scheduleLayout(); }, true);
+    document.fonts?.ready.then(scheduleLayout);
+
+    setInterval(() => {
+        if (stateOf() !== lastState || scrollX !== lastX || scrollY !== lastY ||
+            innerWidth !== lastW || innerHeight !== lastH) {
+            lastX = scrollX; lastY = scrollY; lastW = innerWidth; lastH = innerHeight;
+            layout();
+        }
+    }, 350);
+
+    layout();
+})();
+
+</script>
+</body>
+</html>
