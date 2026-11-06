@@ -123,6 +123,8 @@
             .markdown th, .markdown td { border: 1px solid var(--border); padding: 6px; text-align: left; }
             .markdown blockquote { border-left: 3px solid var(--border); margin: 8px 0; padding: 2px 12px; color: var(--muted); }
             .markdown ul, .markdown ol { padding-left: 22px; }
+            .markdown ol { list-style-type: decimal; } .markdown ol ol { list-style-type: lower-alpha; } .markdown ol ol ol { list-style-type: lower-roman; }
+            .note-title { margin-left: 10px; min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
             .markdown li.task { list-style: none; margin-left: -20px; }
             .markdown a { color: var(--accent); }
             .markdown hr { border: 0; border-top: 1px solid var(--border); }
@@ -214,7 +216,12 @@ dialog.ppn-trash-dialog{position:fixed;top:12px;bottom:auto;margin:0;padding:0;w
 .ppn .ppn-expand svg{width:12px;height:12px;transition:transform 140ms ease}
 .ppn .ppn-expand[aria-expanded="false"] svg{transform:rotate(-90deg)}
 .ppn .ppn-expand:hover{background:var(--nav-hover);color:var(--nav-ink)}
-.ppn .ppn-state{padding-left:calc(62px + var(--ppn-depth,0)*14px)}
+.ppn .ppn-state{position:relative;padding-left:calc(62px + var(--ppn-depth,0)*14px)}
+.ppn .ppn-state-grip{position:absolute;left:calc(38px + var(--ppn-depth,0)*14px);top:50%;transform:translateY(-50%);display:grid;place-items:center;width:16px;height:18px;color:var(--nav-muted);opacity:0;touch-action:none}.ppn .ppn-state-grip svg{width:15px;height:17px}.ppn .ppn-state:focus-visible .ppn-state-grip,.ppn.ppn-drag-ghost .ppn-state-grip{opacity:1}
+@media(hover:hover){.ppn .ppn-state[data-ppn-drag]:hover{cursor:grab}.ppn .ppn-state[data-ppn-drag]:hover .ppn-state-grip{opacity:1}}
+.ppn .ppn-state-wrap{position:relative}.ppn .ppn-state-wrap>.ppn-state{padding-right:42px;min-height:32px;overflow-wrap:anywhere}.ppn .ppn-state-edit{top:50%;transform:translateY(-50%);width:24px;height:24px;padding:5px;background:transparent;opacity:0;pointer-events:none}.ppn .ppn-state-wrap:hover>.ppn-state-edit,.ppn .ppn-state-wrap:has(:focus-visible)>.ppn-state-edit{opacity:1;pointer-events:auto}.ppn .ppn-state-edit:hover{background:var(--nav-hover);color:var(--nav-ink)}
+@media(hover:none),(pointer:coarse){.ppn .ppn-state-edit{opacity:1;pointer-events:auto}}
+@media(pointer:coarse){.ppn .ppn-state-wrap>.ppn-state{min-height:44px;padding-right:52px}.ppn .ppn-state-edit{width:40px;height:40px;padding:12px}.ppn .ppn-state-grip{left:calc(34px + var(--ppn-depth,0)*14px);width:22px;height:30px;opacity:1}}
 .ppn .ppn-page.ppn-drop-inside{background:color-mix(in srgb,var(--nav-focus) 10%,var(--nav-surface));box-shadow:inset 0 0 0 1.5px var(--nav-focus);color:var(--nav-ink)}
 .ppn .ppn-drop-invalid{box-shadow:inset 0 0 0 1px var(--nav-danger);background:color-mix(in srgb,var(--nav-danger) 8%,var(--nav-surface))}
 .ppn .ppn-root-active{background:color-mix(in srgb,var(--nav-focus) 9%,var(--nav-surface));box-shadow:inset 0 0 0 1px var(--nav-focus);color:var(--nav-focus)}
@@ -238,6 +245,216 @@ dialog.ppn-trash-dialog{position:fixed;top:12px;bottom:auto;margin:0;padding:0;w
 body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing iframe{pointer-events:none}
 @media(pointer:coarse){.page-nav-resizer{width:16px}}
 </style>
+        <style>.pu-dialog{--pu-bg:#fff;--pu-soft:#f5f6f8;--pu-text:#202329;--pu-muted:#667085;--pu-line:#d8dee3;box-sizing:border-box;width:min(920px,94vw);max-height:86vh;padding:0;border:1px solid var(--pu-line);border-radius:12px;background:var(--pu-bg);color:var(--pu-text);font:14px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;box-shadow:0 20px 70px #0004}
+.pu-dialog:not([open]){display:none}.pu-dialog::backdrop{background:#10182880}.pu-dialog-head{display:flex;gap:20px;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--pu-line)}.pu-dialog h2{font-size:19px;font-weight:650;margin:0}.pu-dialog-body{padding:16px 20px;overflow:auto;max-height:calc(86vh - 76px)}
+.pu-muted{color:var(--pu-muted,#667085);font-size:12px;margin:4px 0 12px}.pu-table-wrap{overflow:auto}.pu-table{width:100%;border-collapse:collapse;table-layout:fixed}.pu-table th,.pu-table td{padding:12px 10px;border-bottom:1px solid var(--pu-line);text-align:left;vertical-align:top;overflow-wrap:anywhere}.pu-table th{font-size:12px;background:var(--pu-soft);color:var(--pu-muted);font-weight:500}.pu-table th:nth-child(1){width:19%}.pu-table th:nth-child(2){width:13%}.pu-table th:nth-child(4){width:100px}.pu-table strong{font-weight:600}.pu-table textarea{box-sizing:border-box;width:100%;padding:7px 9px;resize:vertical;min-height:54px;border:1px solid var(--pu-line);border-radius:5px;font:inherit;line-height:1.6;background:var(--pu-bg);color:inherit}.pu-table details{margin-top:7px;font-size:12px}.pu-table summary{cursor:pointer;color:var(--pu-muted)}.pu-before,.pu-after{white-space:pre-wrap;margin:8px 0;padding:7px;background:var(--pu-soft);border-radius:4px}.pu-kind{font-size:12px}.pu-release-section+.pu-release-section{margin-top:24px;padding-top:16px;border-top:1px solid var(--pu-line)}
+.pu-btn{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:5px 10px;border:1px solid #808790;border-radius:6px;font:inherit;font-size:12px;line-height:20px;white-space:nowrap;background:transparent;color:inherit;cursor:pointer}.pu-btn:hover{background:#80879015}.pu-btn:focus-visible,.pu-table textarea:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pu-btn.primary{background:#fff;color:#1744a8;border-color:#fff;font-weight:600}.pu-error{color:#e5484d}
+.pu-update-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;flex:none;padding:12px 20px;background:#1d4ed8;color:#fff;font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif}.pu-update-banner[hidden],.pu-update-badge[hidden]{display:none}.pu-banner-detail{font-size:12px;opacity:.9;margin-top:2px}.pu-banner-actions{display:flex;gap:8px;flex:none}.pu-update-banner .pu-btn{border-color:#ffffff70;color:white}.pu-update-banner .pu-btn.primary{color:#1744a8;background:white}.pu-update-badge{background:#1d4ed8!important;color:white!important;border-color:#1d4ed8!important}.pu-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:2147483640;padding:10px 16px;border-radius:8px;background:#202329;color:#fff;font:13px/1.6 sans-serif;max-width:min(80vw,600px);box-shadow:0 8px 24px #0003}.pu-toast[hidden]{display:none}
+:root[data-ext-theme="dark"] .pu-dialog,:root[data-home-theme="dark"] .pu-dialog{--pu-bg:#15181d;--pu-soft:#20252c;--pu-text:#edf0f4;--pu-muted:#a3adba;--pu-line:#39414b;color-scheme:dark}
+@media(prefers-color-scheme:dark){:root:not([data-ext-theme="light"]):not([data-home-theme="light"]) .pu-dialog{--pu-bg:#15181d;--pu-soft:#20252c;--pu-text:#edf0f4;--pu-muted:#a3adba;--pu-line:#39414b;color-scheme:dark}}
+@media(max-width:700px){.pu-update-banner{align-items:flex-start;flex-direction:column;padding:12px}.pu-banner-actions{flex-wrap:wrap}.pu-btn{min-height:38px}.pu-dialog{width:96vw}.pu-dialog-body{padding:12px}.pu-table{min-width:620px}.pu-dialog-head{padding:12px}}
+</style>
+        <script>/* 发布说明、本地草稿与静态站更新检测。只读取同站点版本文件。 */
+(function(global){
+    'use strict';
+    const KINDS={text:'文案',annotation:'标注',document:'页面需求','annotation-position':'标注位置',page:'页面配置',
+        'page-added':'新增页面','page-removed':'删除页面','element-added':'新增内容','element-removed':'删除内容',
+        style:'样式',logic:'交互代码',asset:'图片 / 资源',resource:'公共资源',layout:'结构',runtime:'评审组件',publication:'发布版本'};
+    function validRelease(value) {
+        return !!value && value.schemaVersion===1 && /^rel-[a-f0-9]{16}$/.test(value.releaseId || '') &&
+            /^[a-f0-9]{64}$/.test(value.contentVersion || '') && Number.isSafeInteger(value.sequence) && value.sequence>0 &&
+            ['review','pure'].includes(value.mode);
+    }
+    function safeRelative(value) {
+        return typeof value==='string' && value.length<300 && !value.includes('\\') && !/[?#:%]/.test(value) &&
+            value.split('/').every(p=>p && p!=='.' && p!=='..');
+    }
+    function createWatcher(options) {
+        const current=options.current, fetcher=options.fetch || global.fetch.bind(global);
+        const visible=options.visible || (()=>!global.document?.hidden);
+        const schedule=options.setTimeout || global.setTimeout.bind(global), cancel=options.clearTimeout || global.clearTimeout.bind(global);
+        let timer=null, stopped=true, inFlight=null, delay=30000, seen=current?.sequence || 0;
+        const protocol=options.protocol || global.location?.protocol;
+        function next(){ cancel(timer); if(!stopped && visible()) timer=schedule(check,delay); }
+        function check(){
+            if(stopped || !visible() || !validRelease(current) || !['http:','https:'].includes(protocol)) return Promise.resolve();
+            if(inFlight) return inFlight;
+            cancel(timer);
+            const abort=global.AbortController ? new global.AbortController():null;
+            const timeout=abort && schedule(()=>abort.abort(),5000);
+            inFlight=(async()=>{
+                try {
+                    const url=new URL('prototype-release.json',options.baseUrl || global.location.href);
+                    url.searchParams.set('_check',String(Date.now()));
+                    const response=await fetcher(url.href,{cache:'no-store',credentials:'omit',signal:abort?.signal});
+                    if(!response.ok) throw Error('版本暂不可读');
+                    const latest=await response.json();
+                    if(!validRelease(latest) || (current.projectId && latest.projectId!==current.projectId)) return;
+                    delay=30000;
+                    if(latest.sequence>seen){
+                        seen=latest.sequence;
+                        if(latest.contentVersion!==current.contentVersion) options.onUpdate(latest);
+                    }
+                } catch(_){ delay=Math.min(delay*2,300000); }
+                finally { if(timeout)cancel(timeout); inFlight=null;next(); }
+            })();
+            return inFlight;
+        }
+        const resume=()=>{if(visible())check();else cancel(timer);};
+        return {start(){if(!stopped)return;stopped=false;global.addEventListener?.('focus',resume);global.document?.addEventListener('visibilitychange',resume);check();},
+            check,stop(){stopped=true;cancel(timer);global.removeEventListener?.('focus',resume);global.document?.removeEventListener('visibilitychange',resume);}};
+    }
+    function node(tag,text,className){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;}
+    function notify(text){
+        let n=document.querySelector('.pu-toast');if(!n){n=node('div',undefined,'pu-toast');n.setAttribute('role','status');document.body.append(n);}
+        n.textContent=text;n.hidden=false;clearTimeout(n._timer);n._timer=setTimeout(()=>n.hidden=true,4500);
+    }
+    function targetHash(target){return new URLSearchParams({p:target.pageId || '',s:target.stateId || 'default',changeTarget:JSON.stringify(target)}).toString();}
+    function readTarget(hash){try{const raw=new URLSearchParams(hash.slice(1)).get('changeTarget');if(!raw || raw.length>6000)return null;const t=JSON.parse(raw);
+        if(!t || typeof t.pageId!=='string' || t.pageId.length>256 || typeof t.stateId!=='string' || t.stateId.length>256)return null;
+        const out={pageId:t.pageId,stateId:t.stateId};for(const k of ['noteId','documentId'])if(typeof t[k]==='string' && t[k].length<256)out[k]=t[k];
+        if(t.anchor && typeof t.anchor==='object'){out.anchor={};for(const k of ['selector','protoId','tag','text','parentText','textRule'])if(typeof t.anchor[k]==='string' && t.anchor[k].length<3000)out.anchor[k]=t.anchor[k];}
+        return out;
+    }catch(_){return null;}}
+    let currentDialog=null;
+    const previewCache=new Map();
+    function previewLocal(projectId,force=false){
+        const hit=previewCache.get(projectId);if(!force && hit && Date.now()-hit.time<5000)return hit.promise;
+        const promise=fetch('/api/ext/release-preview?projectId='+encodeURIComponent(projectId)).then(r=>r.json());
+        previewCache.set(projectId,{promise,time:Date.now()});return promise;
+    }
+    async function summarizeLocal(button,projectId,force=false){
+        if(!button)return;button.dataset.project=projectId;button.textContent='更新说明 · 正在对比…';
+        try{const result=await previewLocal(projectId,force);if(button.dataset.project!==projectId)return;
+            const s=result.release?.summary;button.textContent=result.ok?`更新说明 · ${s?.pages || 0} 页 / ${s?.changes || 0} 项`:'更新说明 · 点击重试';
+        }catch(_){if(button.dataset.project===projectId)button.textContent='更新说明 · 点击重试';}
+    }
+    function dialog(title){
+        currentDialog?.close();currentDialog?.remove();
+        const d=node('dialog',undefined,'pu-dialog');currentDialog=d;
+        const head=node('div',undefined,'pu-dialog-head');const heading=node('h2',title);heading.id='pu-title';d.setAttribute('aria-labelledby','pu-title');head.append(heading);
+        const close=node('button','关闭','pu-btn');close.type='button';close.onclick=()=>d.close();head.append(close);
+        const body=node('div',undefined,'pu-dialog-body');d.append(head,body);document.body.append(d);
+        d.addEventListener('close',()=>{d._flush?.();d.remove();if(currentDialog===d)currentDialog=null;},{once:true});
+        d.showModal();return {d,body};
+    }
+    function showItems(host,payload,options={}){
+        host.replaceChildren();
+        const items=Array.isArray(payload?.items)?payload.items:[];
+        const status=node('p',undefined,'pu-muted');host.append(status);
+        status.textContent=payload?.baselineStatus==='unavailable'?'首次建立版本基线，历史差异暂不可完整比较':
+            payload?.baselineStatus==='initial'?'首次发布摘要':items.length?`${new Set(items.map(i=>i.target?.pageId)).size} 个页面 · ${items.length} 项更新`:'与上次版本相比没有内容变化';
+        if(payload?.publishedAt)host.append(node('p',payload.publishedAt,'pu-muted'));
+        if(!items.length)return;
+        const wrap=node('div',undefined,'pu-table-wrap'), table=node('table',undefined,'pu-table');
+        const tr=node('tr');for(const label of ['页面 / 状态','类型','更新内容','操作'])tr.append(node('th',label));
+        const thead=node('thead');thead.append(tr);table.append(thead);
+        const tbody=node('tbody');table.append(tbody);wrap.append(table);host.append(wrap);
+        for(const item of items){
+            const row=node('tr'), page=node('td'), kind=node('td'), description=node('td'), action=node('td');
+            page.append(node('strong',item.pageTitle || '公共资源'),node('div',item.stateTitle || '默认','pu-muted'));
+            if(item.affectedPages?.length>1)page.append(node('small',(item.affectedPageTitles || item.affectedPages).join('、'),'pu-muted'));
+            kind.append(node('span',KINDS[item.kind] || '内容','pu-kind'));
+            if(options.edit){
+                const input=node('textarea');input.value=item.description || '';input.rows=2;input.maxLength=1000;
+                input.setAttribute('aria-label','修改更新说明：'+(item.pageTitle || '公共资源'));
+                input.oninput=()=>{item.description=input.value;options.onEdit?.(items);};description.append(input);
+            }else description.append(node('div',item.description || '内容有更新'));
+            if(item.before || item.after){
+                const details=node('details');details.append(node('summary',item.target?.deleted?'查看删除内容':'前后内容'));
+                if(item.before)details.append(node('p','原：'+item.before,'pu-before'));
+                if(item.after)details.append(node('p','新：'+item.after,'pu-after'));description.append(details);
+            }
+            const button=node('button',item.target?.deleted?'查看详情':options.refresh?'刷新并定位':'定位','pu-btn');button.type='button';
+            button.onclick=()=>{
+                if(item.target?.deleted){description.querySelector('details')?.setAttribute('open','');return;}
+                if(!item.target?.pageId){notify('此项为公共更新，请查看涉及页面');return;}
+                options.close?.();Promise.resolve(options.onLocate?.(item.target)).catch(e=>notify(e.message || '定位失败'));
+            };
+            action.append(button);row.append(page,kind,description,action);tbody.append(row);
+        }
+    }
+    async function openLocal({projectId,onLocate}){
+        const {d,body}=dialog('更新说明');body.append(node('p','正在对比上次发布…','pu-muted'));
+        let result,saveTimer=null,pending=null,saving=false;
+        const status=node('p','修改说明自动保存','pu-muted');
+        async function save(){
+            clearTimeout(saveTimer);if(saving || !pending)return;
+            saving=true;const descriptions=pending;pending=null;
+            try{
+                const response=await fetch('/api/ext/release-notes',{method:'POST',headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({projectId,branch:result.target.branch,sourceVersion:result.sourceVersion,descriptions})});
+                const data=await response.json();if(!data.ok)throw Error(data.error || '说明保存失败');status.textContent='说明已保存';
+            }catch(e){status.textContent=e.message;notify(e.message);}finally{saving=false;if(pending)save();}
+        }
+        d._flush=()=>{clearTimeout(saveTimer);save();};
+        try{
+            result=await previewLocal(projectId,true);
+            if(!result.ok)throw Error(result.error || '无法生成更新说明');if(!d.open)return;
+            const content=node('div');showItems(content,result.changes,{edit:true,close:()=>d.close(),onLocate:target=>{
+                if(onLocate)return onLocate(target);
+                const url=new URL('/src/viewer.html',location.href);url.searchParams.set('ext',projectId);url.searchParams.set('page',target.pageId);url.searchParams.set('state',target.stateId || 'default');url.searchParams.set('mode','annotate');url.hash=targetHash(target);global.open(url.href,'_blank','noopener');
+            },onEdit:items=>{pending=Object.fromEntries(items.map(i=>[i.id,i.description]));status.textContent='正在保存…';clearTimeout(saveTimer);saveTimer=setTimeout(save,600);}});
+            body.replaceChildren(content,status);
+        }catch(e){body.replaceChildren(node('p',e.message,'pu-error'));}
+    }
+    function mountPublished({data,onLocate}){
+        const header=document.querySelector('header.topbar');if(!header)return;
+        let latest=null;
+        const banner=node('section',undefined,'pu-update-banner');banner.hidden=true;banner.setAttribute('aria-label','页面更新通知');banner.setAttribute('role','status');
+        const label=node('div'),title=node('strong','页面有更新，请刷新查看最新版本。'),detail=node('div',undefined,'pu-banner-detail');label.append(title,detail);
+        const controls=node('div',undefined,'pu-banner-actions');
+        const refresh=node('button','刷新页面','pu-btn primary'),view=node('button','查看更新','pu-btn'),later=node('button','稍后','pu-btn');
+        controls.append(refresh,view,later);banner.append(label,controls);header.after(banner);
+        const badge=node('button','有更新','pu-btn pu-update-badge');badge.hidden=true;badge.onclick=()=>{badge.hidden=true;banner.hidden=false;};header.append(badge);
+        function refreshTo(target){const url=new URL(location.href);url.searchParams.set('v',latest.contentVersion);if(target)url.hash=targetHash(target);location.replace(url.href);}
+        refresh.onclick=()=>refreshTo();later.onclick=()=>{banner.hidden=true;badge.hidden=false;};
+        async function show(latestOnly=false){
+            const {d,body}=dialog(latestOnly?'最新更新说明':'更新说明');
+            if(!latestOnly){showItems(body,data.changeLog || {items:[]},{close:()=>d.close(),onLocate});}
+            else body.append(node('p','正在读取更新说明…','pu-muted'));
+            let release=latestOnly?latest:data.release;
+            if(!validRelease(release))return;
+            if(release.mode==='pure'){body.replaceChildren(node('p','最新发布已切换为纯净版，请刷新后查看原型。'));return;}
+            if(!latestOnly && ['http:','https:'].includes(location.protocol)){
+                try{
+                    const response=await fetch(new URL('prototype-release.json',location.href),{cache:'no-store',credentials:'omit'});
+                    const remote=await response.json();
+                    if(validRelease(remote) && remote.projectId===data.release.projectId && Array.isArray(remote.history))
+                        release={...release,history:remote.history.filter(h=>h.sequence<=data.release.sequence)};
+                }catch(_){/* 离线时保留随包携带的当前更新说明。 */}
+            }
+            const history=(Array.isArray(release.history)?release.history:[]).filter(h=>!latestOnly || h.sequence>data.release.sequence);
+            const paths=[...history.map(h=>h.changesUrl),release.changesUrl].filter((v,i,a)=>v && a.indexOf(v)===i && safeRelative(v));
+            if(!latestOnly){
+                if(!paths.length)return;
+                const more=node('button','查看保留的历史更新','pu-btn');body.append(more);more.onclick=()=>load();
+            }else await load();
+            async function load(){
+                const output=node('div');let count=0;
+                if(latestOnly && history.length && Math.min(...history.map(h=>h.sequence))>data.release.sequence+1)
+                    output.append(node('p','当前页面落后较多，以下仅包含保留范围内的更新；更早变化已归档。','pu-muted'));
+                for(const path of paths){
+                    try{
+                        const response=await fetch(new URL(path,location.href),{cache:'no-store',credentials:'omit'});if(!response.ok)continue;
+                        const payload=await response.json();if(payload.schemaVersion!==1 || !Array.isArray(payload.items) || path!=='prototype-changes/'+payload.releaseId+'.json')continue;
+                        const section=node('section',undefined,'pu-release-section');showItems(section,payload,{refresh:latestOnly,close:()=>d.close(),onLocate:latestOnly?refreshTo:onLocate});output.append(section);count++;
+                    }catch(_){/* 部分历史可能已归档 */}
+                }
+                if(!d.open)return;
+                if(count)body.replaceChildren(output);else if(latestOnly)body.replaceChildren(node('p','更新说明暂不可读，请稍后重试；可先刷新查看最新页面。'));
+            }
+        }
+        const notes=node('button','更新说明','pu-btn');notes.onclick=()=>show();header.append(notes);view.onclick=()=>show(true);
+        if(validRelease(data.release)){
+            const watcher=createWatcher({current:data.release,onUpdate:value=>{latest=value;const s=value.summary || {};detail.textContent=`${value.publishedAt || ''} · 涉及 ${s.pages || 0} 个页面、${s.changes || 0} 项变化`;banner.hidden=false;badge.hidden=true;}});
+            watcher.start();global.addEventListener('pagehide',()=>watcher.stop(),{once:true});
+        }
+        return {notify};
+    }
+    global.PublicationUpdates={createWatcher,validRelease,safeRelative,openLocal,summarizeLocal,mountPublished,notify,readTarget,targetHash};
+})(typeof window!=='undefined'?window:globalThis);
+</script>
         <script>(function () {
     'use strict';
     const svg = (path) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">' + path + '</svg>';
@@ -435,7 +652,19 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
         function visit(page) {if (!page || seen.has(page.id)) return; seen.add(page.id); result.push(page); (project.pages || []).filter(p => p.parentId === page.id).forEach(visit);}
         visit((project.pages || []).find(p => p.id === id)); return result;
     }
+    function orderedStates(page) {
+        const states=page?.states || [],records=new Map(states.map(s=>[s.id,s]));
+        const ordered=[];
+        for(const id of Array.isArray(page?.stateOrder)?page.stateOrder:[]){const state=records.get(id);if(state){ordered.push(state);records.delete(id);}}
+        return ordered.concat(states.filter(s=>records.has(s.id)));
+    }
     function reorderError(project, request) {
+        if(request.kind==='state'){
+            const page=project.pages?.find(p=>p.id===request.pageId && !p.trashedAt);
+            if(!page || !page.states?.some(s=>s.id===request.id) || !page.states.some(s=>s.id===request.targetId))return '状态已变化，请重新拖动';
+            if(!['before','after'].includes(request.position))return '状态只支持同一页面内上下排序';
+            return request.id===request.targetId?'请选择其他状态':'';
+        }
         if (request.kind === 'client') return '';
         const source = project.pages?.find(p => p.id === request.id), target = project.pages?.find(p => p.id === request.targetId);
         if (!source || source.trashedAt) return '页面已移除';
@@ -455,7 +684,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
         return depth + height(source) - 1 > 3 ? '最多支持三级页面，当前子树会超过三级' : '';
     }
     function reorderProject(project, request) {
-        if (!['page', 'client'].includes(request.kind)) return false;
+        if (!['page', 'client', 'state'].includes(request.kind)) return false;
         if (request.kind === 'client') {
             const records = [...(project.clients || [])], source = records.findIndex(p => p.id === request.id), target = records.findIndex(p => p.id === request.targetId);
             if (source < 0 || target < 0 || source === target || !['before', 'after'].includes(request.position)) return false;
@@ -465,6 +694,12 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
             project.clients = records; return true;
         }
         if (reorderError(project, request)) return false;
+        if(request.kind==='state'){
+            const page=project.pages.find(p=>p.id===request.pageId),states=orderedStates(page),ids=states.map(s=>s.id);
+            const next=ids.filter(id=>id!==request.id);next.splice(next.indexOf(request.targetId)+(request.position==='after'?1:0),0,request.id);
+            if(next.every((id,index)=>id===ids[index]))return false;
+            project.pages=project.pages.map(p=>p===page?{...p,stateOrder:next}:p);return true;
+        }
         const tree = pageTree(project), target = tree.nodes.get(request.targetId)?.page;
         const moved = subtreePages(project, request.id).map(p => ({...p})), ids = new Set(moved.map(p => p.id));
         const records = project.pages.filter(p => !ids.has(p.id));
@@ -499,6 +734,14 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
         if(page.role==='launcher'||(parent&&(parent.clientId || '')!==(page.clientId || '')))delete page.parentId;
         if(page.role==='launcher')for(const child of project.pages)if(child.parentId===id)delete child.parentId;
     }
+    function updateStateTitle(project, pageId, stateId, value) {
+        const title=typeof value==='string'?value.trim():'';
+        if(!title || title.length>100 || /[\u0000-\u001f\u007f]/.test(title))throw new Error(!title?'请填写状态名称':'状态名称最多 100 个字符，不能包含换行或控制字符');
+        const page=project.pages.find(p=>p.id===pageId && !p.trashedAt),state=page?.states?.find(s=>s.id===stateId);
+        if(!state)throw new Error('状态已移除，请重新打开项目');
+        if(title===(state.title || state.id))return false;
+        state.title=title;state.titleUserSet=true;return true;
+    }
     function mount(host, initial) {
         let options = initial, filter = '', closed = new Set(['__launchers']), closedPages = new Set(), filterControl = null, drag = null, saving = false, suppressClick = false;
         host.classList.add('ppn');
@@ -510,7 +753,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
         }
         function render() {
             const focused = document.activeElement?.closest('[data-ppn-key]')?.dataset.ppnKey;
-            const { project, currentPage, currentState, onSelect, onEdit, onReorder, annotations = [] } = options;
+            const { project, currentPage, currentState, onSelect, onEdit, onEditState, onReorder, annotations = [] } = options;
             const pages = (project.pages || []).filter(p=>!p.trashedAt), clients = project.clients || [], tree = pageTree(project);
             if (filter && !clients.some(c => c.id === filter)) filter = '';
             filterControl?.destroy(); filterControl = null; host.replaceChildren();
@@ -582,10 +825,18 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                         const expand=button('ppn-expand','',()=>{closedPages.has(page.id)?closedPages.delete(page.id):closedPages.add(page.id);render();});
                         expand.innerHTML=chevron;expand.setAttribute('aria-label',(nested.hidden?'展开':'收起')+' '+title.textContent+'的子页面');expand.setAttribute('aria-expanded',String(!nested.hidden));expand.setAttribute('aria-controls',nested.id);expand.dataset.ppnKey='expand:'+page.id;item.append(expand);
                     }
-                    if ((page.states || []).length>1) for (const state of page.states) {
+                    if ((page.states || []).length>1) for (const state of orderedStates(page)) {
                         const st=button('ppn-state',state.title || state.id,()=>onSelect(page.id,state.id));
                         st.dataset.pageId=page.id;st.dataset.stateId=state.id;st.dataset.scope=page.id+'\n'+state.id;st.dataset.ppnKey='state:'+page.id+':'+state.id;
-                        st.style.setProperty('--ppn-depth',depth-1);st.setAttribute('aria-current',String(page.id===currentPage && state.id===currentState));node.append(st);
+                        st.style.setProperty('--ppn-depth',depth-1);st.setAttribute('aria-current',String(page.id===currentPage && state.id===currentState));
+                        if(onReorder){const grip=document.createElement('span');grip.className='ppn-state-grip';grip.innerHTML=dragIcon;grip.setAttribute('aria-hidden','true');st.prepend(grip);st.dataset.ppnDrag='state';st.dataset.dragId=state.id;st.setAttribute('aria-keyshortcuts','Alt+ArrowUp Alt+ArrowDown');st.title='拖动调整状态顺序 · Alt + ↑ / ↓';}
+                        if(onEditState){
+                            const row=document.createElement('div');row.className='ppn-state-wrap';
+                            const edit=button('ppn-edit ppn-state-edit','',event=>{event.stopPropagation();onEditState(page,state,event.currentTarget);});
+                            edit.innerHTML=editIcon;edit.setAttribute('aria-label','修改状态名称：'+(state.title || state.id));edit.title='修改状态名称';edit.dataset.ppnKey='edit-state:'+page.id+':'+state.id;
+                            st.setAttribute('aria-keyshortcuts',(onReorder?'Alt+ArrowUp Alt+ArrowDown ':'')+'F2');st.onkeydown=event=>{if(event.key==='F2'){event.preventDefault();event.stopPropagation();onEditState(page,state,edit);}};
+                            row.append(st,edit);node.append(row);
+                        }else node.append(st);
                     }
                     children.forEach(child=>renderPage(child,nested));if(children.length)node.append(nested);
                 }
@@ -602,13 +853,14 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
             if (saving || !options.onReorder) return;
             const check = {pages: [...options.project.pages], clients: [...(options.project.clients || [])]};
             const error=reorderError(options.project,request);if(error){live.textContent=error;return;}
-            if (!reorderProject(check, request)) {live.textContent='页面位置未改变';return;}
+            const stateMove=request.kind==='state',label=stateMove?'状态顺序':'页面结构';
+            if (!reorderProject(check, request)) {live.textContent=label+'未改变';return;}
             const previousProject=options.project, save=options.onReorder;
             if(request.position==='inside')closedPages.delete(request.targetId);
-            const moved=check.pages.find(p=>p.id===request.id);if(moved)closed.delete(groupKey(moved,check));
+            const moved=request.kind==='page'&&check.pages.find(p=>p.id===request.id);if(moved)closed.delete(groupKey(moved,check));
             if(filter && moved && groupKey(moved,check)!==filter)filter='';
-            saving = true; options={...options,project:check}; live.textContent = '正在保存页面结构'; render();
-            try {const ok = await save(request); if(ok===false && options.project===check)options={...options,project:previousProject};live.textContent = ok === false ? '移动未保存，已恢复原结构' : '页面结构已保存';}
+            saving = true; options={...options,project:check}; live.textContent = '正在保存'+label; render();
+            try {const ok = await save(request); if(ok===false && options.project===check)options={...options,project:previousProject};live.textContent = ok === false ? '移动未保存，已恢复原结构' : label+'已保存';}
             catch (_) {if(options.project===check)options={...options,project:previousProject};live.textContent = '移动未保存，已恢复原结构';}
             finally {saving = false; render(); if(focusKey) Array.from(host.querySelectorAll('[data-ppn-key]')).find(n=>n.dataset.ppnKey===focusKey)?.focus({preventScroll:true});}
         }
@@ -632,7 +884,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                 drag.caption=document.createElement('div');drag.caption.className='ppn-drag-caption';drag.ghost.append(drag.caption);
                 drag.ghost.style.width=startRect.width+'px';document.body.append(drag.ghost);
                 drag.line=document.createElement('div');drag.line.className='ppn-drop-line';document.body.append(drag.line);
-                live.textContent=node.dataset.ppnDrag==='client'?'正在拖动端分组':'拖到中间成为子页面，上下边缘同级排序';tick();
+                live.textContent=node.dataset.ppnDrag==='state'?'上下拖动调整状态顺序，仅限当前页面':node.dataset.ppnDrag==='client'?'正在拖动端分组':'拖到中间成为子页面，上下边缘同级排序';tick();
             }
             function tick(schedule=true) {
                 if (!drag?.started) return;
@@ -641,13 +893,13 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                 const inPanel=d.x>=r.left-18 && d.x<=r.right+18;
                 if(inPanel){const edge=38;const delta=d.y<r.top+edge?-Math.min(9,(r.top+edge-d.y)/4):d.y>r.bottom-edge?Math.min(9,(d.y-r.bottom+edge)/4):0;host.scrollTop+=delta;}
                 host.querySelectorAll('.ppn-drop-inside,.ppn-drop-invalid,.ppn-root-active').forEach(n=>n.classList.remove('ppn-drop-inside','ppn-drop-invalid','ppn-root-active'));
-                const kind=node.dataset.ppnDrag, candidates=Array.from(host.querySelectorAll('[data-ppn-drag]')).filter(n=>n.dataset.ppnDrag===kind && n.getClientRects().length);
+                const kind=node.dataset.ppnDrag, candidates=Array.from(host.querySelectorAll('[data-ppn-drag]')).filter(n=>n.dataset.ppnDrag===kind && (kind!=='state'||n.dataset.pageId===node.dataset.pageId) && n.getClientRects().length);
                 let closest=null, distance=Infinity, request=null, caption='', inside=false;
                 const rootTarget=kind==='page'&&inPanel?Array.from(host.querySelectorAll('[data-ppn-root]')).find(n=>{const cr=n.getBoundingClientRect();return cr.height&&d.y>=cr.top&&d.y<=cr.bottom;}):null;
                 if(rootTarget){request={kind,id:node.dataset.dragId,targetId:rootTarget.dataset.ppnRoot,position:'root'};closest=rootTarget;caption='移到“'+rootTarget.querySelector('span')?.textContent+'”顶层';}
                 else if(inPanel && d.y>=r.top && d.y<=r.bottom)for(const candidate of candidates){const cr=candidate.getBoundingClientRect(),dist=Math.abs(d.y-(cr.top+cr.height/2));if(dist<distance&&d.y>=cr.top-8&&d.y<=cr.bottom+8){distance=dist;closest=candidate;}}
                 if(closest&&!rootTarget){const cr=closest.getBoundingClientRect(),part=(d.y-cr.top)/cr.height;inside=kind==='page'&&part>.25&&part<.75&&node.dataset.dragGroup!=='__launchers';
-                    const position=inside?'inside':part<.5?'before':'after';request={kind,id:node.dataset.dragId,targetId:closest.dataset.dragId,position};
+                    const position=inside?'inside':part<.5?'before':'after';request={kind,id:node.dataset.dragId,targetId:closest.dataset.dragId,position,...(kind==='state'?{pageId:node.dataset.pageId}:{})};
                     const title=closest.querySelector('.ppn-title')?.textContent || closest.textContent;caption=inside?'移入“'+title+'”':'放在“'+title+'”'+(position==='before'?'之前':'之后');
                 }
                 const error=request?reorderError(options.project,request):'', valid=request&&!error;
@@ -659,10 +911,10 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                 }
                 const expandId=valid&&inside?request.targetId:'';
                 if(d.expandId!==expandId){clearTimeout(d.expandTimer);d.expandId=expandId;if(expandId&&closedPages.has(expandId))d.expandTimer=setTimeout(()=>{if(!drag||drag.expandId!==expandId)return;closedPages.delete(expandId);const branch=closest.closest('.ppn-branch'),children=branch.querySelector(':scope > .ppn-children'),toggle=branch.querySelector(':scope > .ppn-item-wrap > .ppn-expand');if(children)children.hidden=false;if(toggle){toggle.setAttribute('aria-expanded','true');toggle.setAttribute('aria-label',toggle.getAttribute('aria-label').replace(/^展开/,'收起'));}},650);}
-                const message=error || caption || '中间移入 · 边缘排序 · 最多三级';d.caption.textContent=message;if(d.message!==message){live.textContent=message;d.message=message;}
+                const message=error || caption || (kind==='state'?'仅限当前页面的状态之间排序':'中间移入 · 边缘排序 · 最多三级');d.caption.textContent=message;if(d.message!==message){live.textContent=message;d.message=message;}
                 d.ghost.classList.toggle('ppn-no-drop',!d.drop);if(schedule)d.raf=requestAnimationFrame(tick);
             }
-            const touchHandle=event.target.closest('.ppn-page-icon');
+            const touchHandle=event.target.closest('.ppn-page-icon,.ppn-state-grip');
             if(event.pointerType==='touch'&&!touchHandle) drag.timer=setTimeout(start,300);
             window.addEventListener('pointermove', e=>{if(!drag||e.pointerId!==drag.pointerId)return;drag.x=e.clientX;drag.y=e.clientY;if(!drag.started&&Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)>6){if(event.pointerType==='touch'&&!touchHandle){endDrag(true);return;}start();}if(drag?.started)e.preventDefault();},{passive:false,signal:controller.signal});
             window.addEventListener('pointerup',e=>{if(drag&&e.pointerId===drag.pointerId){drag.x=e.clientX;drag.y=e.clientY;if(drag.started)tick(false);endDrag();}},{signal:controller.signal});
@@ -679,12 +931,12 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
             if(!event.altKey||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(event.key)||!options.onReorder)return;
             const node=event.target.closest('[data-ppn-drag]');if(!node)return;event.preventDefault();event.stopImmediatePropagation();
             const kind=node.dataset.ppnDrag,id=node.dataset.dragId,tree=pageTree(options.project),branch=tree.nodes.get(id);
-            const siblings=Array.from(host.querySelectorAll('[data-ppn-drag]')).filter(n=>n.dataset.ppnDrag===kind && (kind==='client'||(n.dataset.dragGroup===node.dataset.dragGroup&&n.dataset.parentId===node.dataset.parentId)));
+            const siblings=Array.from(host.querySelectorAll('[data-ppn-drag]')).filter(n=>n.dataset.ppnDrag===kind && (kind==='state'?n.dataset.pageId===node.dataset.pageId:kind==='client'||(n.dataset.dragGroup===node.dataset.dragGroup&&n.dataset.parentId===node.dataset.parentId)));
             const i=siblings.indexOf(node);let target,position;
             if(event.key==='ArrowLeft'&&kind==='page'){target=branch?.parentId;position='after';}
             else if(event.key==='ArrowRight'&&kind==='page'){target=siblings[i-1]?.dataset.dragId;position='inside';}
             else if(['ArrowUp','ArrowDown'].includes(event.key)){target=siblings[i+(event.key==='ArrowUp'?-1:1)]?.dataset.dragId;position=event.key==='ArrowUp'?'before':'after';}
-            if(target)commit({kind,id,targetId:target,position},node.dataset.ppnKey);
+            if(target)commit({kind,id,targetId:target,position,...(kind==='state'?{pageId:node.dataset.pageId}:{})},node.dataset.ppnKey);
         },true);
         function revealAncestors(pageId){const tree=pageTree(options.project);let node=tree.nodes.get(pageId);while(node?.parentId){closedPages.delete(node.parentId);node=tree.nodes.get(node.parentId);}}
         let revealedPage='';
@@ -711,7 +963,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
         canvas.classList.add('ppn-canvas');canvas.classList.toggle('ppn-mobile',type==='mobile');canvas.classList.toggle('ppn-pad',type==='pad');canvas.classList.toggle('ppn-shell',['mobile','pad'].includes(type) && shell);
         if(type==='pad')previewDevices.set(frame,fitDevice(frame,canvas,shell?1220:1180,shell?860:820));
     }
-    window.ProtoProjectNavigation = {mount, defaultPage, applyPreview, fitDevice, createSelect, positionPopup, reorderProject, reorderError, pageTree, subtreePages, updatePageNavigation, createPageTracking};
+    window.ProtoProjectNavigation = {mount, defaultPage, applyPreview, fitDevice, createSelect, positionPopup, reorderProject, reorderError, pageTree, subtreePages, updatePageNavigation, updateStateTitle, orderedStates, createPageTracking};
 })();
 </script>
         <script>/* 工作台和独立评审壳共用页面列表宽度交互。 */
@@ -815,7 +1067,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
             </aside>
         </main>
         <noscript>请开启 JavaScript 查看评审内容（页面树、PRD 与标注气泡均依赖脚本渲染）。</noscript>
-        <script type="application/json" id="review-data">{"name": "学案客观题支持需讲解", "projectId": "p-3dd34744e2d28260", "revision": 132, "publishedAt": "2026-11-03T05:53:26.009148+00:00", "pages": [{"id": "home", "title": "项目演示入口", "file": "index.html", "states": [{"id": "default", "title": "默认页面", "kind": "default"}], "role": "launcher", "clientId": "", "previewType": "web"}, {"id": "answer-card", "title": "答题卡模板制作（老题卡）", "file": "answer-card.html", "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": [], "manualTargets": [{"id": "95c73f61-0bd2-4150-b8c0-11808da70a69", "label": "设置分组", "anchor": {"protoId": "open-group-explain", "selector": "#pane-explain > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)", "tag": "span", "text": "设置分组", "parentText": "设置分组"}}], "excludedTargets": [{"id": "e573ab88-39fa-4056-beea-7881a19037e3", "anchor": {"protoId": "", "selector": "#paper > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(7) > div:nth-of-type(2) > div:nth-of-type(1)", "tag": "div", "text": "反思感悟 理解一元二次不等式的定义应注意两点", "parentText": "反思感悟 理解一元二次不等式的定义应注意两点 (1) 一元，即只含一个未知数，其他元素均为常数（或参数）. (2) 二次，即未知数的最高次数必须为 2，且二次项系数不为 0."}}, {"id": "95c73f61-0bd2-4150-b8c0-11808da70a69", "anchor": {"protoId": "", "selector": "#paper > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(3) > svg > rect", "tag": "rect", "text": "", "parentText": ""}}]}}], "role": "page", "clientId": "client-11a336c9-dc1d-4fde-bf23-ed1dcfa5cd2a", "previewType": "web"}, {"id": "app-p1", "title": "学案详情", "file": "app-p1.html", "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": ["need-toggle"]}}], "role": "page", "clientId": "student-app", "previewType": "mobile"}, {"id": "app-p2", "title": "扫码作答结果-app", "file": "app-p2.html", "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": ["need-toggle"]}}], "role": "page", "clientId": "student-app", "previewType": "mobile"}, {"id": "review", "title": "讲评课件", "file": "review.html", "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": ["need-link-obj", "need-link-card"]}}], "role": "page", "clientId": "teacher-web", "previewType": "web"}, {"id": "student", "title": "我的答题情况", "file": "student.html", "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": ["need-toggle"]}}], "role": "page", "clientId": "student-web", "previewType": "web"}, {"id": "pad-p1", "title": "作业详情 - 学生平板", "file": "pad-p1.html", "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": ["need-toggle"]}}], "role": "page", "clientId": "client-674e6776-d8eb-4893-b8ab-7fca31619fcb", "previewType": "pad"}, {"id": "pad-p2", "title": "扫码作答结果 - 学生平板", "file": "pad-p2.html", "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": ["need-toggle"]}}], "role": "page", "clientId": "client-674e6776-d8eb-4893-b8ab-7fca31619fcb", "previewType": "pad"}], "clients": [{"id": "client-11a336c9-dc1d-4fde-bf23-ed1dcfa5cd2a", "title": "中台", "previewType": "web", "userCreated": true}, {"id": "teacher-web", "title": "教师 Web", "previewType": "web"}, {"id": "student-web", "title": "学生 Web", "previewType": "web"}, {"id": "student-app", "title": "学生 App", "previewType": "mobile"}, {"id": "client-674e6776-d8eb-4893-b8ab-7fca31619fcb", "title": "学生pad", "previewType": "pad", "userCreated": true}], "defaultPage": "student", "documents": [{"id": "ef471fad-fe39-46d4-bee6-11a9daf96fb0", "pageId": "home", "stateId": "default", "markdown": "## 一、需求描述\n新教育后台原型项目的整合壳页：左侧为原型页面导航，右侧 iframe 加载被选中页面，供评审者在同一入口内切换查看全部页面（教师端 Web、学生端 Web、学生 App 三类页面同属本项目）。默认打开导航第一项，当前选中页以蓝左条+浅蓝底高亮。\n\n## 二、研发实现\n页面清单由壳内 PAGES 数组静态注册（id/名称/文件路径），新增页面只需放入页面文件并追加一行注册项；URL hash（#页面id）与选中页双向同步，刷新或直达链接保持当前页；iframe 内各页面交互（含弹窗）相互独立，互不影响。", "confirmed": false, "updatedAt": "2026-10-13T10:22:56.662439+00:00"}, {"id": "0b2fb3ff-4a85-4db3-afc2-d0b20db12976", "pageId": "answer-card", "stateId": "default", "markdown": "## 需求目标\n\n- 支持把客观题切割区域按组组织，分组配置仅影响本页表格展示。\n- 线下勾选的需讲解后，线上自动同步；线上修改学讲解状态后，重扫题卡不覆盖线上数据。\n", "confirmed": false, "updatedAt": "2026-10-16T06:42:56.705Z"}, {"id": "903a4258-365a-4072-9e9f-ae690328c897", "pageId": "review", "stateId": "default", "markdown": "## 需求目标\n\n- 让教师直接看到每题需讲解人数并查看明细名单。", "confirmed": false, "updatedAt": "2026-10-16T03:34:31.232099+00:00"}, {"id": "204e8c77-1887-4b6b-8d1a-4c5f147d11aa", "pageId": "student", "stateId": "default", "markdown": "## 需求目标\n\n- 客观题与主观题都提供操作是否需要讲解的统一入口。", "confirmed": false, "updatedAt": "2026-10-16T03:34:31.232099+00:00"}, {"id": "e31d6e03-acf0-4cfa-87c8-31137125bd50", "pageId": "app-p1", "stateId": "default", "markdown": "## 需求目标\n\n- 客观题与主观题一致，均可通过开关表达是否需要讲解。", "confirmed": false, "updatedAt": "2026-10-16T03:34:31.232099+00:00"}, {"id": "9cf9ee80-1de9-4e18-8680-c11e62040a27", "pageId": "app-p2", "stateId": "default", "markdown": "## 需求目标\n\n- 学案错题不支持加入错题本，页面不出现任何错题本入口。", "confirmed": false, "updatedAt": "2026-10-16T03:34:31.232099+00:00"}, {"id": "6f84a73e-be02-49ef-9215-3f66bfda1950", "pageId": "pad-p1", "stateId": "default", "markdown": "## 需求目标\n\n- 以开关状态明确表达每题是否需要讲解。", "confirmed": false, "updatedAt": "2026-10-16T03:34:31.232099+00:00"}, {"id": "54282db3-ccda-4a93-86e6-3ec1227ffe2c", "pageId": "pad-p2", "stateId": "default", "markdown": "## 需求目标\n\n- 以开关表达是否需要讲解，并移除全部错题本入口。", "confirmed": false, "updatedAt": "2026-10-16T03:34:31.232099+00:00"}], "annotations": [{"id": "4d13dff3-44e6-4adb-89f8-ba9fc285a217", "pageId": "home", "stateId": "default", "number": 1, "body": "页面导航清单：点击切换右侧页面，当前页蓝左条+浅蓝底高亮；新页面在壳 PAGES 数组注册一行即入列。", "anchor": {"protoId": "nav-list", "selector": "[data-proto-id=\"nav-list\"]", "tag": "div", "text": ""}, "placement": {"kind": "element", "x": 0, "y": 0, "rx": 0, "ry": 0.5}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-13T10:06:00.283758+00:00"}, {"id": "42045c03-98da-42e2-9891-d9d67fb6e519", "pageId": "home", "stateId": "default", "number": 2, "body": "内容区：iframe 加载被选中页面文件，各页面交互（含弹窗）在各自页面内闭环，互不影响。", "anchor": {"protoId": "page-frame", "selector": "[data-proto-id=\"page-frame\"]", "tag": "iframe", "text": ""}, "placement": {"kind": "element", "x": 0, "y": 0, "rx": 0, "ry": 0.5}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-13T10:06:00.283758+00:00"}, {"id": "43c0f151-8a81-4e5b-9e51-30535bf16d1a", "pageId": "home", "stateId": "default", "number": 3, "body": "导航栏：URL hash（#页面id）与选中页双向同步，刷新或直达链接保持当前页。", "anchor": {"protoId": "side-nav", "selector": "[data-proto-id=\"side-nav\"]", "tag": "aside", "text": "新教育后台原型页面共 0 个页面"}, "placement": {"kind": "element", "x": 0, "y": 0, "rx": 0, "ry": 0.5}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-13T10:06:00.283758+00:00"}, {"id": "0debf109-606c-4489-ba1e-e7924c7fc9c6", "pageId": "answer-card", "stateId": "default", "number": 2, "body": "### 业务规则\n\n- 将作业模板的**设置分组**，**整行绘制**功能迁移过来\n- 讲解区切割将学案的客观题也显示出来。\n\n### 交互说明\n\n1. 交互同作业\n", "anchor": {"protoId": "ctrl-explain", "selector": "#pane-explain > div:nth-of-type(1)", "tag": "div", "text": "设置分组 整行绘制 连续绘制 清空", "parentText": "设置分组 整行绘制 连续绘制 清空 题号 进度 操作 1 0/1 绘制 清除 2 0/1 绘制 清除 3 0/1 绘制 清除 4 0/1 绘制 清除 1 0/1 绘制 清除 2 0/1 绘制 清除 3 0/1 绘制 清除 1 0/1 绘制 清除 2 0/1 绘制 清除 3 0/1 绘制 清除 4 0/1 绘制 清除 1 0/1 绘制 清除 2 0/1 绘制 清除 3 0/1 绘制 清除", "htmlSnippet": "<div class=\"ctrl\" data-proto-id=\"ctrl-explain\">\n          <div class=\"ctrl-item blue\" data-proto-id=\"ctrl-group-explain\"><span class=\"ctrl-group-lb\" data-proto-id=\"open-group-explain\" onclick=\"openGroupView('explain')\">设置分组<\/span> <span class=\"tgl on\" onclick=\"onGroupToggle(this,'explain')\"><\/span><\/div>\n          <div class=\"ctrl-item\" data-proto-id=\"ctrl-row-explain\">整行绘制 <span class=\"tgl tg-row\" onclick=\"this.classList.toggle('on')\"><\/span><\/div>\n          <div class=\"ctrl-item\" data-proto-id=\"ctrl-continuous-explain\">连续绘制<\/div>\n          <span class=\"ctrl-clear\" onclick=\"clearAll('explain')\" data-proto-id=\"ctrl-clear-explain\">清空<\/span>\n        <\/div>", "rect": {"x": 1146, "y": 136, "width": 361, "height": 43}, "conditions": [{"selector": "body > div:nth-of-type(1) > aside:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(4)", "kind": "click", "value": "true", "option": "讲解区切割", "label": "切换到讲解区切割", "explicit": true}]}, "placement": {"kind": "element", "x": 19.200000000000045, "y": 2.500003051757801, "rx": 0.05315614438294942, "ry": 0.058139605854832584}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-16T10:41:08.773Z"}, {"id": "1da46791-700b-4349-901d-a9108062ea3f", "pageId": "review", "stateId": "default", "number": 1, "body": "客观题表格（本期改造）：新增「需讲解人数」行——每列显示该题标记需讲解的学生数，蓝字可点击、-为灰色不可点；点击弹出需讲解弹窗。\n", "anchor": {"protoId": "", "selector": "body > main > section:nth-of-type(1)", "tag": "section", "text": "讲评报表 小提示：点击题号可以全屏显示该题详情 添加对比班级： 请选择班级 ▾ 导出Excel 客观题题号 目标一应用体验 1(1) 目标一应用体验 1(2) 目标一应用体验 1(3) 目标一应用体验 1(4) 目标一应用体验 1(5) 目标一应用体验 1(6) 目标二应用体验 1(1) 目标二应用体验 1(2) 目标二应用体验 1(3) 目标二应用体验 1(4) 年级正确率 72.3% 60% 92.3% 100% 84.6% 96.9% 98.4% 85.9% 98.4% 64.1% 6正确率 72.3% 60% 92.3% 100% 84.6% 96.9% 98.4% 85.9% 98.4% 64.1% 6需讲解人数 4 8 2 0 4 1 3 2 0 8 主观题题号 目标一应用体验2 目标二应用体验2 6需讲解人数 1 4", "parentText": "讲评报表 小提示：点击题号可以全屏显示该题详情 添加对比班级： 请选择班级 ▾ 导出Excel 客观题题号 目标一应用体验 1(1) 目标一应用体验 1(2) 目标一应用体验 1(3) 目标一应用体验 1(4) 目标一应用体验 1(5) 目标一应用体验 1(6) 目标二应用体验 1(1) 目标二应用体验 1(2) 目标二应用体验 1(3) 目标二应用体验 1(4) 年级正确率 72.3% 60% 92.3% 100% 84.6% 96.9% 98.4% 85.9% 98.4% 64.1% 6正确率 72.3% 60% 92.3% 100% 84.6% 96.9% 98.4% 85.9% 98.4% 64.1% 6需讲解人数 4 8 2 0 4 1 3 2 0 8 主观题题号 目标一应用体验2 目标二应用体验2 6需讲解人数 1 4 讲评课件 小提示：点击题目区域可以查看答案和解析 排序筛选", "htmlSnippet": "<section class=\"sec\">\n    <div class=\"sec-head\">\n      <span class=\"sec-tt\">讲评报表<\/span>\n      <span class=\"sec-tip\">小提示：点击题号可以全屏显示该题详情<\/span>\n      <div class=\"sec-acts\">\n        <span class=\"add-cls\">添加对比班级：<\/span>\n        <div class=\"sel\" onclick=\"toast('选择对比班级')\">请选择班级 <span class=\"car\">▾<\/span><\/div>\n        <button class=\"btn-blue\" onclick=\"toast('正在导出 Excel')\">导出Excel<\/button>\n      <\/div>\n    <\/div>\n    <table class=\"rep-tb\" id=\"objTable\" data-proto-id=\"obj-need-table\"><thead><tr><th class=\"rh\">客观题题号<\/th><th onclick=\"toast('全屏显示该题详情')\"><i class=\"flag\"><\/i>目标一应用体验<br>1(1)<\/th><th onclick=\"toast('全屏显示该题详情')\"><i class=\"flag\"><\/i>目标一应用体验<br>1(2)<\/th><th onclick=\"toast('全屏显示该题详情')\"><i class=\"flag\"><\/i>目标一应用体验<br>1(3)<\/th><th onclick=\"toast('全屏显示该题详情')\"><i class=\"flag\"><\/i>目标一应用体验<br>1(4)<\/th><th onclick=\"toast('全屏显示该题详情')\"><i class=\"flag\"><\/i>目标一应用体验<br>1(5)<\/th><th onclick=\"toast('全屏显示该题详情')\"><i class=\"flag\"><\/i>目标一应用体验<br>1(6)<\/th><th onclick=\"toast('全屏显示该题详情')\"><i class=\"flag\"><\/i>目标二应用体验<br>1(1)<\/th><th onclick=\"toast('全屏显示该题详情')\" class=\"\"><i class=\"flag\"><\/i>目标二应用体验<br>1(2)<\/th><th onclick=\"toast('全屏显示该题详情')\"><i class=\"flag\"><\/i>目标二应用体验<br>1(3)<\/th><th onclick=\"toast('全屏显示该题详情')\" class=\"\"><i class=\"flag\"><\/i>目标二应用体验<br>1(4)<\/th><\/tr><\/thead><tbody><tr><td class=\"rh\">年级正确率<\/td><td>72.3%<\/td><td>60%<\/td><td>92.3%<\/td><td>100%<\/td><td>84.6%<\/td><td>96.9%<\/td><td>98.4%<\/td><td class=\"\">85.9%<\/td><td class=\"\">98.4%<\/td><td>64.1%<\/td><\/tr><tr><td class=\"rh\">6正确率<\/td><td>72.3%<\/td><td>60%<\/td><td>92.3%<\/td><td>100%<\/td><td>84.6%<\/td><td>96.9%<\/td><td class=\"\">98.4%<\/td><td>85.9%<\/td><td>98.4%<\/td><td>64.1%<\/td><\/tr><tr><td class=\"rh\">6需讲解人数<\/td><td><span class=\"need-link\" onclick=\"openNeedModal(0)\">4<\/span><\/td><td><span class=\"need-link\" onclick=\"openNeedModal(1)\">8<\/s", "rect": {"x": 22, "y": 213, "width": 1202, "height": 380}}, "placement": {"kind": "element", "x": 9.9315, "y": 228.81599694824217, "rx": 0.0082652298616743, "ry": 0.6027818579271699}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-16T05:50:58.632Z"}, {"id": "828454f9-8290-4be0-9961-453c24a7c3e1", "pageId": "review", "stateId": "default", "number": 2, "body": "### 页面显示\n\n- 主观题表格各栏目展示需讲解人数，蓝字可点、- 为灰色不可点。\n\n### 数据流转\n\n- 需讲解人数与学生端、App 端的需讲解标记实时互通，学生标记即时增加、撤销即时扣减。\n\n### 交互说明\n\n1. 点击人数弹出该题需讲解名单弹窗，主观题弹窗仅列人名。\n", "anchor": {"protoId": "sub-need-table", "selector": "[data-proto-id=\"sub-need-table\"]", "tag": "table", "text": ""}, "placement": {"kind": "element", "x": 0, "y": 0, "rx": 0, "ry": 0.5}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-23T03:55:25.899Z"}, {"id": "cbfdd492-8030-471d-95f7-f43d1b1c9aa3", "pageId": "review", "stateId": "default", "number": 3, "body": "讲评课件题目卡片（本期改造）：每张卡片底部「年级正确率」后新增「需讲解：x人」蓝色链接，点击弹出需讲解弹窗。", "anchor": {"protoId": "", "selector": "#cardList > div:nth-of-type(2) > div:nth-of-type(3)", "tag": "div", "text": "班级正确率：60% 年级正确率：60% 需讲解：8人 数据分析 全屏显示", "parentText": "目标一应用体验1(2) 单选题 下列关于二氧化硫性质的说法正确的是（ ） A. 无色无味气体，不易溶于水 B. 具有漂白性，能使品红溶液褪色 C. 密度比空气小 D. 不能与碱溶液反应 班级正确率：60% 年级正确率：60% 需讲解：8人 数据分析 全屏显示", "htmlSnippet": "<div class=\"q-foot\">\n        <span>班级正确率：<span class=\"fv\">60%<\/span><\/span>\n        <span>年级正确率：<span class=\"fv\">60%<\/span><\/span>\n        <span class=\"q-need\" onclick=\"openNeedModalByCard(1)\">需讲解：8人<\/span>\n        <div class=\"q-foot-acts\">\n          <span class=\"q-fa\" onclick=\"toast('打开数据分析')\">\n            <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><path d=\"M2 11V6.5M6.5 11V2M11 11V8.5\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\"><\/path><\/svg>\n            数据分析<\/span>\n          <span class=\"q-fa\" onclick=\"toast('全屏显示')\">\n            <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><path d=\"M1.5 4.5v-3h3M8.5 1.5h3v3M11.5 8.5v3h-3M4.5 11.5h-3v-3\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path><\/svg>\n            全屏显示<\/span>\n        <\/div>\n      <\/div>", "rect": {"x": 40, "y": 322, "width": 1658, "height": 40}}, "placement": {"kind": "element", "x": 338.4, "y": 8.699981689453125, "rx": 0.20405209540416025, "ry": 0.21969649461130694}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-14T06:15:12.538Z"}, {"id": "4eb03278-3c7f-4cc1-81b0-f12cea14d92a", "pageId": "review", "stateId": "default", "number": 4, "body": "### 页面显示\n\n- 弹窗逐行列出学生姓名与所选答案，单选、判断整项比对、答错标红，多选题逐字母比对、仅错选字母标红\n", "anchor": {"protoId": "", "selector": "#mask > div > div:nth-of-type(1)", "tag": "div", "text": "需讲解人数8人 ×", "parentText": "需讲解人数8人 × 彭天奇（A）、裴诗语（C）、邓诗诗（B）、徐子谦（D）、游可欣（A）、余浩然（C）、谢俊宇（B）、李子墨（D） 关 闭", "htmlSnippet": "<div class=\"m-head\">\n      <span class=\"m-title\" id=\"mTitle\">需讲解人数8人<\/span>\n      <span class=\"m-x\" onclick=\"closeModal()\">×<\/span>\n    <\/div>", "rect": {"x": 386, "y": 394, "width": 480, "height": 49}, "revealSteps": [{"protoId": "", "selector": "#cardList > div:nth-of-type(2) > div:nth-of-type(3) > span:nth-of-type(3)", "tag": "span", "text": "需讲解：8人", "parentText": "班级正确率：60% 年级正确率：60% 需讲解：8人 数据分析 全屏显示", "kind": "click", "value": "true", "label": "需讲解：8人"}]}, "placement": {"kind": "element", "x": 131.39999389648438, "y": 30.54998779296875, "rx": 0.27374998728434247, "ry": 0.6260243498071194}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-23T04:49:12.102Z"}, {"id": "c025f4c9-86af-4a39-a560-cc10421998fb", "pageId": "student", "stateId": "default", "number": 4, "body": "题目卡片列表（本期改造）：每道题（客观+主观）卡片底部统一「讲解情况」开关——ON 蓝字「需要讲解」、OFF 灰字「无需讲解」，切换即时生效并 toast；答错卡片「我的作答」红字。", "anchor": {"protoId": "", "selector": "#card-q7 > div:nth-of-type(2)", "tag": "div", "text": "我的作答：F 正确答案：F 班级正确率：98.4% 年级正确率：98.4% 讲解情况： 无需讲解 我的作答", "parentText": "第目标二应用体验1(1)题（选择题） 判断正误 二氧化硫使酸性高锰酸钾溶液褪色，利用的是二氧化硫的漂白性 T. 正确 F. 错误 我的作答：F 正确答案：F 班级正确率：98.4% 年级正确率：98.4% 讲解情况： 无需讲解 我的作答", "htmlSnippet": "<div class=\"q-foot\"><span>我的作答：<b class=\"my-right\">F<\/b><\/span><span>正确答案：<b>F<\/b><\/span><span>班级正确率：<b>98.4%<\/b><\/span><span>年级正确率：<b>98.4%<\/b><\/span><span class=\"q-exp\">讲解情况：<span class=\"exp-txt\" id=\"expTxt-q7\">无需讲解<\/span><span class=\"exp-tgl\" id=\"expTgl-q7\" onclick=\"toggleExplain('q7')\"><\/span><\/span><span class=\"q-myans\" onclick=\"toast('查看我的手写作答')\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><path d=\"M8 1.5H3a1 1 0 00-1 1v8a1 1 0 001 1h7a1 1 0 001-1V4.5L8 1.5z\" stroke=\"currentColor\" stroke-width=\"1.1\" stroke-linejoin=\"round\"><\/path><path d=\"M8 1.5v3h3\" stroke=\"currentColor\" stroke-width=\"1.1\" stroke-linejoin=\"round\"><\/path><\/svg> 我的作答<\/span><\/div>", "rect": {"x": 44, "y": 570, "width": 1158, "height": 42}}, "placement": {"kind": "element", "x": 543.279, "y": 6.3999755859374545, "rx": 0.46931497188829047, "ry": 0.15310946657298344}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-16T09:36:38.778Z"}, {"id": "b1cb4dd9-3ca0-4946-8f81-3d4fe2b71b6f", "pageId": "app-p1", "stateId": "default", "number": 6, "body": "题目列表（本期改造）：客观题行右侧新增需讲解开关（此前仅主观题有）——ON 蓝字「需要讲解」、OFF 灰字「不需讲解」\n", "anchor": {"protoId": "", "selector": "#qList > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(3)", "tag": "span", "text": "我的答案：F", "parentText": "目标一应用体验1(1) 正确答案：F 我的答案：F", "htmlSnippet": "<span class=\"q-mine\">我的答案：<b>F<\/b><\/span>", "rect": {"x": 294, "y": 210, "width": 72, "height": 17}}, "placement": {"kind": "element", "x": 40.26248779296873, "y": 1.0434908447265627, "rx": 0.5571698355640564, "ry": 0.0621125460502616}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-16T06:41:18.422Z"}, {"id": "4b6d77b6-6af9-48e6-b122-62211de6c75b", "pageId": "app-p2", "stateId": "default", "number": 4, "body": "题目列表：客观题行=序号+作答圆点（红错绿对，内为我的答案）+正确答案+需讲解开关；主观题行=我的作答+照片缩略图+需讲解开关；开关 ON 蓝字「需要讲解」、OFF 灰字「不需讲解」。", "anchor": {"protoId": "", "selector": "#qList > div:nth-of-type(1)", "tag": "div", "text": "1 C 正确答案 A 不需讲解", "parentText": "1 C 正确答案 A 不需讲解 2 C 正确答案 A 需要讲解 3 C 正确答案 C 不需讲解 4 我的作答 NaClO、HClO、Ca(ClO)₂ 需要讲解 5 我的作答 不会，二者反应后漂白性消失 不需讲解 6 我的作答 SO₂ + Cl₂ + 2H₂O = H₂SO₄ + 2HCl 需要讲解", "htmlSnippet": "<div class=\"q-row\"><span class=\"q-no\">1<\/span><span class=\"q-dot r\">C<\/span><span class=\"q-ans\">正确答案 A<\/span><span class=\"sw\"><span class=\"sw-txt\" id=\"swt-1\">不需讲解<\/span><span class=\"sw-tg\" id=\"swg-1\" onclick=\"toggleNeed(1)\"><\/span><\/span><\/div>", "rect": {"x": 0, "y": 121, "width": 382, "height": 55}}, "placement": {"kind": "element", "x": 329.6, "y": 1.6999969482421875, "rx": 0.8619246999497147, "ry": 0.031021842553101735}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-14T06:16:52.199Z"}, {"id": "1e1d11c6-592e-4468-9176-4119c5dcdd7f", "pageId": "pad-p1", "stateId": "default", "number": 2, "body": "### 页面显示\n\n- 每张题卡底部按钮区左侧常驻需讲解开关，ON 蓝字「需要讲解」、OFF 灰字「不需讲解」。\n\n### 交互说明\n\n1. 切换开关即时生效并以 toast 反馈。", "anchor": {"protoId": "", "selector": "#cardGrid > div:nth-of-type(1) > div:nth-of-type(3)", "tag": "div", "text": "不需讲解 学霸答卷 类题加练", "parentText": "第1题 正确答案：A 我的答案：A 不需讲解 学霸答卷 类题加练", "htmlSnippet": "<div class=\"qc-foot\"><span class=\"sw\"><span class=\"sw-txt\" id=\"swt-xq-q1\">不需讲解<\/span><span class=\"sw-tg\" id=\"swg-xq-q1\" onclick=\"toggleNeed('xq-q1')\"><\/span><\/span><span class=\"btn-line\" onclick=\"toast('学霸答卷（本期未实现）')\">学霸答卷<\/span><span class=\"btn-line\" onclick=\"toast('类题加练（本期未实现）')\">类题加练<\/span><\/div>", "rect": {"x": 48, "y": 504, "width": 513, "height": 45}}, "placement": {"kind": "element", "x": 332.15978411865234, "y": 18.535304443359337, "rx": 0.6474780261513213, "ry": 0.4103830112278233}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-16T06:12:15.205Z"}, {"id": "9801a10d-8361-4401-bc53-373c3b612e0e", "pageId": "pad-p2", "stateId": "default", "number": 1, "body": "### 页面显示\n\n- 每题行右侧为需讲解开关，ON 蓝字「需要讲解」、OFF 灰字「不需讲解」。\n\n### 业务规则\n\n- 学案的错题不支持加入错题本，本页无任何错题本入口。\n", "anchor": {"protoId": "", "selector": "#swg-q1", "tag": "span", "text": "", "parentText": "需要讲解", "htmlSnippet": "<span class=\"sw-tg on\" id=\"swg-q1\" onclick=\"toggleNeed('q1')\"><\/span>", "rect": {"x": 529, "y": 152, "width": 32, "height": 18}}, "placement": {"kind": "element", "x": 26.424155761718794, "y": 1.265050781250011, "rx": 0.8258365296603876, "ry": 0.07030665147147724}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-16T06:33:35.332Z"}, {"id": "d82a7efa-13ce-435f-bb6f-42b841b270a3", "pageId": "review", "stateId": "default", "number": 5, "body": "导出的excel中也要增加客观题需讲解数据\n", "anchor": {"protoId": "", "selector": "body > main > section:nth-of-type(1) > div:nth-of-type(1) > div > button", "tag": "button", "text": "导出Excel", "parentText": "添加对比班级： 请选择班级 ▾ 导出Excel", "htmlSnippet": "<button class=\"btn-blue\" onclick=\"toast('正在导出 Excel')\">导出Excel<\/button>", "rect": {"x": 1202, "y": 229, "width": 84, "height": 28}}, "placement": {"kind": "element", "x": 80.949951171875, "y": 2.1999969482421875, "rx": 0.9688802898274926, "ry": 0.07857131958007812}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-20T01:00:02.752Z"}, {"id": "2b8884f9-c743-4ef3-b830-029f3431127f", "pageId": "review", "stateId": "default", "number": 6, "body": "加油很多的\n", "anchor": {"protoId": "", "selector": "#objTable > tbody > tr:nth-of-type(2) > td:nth-of-type(10)", "tag": "td", "text": "98.4%", "parentText": "6正确率 72.3% 60% 92.3% 100% 84.6% 96.9% 98.4% 85.9% 98.4% 64.1%", "htmlSnippet": "<td>98.4%<\/td>", "rect": {"x": 1075, "y": 371, "width": 105, "height": 44}}, "placement": {"kind": "element", "x": 84.5999755859375, "y": 27.79998779296875, "rx": 0.8066743798420739, "ry": 0.6318179043856534}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-20T01:01:15.779Z"}], "prototypeVersions": {"answer-card.html": "f32d5b201996fd230c98", "app-p1.html": "ef60168434cbb23ba03e", "app-p2.html": "a5d377c2770061d22ae6", "index.html": "5639cdbbff0c8d77f07c", "pad-p1.html": "0a0d80e4a9b7e9a95552", "pad-p2.html": "cad215e0a409998a319c", "review.html": "43defaee4e7b0fafb723", "student.html": "3dcdce4bfad64b0a3a0a"}}</script>
+        <script type="application/json" id="review-data">{"name": "学案客观题支持需讲解", "projectId": "p-3dd34744e2d28260", "revision": 136, "publishedAt": "2026-11-06 10:22:19", "pages": [{"id": "home", "title": "项目演示入口", "file": "index.html", "states": [{"id": "default", "title": "默认页面", "kind": "default"}], "role": "launcher", "clientId": "", "previewType": "web"}, {"id": "answer-card", "title": "答题卡模板制作（老题卡）", "file": "answer-card.html", "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": [], "manualTargets": [{"id": "95c73f61-0bd2-4150-b8c0-11808da70a69", "label": "设置分组", "anchor": {"protoId": "open-group-explain", "selector": "#pane-explain > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1)", "tag": "span", "text": "设置分组", "parentText": "设置分组"}}], "excludedTargets": [{"id": "e573ab88-39fa-4056-beea-7881a19037e3", "anchor": {"protoId": "", "selector": "#paper > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(7) > div:nth-of-type(2) > div:nth-of-type(1)", "tag": "div", "text": "反思感悟 理解一元二次不等式的定义应注意两点", "parentText": "反思感悟 理解一元二次不等式的定义应注意两点 (1) 一元，即只含一个未知数，其他元素均为常数（或参数）. (2) 二次，即未知数的最高次数必须为 2，且二次项系数不为 0."}}, {"id": "95c73f61-0bd2-4150-b8c0-11808da70a69", "anchor": {"protoId": "", "selector": "#paper > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(3) > svg > rect", "tag": "rect", "text": "", "parentText": ""}}]}}], "role": "page", "clientId": "client-11a336c9-dc1d-4fde-bf23-ed1dcfa5cd2a", "previewType": "web"}, {"id": "app-p1", "title": "学案详情", "file": "app-p1.html", "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": ["need-toggle"]}}], "role": "page", "clientId": "student-app", "previewType": "mobile"}, {"id": "app-p2", "title": "扫码作答结果-app", "file": "app-p2.html", "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": ["need-toggle"]}}], "role": "page", "clientId": "student-app", "previewType": "mobile"}, {"id": "review", "title": "讲评课件", "file": "review.html", "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": ["need-link-obj", "need-link-card"]}}], "role": "page", "clientId": "teacher-web", "previewType": "web"}, {"id": "student", "title": "我的答题情况", "file": "student.html", "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": ["need-toggle"]}}], "role": "page", "clientId": "student-web", "previewType": "web"}, {"id": "pad-p1", "title": "作业详情 - 学生平板", "file": "pad-p1.html", "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": ["need-toggle"]}}], "role": "page", "clientId": "client-674e6776-d8eb-4893-b8ab-7fca31619fcb", "previewType": "pad"}, {"id": "pad-p2", "title": "扫码作答结果 - 学生平板", "file": "pad-p2.html", "states": [{"id": "default", "title": "默认页面", "kind": "default", "interactionHints": {"mode": "targets", "protoIds": ["need-toggle"]}}], "role": "page", "clientId": "client-674e6776-d8eb-4893-b8ab-7fca31619fcb", "previewType": "pad"}], "clients": [{"id": "client-11a336c9-dc1d-4fde-bf23-ed1dcfa5cd2a", "title": "中台", "previewType": "web", "userCreated": true}, {"id": "teacher-web", "title": "教师 Web", "previewType": "web"}, {"id": "student-web", "title": "学生 Web", "previewType": "web"}, {"id": "student-app", "title": "学生 App", "previewType": "mobile"}, {"id": "client-674e6776-d8eb-4893-b8ab-7fca31619fcb", "title": "学生pad", "previewType": "pad", "userCreated": true}], "defaultPage": "student", "documents": [{"id": "ef471fad-fe39-46d4-bee6-11a9daf96fb0", "pageId": "home", "stateId": "default", "markdown": "## 一、需求描述\n新教育后台原型项目的整合壳页：左侧为原型页面导航，右侧 iframe 加载被选中页面，供评审者在同一入口内切换查看全部页面（教师端 Web、学生端 Web、学生 App 三类页面同属本项目）。默认打开导航第一项，当前选中页以蓝左条+浅蓝底高亮。\n\n## 二、研发实现\n页面清单由壳内 PAGES 数组静态注册（id/名称/文件路径），新增页面只需放入页面文件并追加一行注册项；URL hash（#页面id）与选中页双向同步，刷新或直达链接保持当前页；iframe 内各页面交互（含弹窗）相互独立，互不影响。", "confirmed": false, "updatedAt": "2026-10-13T10:22:56.662439+00:00"}, {"id": "0b2fb3ff-4a85-4db3-afc2-d0b20db12976", "pageId": "answer-card", "stateId": "default", "markdown": "## 需求目标\n\n- 支持把客观题切割区域按组组织，分组配置仅影响本页表格展示。\n- 线下勾选的需讲解后，线上自动同步；线上修改学讲解状态后，重扫题卡不覆盖线上数据。\n", "confirmed": false, "updatedAt": "2026-10-16T06:42:56.705Z"}, {"id": "903a4258-365a-4072-9e9f-ae690328c897", "pageId": "review", "stateId": "default", "markdown": "## 需求目标\n\n- 让教师直接看到每题需讲解人数并查看明细名单。", "confirmed": false, "updatedAt": "2026-10-16T03:34:31.232099+00:00"}, {"id": "204e8c77-1887-4b6b-8d1a-4c5f147d11aa", "pageId": "student", "stateId": "default", "markdown": "## 需求目标\n\n- 客观题与主观题都提供操作是否需要讲解的统一入口。", "confirmed": false, "updatedAt": "2026-10-16T03:34:31.232099+00:00"}, {"id": "e31d6e03-acf0-4cfa-87c8-31137125bd50", "pageId": "app-p1", "stateId": "default", "markdown": "## 需求目标\n\n- 客观题与主观题一致，均可通过开关表达是否需要讲解。", "confirmed": false, "updatedAt": "2026-10-16T03:34:31.232099+00:00"}, {"id": "9cf9ee80-1de9-4e18-8680-c11e62040a27", "pageId": "app-p2", "stateId": "default", "markdown": "## 需求目标\n\n- 学案错题不支持加入错题本，页面不出现任何错题本入口。", "confirmed": false, "updatedAt": "2026-10-16T03:34:31.232099+00:00"}, {"id": "6f84a73e-be02-49ef-9215-3f66bfda1950", "pageId": "pad-p1", "stateId": "default", "markdown": "## 需求目标\n\n- 以开关状态明确表达每题是否需要讲解。", "confirmed": false, "updatedAt": "2026-10-16T03:34:31.232099+00:00"}, {"id": "54282db3-ccda-4a93-86e6-3ec1227ffe2c", "pageId": "pad-p2", "stateId": "default", "markdown": "## 需求目标\n\n- 以开关表达是否需要讲解，并移除全部错题本入口。", "confirmed": false, "updatedAt": "2026-10-16T03:34:31.232099+00:00"}], "annotations": [{"id": "4d13dff3-44e6-4adb-89f8-ba9fc285a217", "pageId": "home", "stateId": "default", "number": 1, "body": "页面导航清单：点击切换右侧页面，当前页蓝左条+浅蓝底高亮；新页面在壳 PAGES 数组注册一行即入列。", "anchor": {"protoId": "nav-list", "selector": "[data-proto-id=\"nav-list\"]", "tag": "div", "text": ""}, "placement": {"kind": "element", "x": 0, "y": 0, "rx": 0, "ry": 0.5}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-13T10:06:00.283758+00:00"}, {"id": "42045c03-98da-42e2-9891-d9d67fb6e519", "pageId": "home", "stateId": "default", "number": 2, "body": "内容区：iframe 加载被选中页面文件，各页面交互（含弹窗）在各自页面内闭环，互不影响。", "anchor": {"protoId": "page-frame", "selector": "[data-proto-id=\"page-frame\"]", "tag": "iframe", "text": ""}, "placement": {"kind": "element", "x": 0, "y": 0, "rx": 0, "ry": 0.5}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-13T10:06:00.283758+00:00"}, {"id": "43c0f151-8a81-4e5b-9e51-30535bf16d1a", "pageId": "home", "stateId": "default", "number": 3, "body": "导航栏：URL hash（#页面id）与选中页双向同步，刷新或直达链接保持当前页。", "anchor": {"protoId": "side-nav", "selector": "[data-proto-id=\"side-nav\"]", "tag": "aside", "text": "新教育后台原型页面共 0 个页面"}, "placement": {"kind": "element", "x": 0, "y": 0, "rx": 0, "ry": 0.5}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-13T10:06:00.283758+00:00"}, {"id": "0debf109-606c-4489-ba1e-e7924c7fc9c6", "pageId": "answer-card", "stateId": "default", "number": 2, "body": "### 业务规则\n\n- 将作业模板的**设置分组**，**整行绘制**功能迁移过来\n- 讲解区切割将学案的客观题也显示出来。\n\n### 交互说明\n\n1. 交互同作业\n", "anchor": {"protoId": "ctrl-explain", "selector": "#pane-explain > div:nth-of-type(1)", "tag": "div", "text": "设置分组 整行绘制 连续绘制 清空", "parentText": "设置分组 整行绘制 连续绘制 清空 题号 进度 操作 1 0/1 绘制 清除 2 0/1 绘制 清除 3 0/1 绘制 清除 4 0/1 绘制 清除 1 0/1 绘制 清除 2 0/1 绘制 清除 3 0/1 绘制 清除 1 0/1 绘制 清除 2 0/1 绘制 清除 3 0/1 绘制 清除 4 0/1 绘制 清除 1 0/1 绘制 清除 2 0/1 绘制 清除 3 0/1 绘制 清除", "htmlSnippet": "<div class=\"ctrl\" data-proto-id=\"ctrl-explain\">\n          <div class=\"ctrl-item blue\" data-proto-id=\"ctrl-group-explain\"><span class=\"ctrl-group-lb\" data-proto-id=\"open-group-explain\" onclick=\"openGroupView('explain')\">设置分组<\/span> <span class=\"tgl on\" onclick=\"onGroupToggle(this,'explain')\"><\/span><\/div>\n          <div class=\"ctrl-item\" data-proto-id=\"ctrl-row-explain\">整行绘制 <span class=\"tgl tg-row\" onclick=\"this.classList.toggle('on')\"><\/span><\/div>\n          <div class=\"ctrl-item\" data-proto-id=\"ctrl-continuous-explain\">连续绘制<\/div>\n          <span class=\"ctrl-clear\" onclick=\"clearAll('explain')\" data-proto-id=\"ctrl-clear-explain\">清空<\/span>\n        <\/div>", "rect": {"x": 1146, "y": 136, "width": 361, "height": 43}, "conditions": [{"selector": "body > div:nth-of-type(1) > aside:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(4)", "kind": "click", "value": "true", "option": "讲解区切割", "label": "切换到讲解区切割", "explicit": true}]}, "placement": {"kind": "element", "x": 19.200000000000045, "y": 2.500003051757801, "rx": 0.05315614438294942, "ry": 0.058139605854832584}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-16T10:41:08.773Z"}, {"id": "1da46791-700b-4349-901d-a9108062ea3f", "pageId": "review", "stateId": "default", "number": 1, "body": "客观题表格（本期改造）：新增「需讲解人数」行——每列显示该题标记需讲解的学生数，蓝字可点击、-为灰色不可点；点击弹出需讲解弹窗。\n", "anchor": {"protoId": "", "selector": "body > main > section:nth-of-type(1)", "tag": "section", "text": "讲评报表 小提示：点击题号可以全屏显示该题详情 添加对比班级： 请选择班级 ▾ 导出Excel 客观题题号 目标一应用体验 1(1) 目标一应用体验 1(2) 目标一应用体验 1(3) 目标一应用体验 1(4) 目标一应用体验 1(5) 目标一应用体验 1(6) 目标二应用体验 1(1) 目标二应用体验 1(2) 目标二应用体验 1(3) 目标二应用体验 1(4) 年级正确率 72.3% 60% 92.3% 100% 84.6% 96.9% 98.4% 85.9% 98.4% 64.1% 6正确率 72.3% 60% 92.3% 100% 84.6% 96.9% 98.4% 85.9% 98.4% 64.1% 6需讲解人数 4 8 2 0 4 1 3 2 0 8 主观题题号 目标一应用体验2 目标二应用体验2 6需讲解人数 1 4", "parentText": "讲评报表 小提示：点击题号可以全屏显示该题详情 添加对比班级： 请选择班级 ▾ 导出Excel 客观题题号 目标一应用体验 1(1) 目标一应用体验 1(2) 目标一应用体验 1(3) 目标一应用体验 1(4) 目标一应用体验 1(5) 目标一应用体验 1(6) 目标二应用体验 1(1) 目标二应用体验 1(2) 目标二应用体验 1(3) 目标二应用体验 1(4) 年级正确率 72.3% 60% 92.3% 100% 84.6% 96.9% 98.4% 85.9% 98.4% 64.1% 6正确率 72.3% 60% 92.3% 100% 84.6% 96.9% 98.4% 85.9% 98.4% 64.1% 6需讲解人数 4 8 2 0 4 1 3 2 0 8 主观题题号 目标一应用体验2 目标二应用体验2 6需讲解人数 1 4 讲评课件 小提示：点击题目区域可以查看答案和解析 排序筛选", "htmlSnippet": "<section class=\"sec\">\n    <div class=\"sec-head\">\n      <span class=\"sec-tt\">讲评报表<\/span>\n      <span class=\"sec-tip\">小提示：点击题号可以全屏显示该题详情<\/span>\n      <div class=\"sec-acts\">\n        <span class=\"add-cls\">添加对比班级：<\/span>\n        <div class=\"sel\" onclick=\"toast('选择对比班级')\">请选择班级 <span class=\"car\">▾<\/span><\/div>\n        <button class=\"btn-blue\" onclick=\"toast('正在导出 Excel')\">导出Excel<\/button>\n      <\/div>\n    <\/div>\n    <table class=\"rep-tb\" id=\"objTable\" data-proto-id=\"obj-need-table\"><thead><tr><th class=\"rh\">客观题题号<\/th><th onclick=\"toast('全屏显示该题详情')\"><i class=\"flag\"><\/i>目标一应用体验<br>1(1)<\/th><th onclick=\"toast('全屏显示该题详情')\"><i class=\"flag\"><\/i>目标一应用体验<br>1(2)<\/th><th onclick=\"toast('全屏显示该题详情')\"><i class=\"flag\"><\/i>目标一应用体验<br>1(3)<\/th><th onclick=\"toast('全屏显示该题详情')\"><i class=\"flag\"><\/i>目标一应用体验<br>1(4)<\/th><th onclick=\"toast('全屏显示该题详情')\"><i class=\"flag\"><\/i>目标一应用体验<br>1(5)<\/th><th onclick=\"toast('全屏显示该题详情')\"><i class=\"flag\"><\/i>目标一应用体验<br>1(6)<\/th><th onclick=\"toast('全屏显示该题详情')\"><i class=\"flag\"><\/i>目标二应用体验<br>1(1)<\/th><th onclick=\"toast('全屏显示该题详情')\" class=\"\"><i class=\"flag\"><\/i>目标二应用体验<br>1(2)<\/th><th onclick=\"toast('全屏显示该题详情')\"><i class=\"flag\"><\/i>目标二应用体验<br>1(3)<\/th><th onclick=\"toast('全屏显示该题详情')\" class=\"\"><i class=\"flag\"><\/i>目标二应用体验<br>1(4)<\/th><\/tr><\/thead><tbody><tr><td class=\"rh\">年级正确率<\/td><td>72.3%<\/td><td>60%<\/td><td>92.3%<\/td><td>100%<\/td><td>84.6%<\/td><td>96.9%<\/td><td>98.4%<\/td><td class=\"\">85.9%<\/td><td class=\"\">98.4%<\/td><td>64.1%<\/td><\/tr><tr><td class=\"rh\">6正确率<\/td><td>72.3%<\/td><td>60%<\/td><td>92.3%<\/td><td>100%<\/td><td>84.6%<\/td><td>96.9%<\/td><td class=\"\">98.4%<\/td><td>85.9%<\/td><td>98.4%<\/td><td>64.1%<\/td><\/tr><tr><td class=\"rh\">6需讲解人数<\/td><td><span class=\"need-link\" onclick=\"openNeedModal(0)\">4<\/span><\/td><td><span class=\"need-link\" onclick=\"openNeedModal(1)\">8<\/s", "rect": {"x": 22, "y": 213, "width": 1202, "height": 380}}, "placement": {"kind": "element", "x": 9.9315, "y": 228.81599694824217, "rx": 0.0082652298616743, "ry": 0.6027818579271699}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-16T05:50:58.632Z"}, {"id": "828454f9-8290-4be0-9961-453c24a7c3e1", "pageId": "review", "stateId": "default", "number": 2, "body": "### 页面显示\n\n- 主观题表格各栏目展示需讲解人数，蓝字可点、- 为灰色不可点。\n\n### 数据流转\n\n- 需讲解人数与学生端、App 端的需讲解标记实时互通，学生标记即时增加、撤销即时扣减。\n\n### 交互说明\n\n1. 点击人数弹出该题需讲解名单弹窗，主观题弹窗仅列人名。\n", "anchor": {"protoId": "sub-need-table", "selector": "[data-proto-id=\"sub-need-table\"]", "tag": "table", "text": ""}, "placement": {"kind": "element", "x": 0, "y": 0, "rx": 0, "ry": 0.5}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-23T03:55:25.899Z"}, {"id": "cbfdd492-8030-471d-95f7-f43d1b1c9aa3", "pageId": "review", "stateId": "default", "number": 3, "body": "讲评课件题目卡片（本期改造）：每张卡片底部「年级正确率」后新增「需讲解：x人」蓝色链接，点击弹出需讲解弹窗。", "anchor": {"protoId": "", "selector": "#cardList > div:nth-of-type(2) > div:nth-of-type(3)", "tag": "div", "text": "班级正确率：60% 年级正确率：60% 需讲解：8人 数据分析 全屏显示", "parentText": "目标一应用体验1(2) 单选题 下列关于二氧化硫性质的说法正确的是（ ） A. 无色无味气体，不易溶于水 B. 具有漂白性，能使品红溶液褪色 C. 密度比空气小 D. 不能与碱溶液反应 班级正确率：60% 年级正确率：60% 需讲解：8人 数据分析 全屏显示", "htmlSnippet": "<div class=\"q-foot\">\n        <span>班级正确率：<span class=\"fv\">60%<\/span><\/span>\n        <span>年级正确率：<span class=\"fv\">60%<\/span><\/span>\n        <span class=\"q-need\" onclick=\"openNeedModalByCard(1)\">需讲解：8人<\/span>\n        <div class=\"q-foot-acts\">\n          <span class=\"q-fa\" onclick=\"toast('打开数据分析')\">\n            <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><path d=\"M2 11V6.5M6.5 11V2M11 11V8.5\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\"><\/path><\/svg>\n            数据分析<\/span>\n          <span class=\"q-fa\" onclick=\"toast('全屏显示')\">\n            <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><path d=\"M1.5 4.5v-3h3M8.5 1.5h3v3M11.5 8.5v3h-3M4.5 11.5h-3v-3\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path><\/svg>\n            全屏显示<\/span>\n        <\/div>\n      <\/div>", "rect": {"x": 40, "y": 322, "width": 1658, "height": 40}}, "placement": {"kind": "element", "x": 338.4, "y": 8.699981689453125, "rx": 0.20405209540416025, "ry": 0.21969649461130694}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-14T06:15:12.538Z"}, {"id": "4eb03278-3c7f-4cc1-81b0-f12cea14d92a", "pageId": "review", "stateId": "default", "number": 4, "body": "### 页面显示\n\n- 弹窗逐行列出学生姓名与所选答案，单选、判断整项比对、答错标红，多选题逐字母比对、仅错选字母标红\n", "anchor": {"protoId": "", "selector": "#mask > div > div:nth-of-type(1)", "tag": "div", "text": "需讲解人数8人 ×", "parentText": "需讲解人数8人 × 彭天奇（A）、裴诗语（C）、邓诗诗（B）、徐子谦（D）、游可欣（A）、余浩然（C）、谢俊宇（B）、李子墨（D） 关 闭", "htmlSnippet": "<div class=\"m-head\">\n      <span class=\"m-title\" id=\"mTitle\">需讲解人数8人<\/span>\n      <span class=\"m-x\" onclick=\"closeModal()\">×<\/span>\n    <\/div>", "rect": {"x": 386, "y": 394, "width": 480, "height": 49}, "revealSteps": [{"protoId": "", "selector": "#cardList > div:nth-of-type(2) > div:nth-of-type(3) > span:nth-of-type(3)", "tag": "span", "text": "需讲解：8人", "parentText": "班级正确率：60% 年级正确率：60% 需讲解：8人 数据分析 全屏显示", "kind": "click", "value": "true", "label": "需讲解：8人"}]}, "placement": {"kind": "element", "x": 131.39999389648438, "y": 30.54998779296875, "rx": 0.27374998728434247, "ry": 0.6260243498071194}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-23T04:49:12.102Z"}, {"id": "c025f4c9-86af-4a39-a560-cc10421998fb", "pageId": "student", "stateId": "default", "number": 4, "body": "题目卡片列表（本期改造）：每道题（客观+主观）卡片底部统一「讲解情况」开关——ON 蓝字「需要讲解」、OFF 灰字「无需讲解」，切换即时生效并 toast；答错卡片「我的作答」红字。", "anchor": {"protoId": "", "selector": "#card-q7 > div:nth-of-type(2)", "tag": "div", "text": "我的作答：F 正确答案：F 班级正确率：98.4% 年级正确率：98.4% 讲解情况： 无需讲解 我的作答", "parentText": "第目标二应用体验1(1)题（选择题） 判断正误 二氧化硫使酸性高锰酸钾溶液褪色，利用的是二氧化硫的漂白性 T. 正确 F. 错误 我的作答：F 正确答案：F 班级正确率：98.4% 年级正确率：98.4% 讲解情况： 无需讲解 我的作答", "htmlSnippet": "<div class=\"q-foot\"><span>我的作答：<b class=\"my-right\">F<\/b><\/span><span>正确答案：<b>F<\/b><\/span><span>班级正确率：<b>98.4%<\/b><\/span><span>年级正确率：<b>98.4%<\/b><\/span><span class=\"q-exp\">讲解情况：<span class=\"exp-txt\" id=\"expTxt-q7\">无需讲解<\/span><span class=\"exp-tgl\" id=\"expTgl-q7\" onclick=\"toggleExplain('q7')\"><\/span><\/span><span class=\"q-myans\" onclick=\"toast('查看我的手写作答')\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><path d=\"M8 1.5H3a1 1 0 00-1 1v8a1 1 0 001 1h7a1 1 0 001-1V4.5L8 1.5z\" stroke=\"currentColor\" stroke-width=\"1.1\" stroke-linejoin=\"round\"><\/path><path d=\"M8 1.5v3h3\" stroke=\"currentColor\" stroke-width=\"1.1\" stroke-linejoin=\"round\"><\/path><\/svg> 我的作答<\/span><\/div>", "rect": {"x": 44, "y": 570, "width": 1158, "height": 42}}, "placement": {"kind": "element", "x": 543.279, "y": 6.3999755859374545, "rx": 0.46931497188829047, "ry": 0.15310946657298344}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-16T09:36:38.778Z"}, {"id": "b1cb4dd9-3ca0-4946-8f81-3d4fe2b71b6f", "pageId": "app-p1", "stateId": "default", "number": 6, "body": "题目列表（本期改造）：客观题行右侧新增需讲解开关（此前仅主观题有）——ON 蓝字「需要讲解」、OFF 灰字「不需讲解」\n", "anchor": {"protoId": "", "selector": "#qList > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(3)", "tag": "span", "text": "我的答案：F", "parentText": "目标一应用体验1(1) 正确答案：F 我的答案：F", "htmlSnippet": "<span class=\"q-mine\">我的答案：<b>F<\/b><\/span>", "rect": {"x": 294, "y": 210, "width": 72, "height": 17}}, "placement": {"kind": "element", "x": 40.26248779296873, "y": 1.0434908447265627, "rx": 0.5571698355640564, "ry": 0.0621125460502616}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-16T06:41:18.422Z"}, {"id": "4b6d77b6-6af9-48e6-b122-62211de6c75b", "pageId": "app-p2", "stateId": "default", "number": 4, "body": "题目列表：客观题行=序号+作答圆点（红错绿对，内为我的答案）+正确答案+需讲解开关；主观题行=我的作答+照片缩略图+需讲解开关；开关 ON 蓝字「需要讲解」、OFF 灰字「不需讲解」。", "anchor": {"protoId": "", "selector": "#qList > div:nth-of-type(1)", "tag": "div", "text": "1 C 正确答案 A 不需讲解", "parentText": "1 C 正确答案 A 不需讲解 2 C 正确答案 A 需要讲解 3 C 正确答案 C 不需讲解 4 我的作答 NaClO、HClO、Ca(ClO)₂ 需要讲解 5 我的作答 不会，二者反应后漂白性消失 不需讲解 6 我的作答 SO₂ + Cl₂ + 2H₂O = H₂SO₄ + 2HCl 需要讲解", "htmlSnippet": "<div class=\"q-row\"><span class=\"q-no\">1<\/span><span class=\"q-dot r\">C<\/span><span class=\"q-ans\">正确答案 A<\/span><span class=\"sw\"><span class=\"sw-txt\" id=\"swt-1\">不需讲解<\/span><span class=\"sw-tg\" id=\"swg-1\" onclick=\"toggleNeed(1)\"><\/span><\/span><\/div>", "rect": {"x": 0, "y": 121, "width": 382, "height": 55}}, "placement": {"kind": "element", "x": 329.6, "y": 1.6999969482421875, "rx": 0.8619246999497147, "ry": 0.031021842553101735}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-14T06:16:52.199Z"}, {"id": "1e1d11c6-592e-4468-9176-4119c5dcdd7f", "pageId": "pad-p1", "stateId": "default", "number": 2, "body": "### 页面显示\n\n- 每张题卡底部按钮区左侧常驻需讲解开关，ON 蓝字「需要讲解」、OFF 灰字「不需讲解」。\n\n### 交互说明\n\n1. 切换开关即时生效并以 toast 反馈。", "anchor": {"protoId": "", "selector": "#cardGrid > div:nth-of-type(1) > div:nth-of-type(3)", "tag": "div", "text": "不需讲解 学霸答卷 类题加练", "parentText": "第1题 正确答案：A 我的答案：A 不需讲解 学霸答卷 类题加练", "htmlSnippet": "<div class=\"qc-foot\"><span class=\"sw\"><span class=\"sw-txt\" id=\"swt-xq-q1\">不需讲解<\/span><span class=\"sw-tg\" id=\"swg-xq-q1\" onclick=\"toggleNeed('xq-q1')\"><\/span><\/span><span class=\"btn-line\" onclick=\"toast('学霸答卷（本期未实现）')\">学霸答卷<\/span><span class=\"btn-line\" onclick=\"toast('类题加练（本期未实现）')\">类题加练<\/span><\/div>", "rect": {"x": 48, "y": 504, "width": 513, "height": 45}}, "placement": {"kind": "element", "x": 332.15978411865234, "y": 18.535304443359337, "rx": 0.6474780261513213, "ry": 0.4103830112278233}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-16T06:12:15.205Z"}, {"id": "9801a10d-8361-4401-bc53-373c3b612e0e", "pageId": "pad-p2", "stateId": "default", "number": 1, "body": "### 页面显示\n\n- 每题行右侧为需讲解开关，ON 蓝字「需要讲解」、OFF 灰字「不需讲解」。\n\n### 业务规则\n\n- 学案的错题不支持加入错题本，本页无任何错题本入口。\n", "anchor": {"protoId": "", "selector": "#swg-q1", "tag": "span", "text": "", "parentText": "需要讲解", "htmlSnippet": "<span class=\"sw-tg on\" id=\"swg-q1\" onclick=\"toggleNeed('q1')\"><\/span>", "rect": {"x": 529, "y": 152, "width": 32, "height": 18}}, "placement": {"kind": "element", "x": 26.424155761718794, "y": 1.265050781250011, "rx": 0.8258365296603876, "ry": 0.07030665147147724}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-16T06:33:35.332Z"}, {"id": "d82a7efa-13ce-435f-bb6f-42b841b270a3", "pageId": "review", "stateId": "default", "number": 5, "body": "导出的excel中也要增加客观题需讲解数据\n", "anchor": {"protoId": "", "selector": "body > main > section:nth-of-type(1) > div:nth-of-type(1) > div > button", "tag": "button", "text": "导出Excel", "parentText": "添加对比班级： 请选择班级 ▾ 导出Excel", "htmlSnippet": "<button class=\"btn-blue\" onclick=\"toast('正在导出 Excel')\">导出Excel<\/button>", "rect": {"x": 1202, "y": 229, "width": 84, "height": 28}}, "placement": {"kind": "element", "x": 80.949951171875, "y": 2.1999969482421875, "rx": 0.9688802898274926, "ry": 0.07857131958007812}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-10-20T01:00:02.752Z"}, {"id": "87133f76-59b8-4c13-8da7-a9d0f96fb814", "pageId": "review", "stateId": "default", "number": 6, "body": "导出讲评课件中的讲评报表中也要增加客观题需讲解数据\n", "anchor": {"protoId": "", "selector": "body > div:nth-of-type(3) > span", "tag": "span", "text": "导出pdf讲评课件", "parentText": "讲评课件 客观题成绩 导出pdf讲评课件", "htmlSnippet": "<span class=\"tt-export\" onclick=\"toast('正在导出 pdf 讲评课件')\">\n    <svg width=\"13\" height=\"13\" viewBox=\"0 0 13 13\" fill=\"none\"><path d=\"M6.5 1.5v7M3.8 6.3l2.7 2.7 2.7-2.7M2 11.5h9\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><\/path><\/svg>\n    导出pdf讲评课件\n  <\/span>", "rect": {"x": 660, "y": 165, "width": 117, "height": 18}}, "placement": {"kind": "element", "x": 76.125, "y": 9.25, "rx": 0.6499466382070438, "ry": 0.5285714285714286}, "offset": {"x": 20, "y": 0}, "collapsed": false, "confirmed": false, "updatedAt": "2026-11-06T02:21:53.876Z"}], "release": {"schemaVersion": 1, "projectId": "p-3dd34744e2d28260", "releaseId": "rel-a41b46e609da4dde", "sequence": 1, "contentVersion": "1afac005fc2634ec6b4dcf9683ae7235fcaada2dc9e75c9250b246617834ec9e", "publishedAt": "2026-11-06 10:22:19", "mode": "review", "baseReleaseId": "", "summary": {"pages": 2, "changes": 8}, "changesUrl": "prototype-changes/rel-a41b46e609da4dde.json", "snapshotUrl": "prototype-changes/rel-a41b46e609da4dde.snapshot.json", "prototypeBase": "prototype-versions/1afac005fc2634ec6b4dcf96/", "baselineStatus": "previous"}, "changeLog": {"schemaVersion": 1, "releaseId": "rel-a41b46e609da4dde", "sequence": 1, "publishedAt": "2026-11-06 10:22:19", "contentVersion": "1afac005fc2634ec6b4dcf9683ae7235fcaada2dc9e75c9250b246617834ec9e", "baselineStatus": "previous", "items": [{"kind": "annotation", "description": "标注内容删除：移除“加油很多的”", "pageTitle": "讲评课件", "stateTitle": "默认页面", "target": {"pageId": "review", "stateId": "default", "noteId": "2b8884f9-c743-4ef3-b830-029f3431127f", "deleted": true}, "before": "加油很多的", "after": "", "affectedPages": ["review"], "affectedPageTitles": ["讲评课件"], "id": "change-9c7ae24c4efa3d4c62b4"}, {"kind": "annotation", "description": "标注内容新增：新增“导出讲评课件中的讲评报表中也要增加客观题需讲解数据”", "pageTitle": "讲评课件", "stateTitle": "默认页面", "target": {"pageId": "review", "stateId": "default", "noteId": "87133f76-59b8-4c13-8da7-a9d0f96fb814"}, "before": "", "after": "导出讲评课件中的讲评报表中也要增加客观题需讲解数据", "affectedPages": ["review"], "affectedPageTitles": ["讲评课件"], "id": "change-e7f3fbfe5ff291605776"}, {"kind": "style", "description": "样式资源更新：assets/prototype-navigation/project-navigation.css", "pageTitle": "项目演示入口", "stateTitle": "默认页面", "target": {"pageId": "home", "stateId": "default"}, "before": "", "after": "", "affectedPages": ["home"], "affectedPageTitles": ["项目演示入口"], "id": "change-e80ddce44c0dccfe3cd8"}, {"kind": "logic", "description": "交互资源更新：assets/prototype-navigation/project-navigation.js", "pageTitle": "项目演示入口", "stateTitle": "默认页面", "target": {"pageId": "home", "stateId": "default"}, "before": "", "after": "", "affectedPages": ["home"], "affectedPageTitles": ["项目演示入口"], "id": "change-686e680a18f1e8063c63"}, {"kind": "text", "description": "文案：“学案客观题支持需讲解” → “页面导航”", "pageTitle": "项目演示入口", "stateTitle": "默认页面", "target": {"pageId": "home", "stateId": "default", "anchor": {"selector": "[data-proto-id=\"side-nav\"] > header:nth-of-type(1) > span:nth-of-type(1)", "tag": "span", "text": "页面导航"}}, "before": "学案客观题支持需讲解", "after": "页面导航", "affectedPages": ["home"], "affectedPageTitles": ["项目演示入口"], "id": "change-d6e9d155c292505d6a7d"}, {"kind": "text", "description": "文案：“学案客观题支持需讲解” → “新教育后台”", "pageTitle": "项目演示入口", "stateTitle": "默认页面", "target": {"pageId": "home", "stateId": "default", "anchor": {"selector": "[id=\"scope\"]", "tag": "span", "text": "新教育后台"}}, "before": "学案客观题支持需讲解", "after": "新教育后台", "affectedPages": ["home"], "affectedPageTitles": ["项目演示入口"], "id": "change-f8873501cf7a17970e26"}, {"kind": "logic", "description": "页面交互代码或动态文案有更新，请核对", "pageTitle": "项目演示入口", "stateTitle": "默认页面", "target": {"pageId": "home", "stateId": "default"}, "before": "", "after": "", "affectedPages": ["home"], "affectedPageTitles": ["项目演示入口"], "id": "change-686e680a18f1e8063c63"}, {"kind": "style", "description": "页面样式更新", "pageTitle": "项目演示入口", "stateTitle": "默认页面", "target": {"pageId": "home", "stateId": "default"}, "before": "", "after": "", "affectedPages": ["home"], "affectedPageTitles": ["项目演示入口"], "id": "change-e80ddce44c0dccfe3cd8"}]}, "prototypeBase": "prototype-versions/1afac005fc2634ec6b4dcf96/", "prototypeVersions": {"answer-card.html": "db55b0a092154742ffc8", "app-p1.html": "6567d5a5c4b6408f1d67", "app-p2.html": "2d6ec696fa8c54fc1f5c", "index.html": "c5454bb566c37a15026f", "pad-p1.html": "79744da5ecc9743a362c", "pad-p2.html": "24326512260bffd85235", "review.html": "f56653ea69e60bc59ef6", "student.html": "ab59cf1f1b8a639611b9"}}</script>
         <script>
             'use strict';
             const $ = (id) => document.getElementById(id);
@@ -835,7 +1087,8 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                         const size = /(?:^|\s)proto-width=(\d{1,4})$/.exec(title);
                         const width = size && +size[1] >= 48 && +size[1] <= 4096 ? ` width="${+size[1]}"` : '';
                         if (width) title = title.slice(0, size.index).trim();
-                        return hold(`<img src="${esc(new URL('proto/' + path, location.href).href)}" alt="${alt}"${width}${title ? ` title="${title}"` : ''} loading="lazy">`);
+                        const base=/^(?:proto\/|prototype-versions\/[a-f0-9]{24}\/)$/.test(data?.prototypeBase || '') ? data.prototypeBase : 'proto/';
+                        return hold(`<img src="${esc(new URL(base + path, location.href).href)}" alt="${alt}"${width}${title ? ` title="${title}"` : ''} loading="lazy">`);
                     })
                     // 文字颜色：与工作台 safeHTML 同口径，只放行 <span style="color:…"> 这一种内联 HTML（色值限十六进制 / 颜色名）
                     .replace(/&lt;span style=&quot;color:(#[0-9a-fA-F]{3,8}|[a-zA-Z]+)&quot;&gt;/g, (m, c) => `<span style="color:${c.toLowerCase()}">`)
@@ -888,18 +1141,38 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                     }
                     if (/^\s*([-*+]|\d+\.)\s+/.test(line)) {
                         flushPara();
-                        const ordered = /^\s*\d+\./.test(line);
-                        const itemRe = ordered ? /^\s*\d+\.\s+(.*)$/ : /^\s*[-*+]\s+(.*)$/;
-                        const items = [];
-                        while (i < lines.length && itemRe.test(lines[i])) {
-                            const t = lines[i].match(itemRe)[1];
+                        const matchItem = text => /^([ \t]*)([-*+]|\d+\.)\s+(.*)$/.exec(text);
+                        const indent = text => text.replace(/\t/g, '    ').length;
+                        const first = matchItem(line), base = indent(first[1]), stack = [], parts = [];
+                        const closeList = () => { const last = stack.pop(); parts.push(`</li></${last.tag}>`); };
+                        while (i < lines.length) {
+                            const item = matchItem(lines[i]);
+                            if (!item) {
+                                if (!lines[i].trim()) {
+                                    let next = i + 1; while (next < lines.length && !lines[next].trim()) next++;
+                                    const nextItem = matchItem(lines[next] || '');
+                                    if (nextItem && indent(nextItem[1]) >= base) { i = next; continue; }
+                                    break;
+                                }
+                                if (stack.length && indent((/^[ \t]*/.exec(lines[i]) || [''])[0]) > stack.at(-1).indent) {
+                                    parts.push('<br>' + inline(lines[i++].trim())); continue;
+                                }
+                                break;
+                            }
+                            const depth = indent(item[1]), tag = /^\d/.test(item[2]) ? 'ol' : 'ul';
+                            if (depth < base) break;
+                            while (stack.length && depth < stack.at(-1).indent) closeList();
+                            if (stack.length && depth === stack.at(-1).indent && tag !== stack.at(-1).tag) closeList();
+                            if (!stack.length || depth > stack.at(-1).indent) {
+                                const start = tag === 'ol' && parseInt(item[2],10) !== 1 ? ` start="${parseInt(item[2],10)}"` : '';
+                                parts.push(`<${tag}${start}>`); stack.push({indent:depth,tag});
+                            } else parts.push('</li>');
+                            const task = item[3].match(/^\[([ xX])\]\s+(.*)$/);
+                            parts.push(task ? `<li class="task"><input type="checkbox" disabled${task[1] !== ' ' ? ' checked' : ''}> ${inline(task[2])}` : `<li>${inline(item[3])}`);
                             i++;
-                            const task = t.match(/^\[([ xX])\]\s+(.*)$/);
-                            items.push(task
-                                ? `<li class="task"><input type="checkbox" disabled${task[1] !== ' ' ? ' checked' : ''}> ${inline(task[2])}</li>`
-                                : `<li>${inline(t)}</li>`);
                         }
-                        out.push(ordered ? `<ol>${items.join('')}</ol>` : `<ul>${items.join('')}</ul>`);
+                        while (stack.length) closeList();
+                        out.push(parts.join(''));
                         continue;
                     }
                     if (!line.trim()) { flushPara(); i++; continue; }
@@ -921,6 +1194,8 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
             let frameReady = false;     // 当前 iframe 页已握手（收到 ready 且已下发 init）
             let projectNavigation = null;
             let selectedNoteId = null;
+            let pendingPublicationTarget=PublicationUpdates.readTarget(location.hash);
+            let publicationRequest=0;
 
             const safePath = (path) => {
                 const parts = String(path || '').replace(/\\/g, '/').split('/');
@@ -929,7 +1204,8 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
             };
             function prototypeUrl(page) {
                 const file = String(page.file || '').replace(/\\/g, '/');
-                const path = 'proto/' + safePath(file);
+                const base=/^(?:proto\/|prototype-versions\/[a-f0-9]{24}\/)$/.test(data.prototypeBase || '') ? data.prototypeBase : 'proto/';
+                const path = base + safePath(file);
                 const version = data.prototypeVersions?.[file];
                 return typeof version === 'string' && /^[a-f0-9]{20}$/.test(version) ? path + '?v=' + version : path;
             }
@@ -969,6 +1245,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
 
             // ---------- 页面 / 状态切换 ----------
             function selectPage(page, stateId) {
+                if(pendingPublicationTarget?.pageId!==page.id)pendingPublicationTarget=null;
                 const samePage = current.page?.id === page.id && loadedFile === page.file;
                 if (current.page?.id !== page.id || current.stateId !== stateId) selectedNoteId = null;
                 current = { page, stateId };
@@ -979,6 +1256,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                 renderAside();
                 if (samePage && frameReady) {
                     post({ type: 'enterState', stateId });
+                    flushPublicationTarget();
                 } else {
                     pendingState = stateId;
                     loadedFile = page.file;
@@ -1025,8 +1303,9 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                 frameReady = true;
                 // 先按当前页/状态判定 PRD 是否为空，再把真实侧栏开合态下发给 iframe；避免切页瞬间沿用上一页状态。
                 renderAside();
-                post({ type: 'init', notes: pageNotes(), asideOpen: prdAsideOpen(), enterState, selectedNoteId,
+                post({ type: 'init', notes: pageNotes(), pinStyle: data.pinStyle, asideOpen: prdAsideOpen(), enterState, selectedNoteId,
                     hintScopes: (current.page?.states || []).map(state => ({id: state.id, interactionHints: state.interactionHints})) });
+                flushPublicationTarget();
             }
             window.addEventListener('message', (e) => {
                 if (e.source === frame.contentWindow && e.data?.__protoScreenshot === 1 && e.data.type === 'navigate' && current.page?.kind === 'screenshot') {
@@ -1041,7 +1320,22 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                 if (m.type === 'sync') onPinSync(m.map || {}, m.state || 'default', m.stale || []);
                 else if (m.type === 'focus') onPinFocus(m.noteId);
                 else if (m.type === 'selection') selectReviewNote(m.noteId);
+                else if (m.type === 'changeLocated' && m.requestId===publicationRequest && !m.cancelled) PublicationUpdates.notify(m.message || (m.ok?'已定位更新位置':'目标暂不可定位'));
             });
+
+            function flushPublicationTarget(){
+                if(!pendingPublicationTarget || !frameReady)return;
+                const target=pendingPublicationTarget;pendingPublicationTarget=null;
+                if(target.documentId){document.querySelector('aside')?.scrollTo({top:0,behavior:'smooth'});PublicationUpdates.notify('已打开对应页面需求');return;}
+                if(target.noteId)onPinFocus(target.noteId);
+                post({type:'locateChange',target,requestId:++publicationRequest});
+            }
+            function locatePublicationTarget(target){
+                const page=data.pages.find(p=>p.id===target.pageId);
+                if(!page){PublicationUpdates.notify('该页面已删除，请查看变更详情');return;}
+                const state=page.states?.some(s=>s.id===target.stateId)?target.stateId:page.states?.[0]?.id || 'default';
+                pendingPublicationTarget={...target,stateId:state};selectPage(page,state);
+            }
 
             // ---------- 气泡层回调 ----------
             function onPinSync(map, state, stale) {
@@ -1135,6 +1429,7 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
                     const head = document.createElement('div');
                     head.className = 'note-head';
                     head.append(no);
+                    if (note.title) { const title = document.createElement('strong'); title.className = 'note-title'; title.textContent = note.title; head.append(title); }
                     row.append(head, body);
                     if (!stale) {
                         row.onclick = () => reveal(note);
@@ -1150,12 +1445,13 @@ body.page-nav-resizing{user-select:none;cursor:col-resize}body.page-nav-resizing
             } else {
                 $('project').textContent = data.name || '原型项目';
                 document.title = `${data.name || '原型项目'} · 原型评审`;
-                $('generated').textContent = data.publishedAt ? '发布于 ' + String(data.publishedAt).slice(0, 16).replace('T', ' ') : '';
+                $('generated').textContent = data.publishedAt ? '发布于 ' + String(data.publishedAt).slice(0, 19).replace('T', ' ') : '';
                 buildTree();
                 const params = new URLSearchParams(location.hash.slice(1));
-                const page = data.pages.find((p) => p.id === params.get('p')) || ProtoProjectNavigation.defaultPage(data);
+                const page = data.pages.find((p) => p.id === (pendingPublicationTarget?.pageId || params.get('p'))) || ProtoProjectNavigation.defaultPage(data);
                 const stateId = page.states?.some((s) => s.id === params.get('s')) ? params.get('s') : (page.states?.[0]?.id || 'default');
                 selectPage(page, stateId);
+                PublicationUpdates.mountPublished({data,onLocate:locatePublicationTarget});
             }
             const pageNavSizer = ProtoSidebarResize.attach($('page-nav-resizer'), {
                 storageKey: 'prototype-page-nav-width', isOpen: () => !$('layout').classList.contains('left-closed'),
