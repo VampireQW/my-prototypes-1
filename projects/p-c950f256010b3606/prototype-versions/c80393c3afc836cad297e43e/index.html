@@ -3455,7 +3455,7 @@ refreshTitle();
                 return false;
             })) continue;
             if (condition.kind !== 'click' && conditionValue(element, condition) === condition.value) continue;
-            return { element, condition, label: condition.label || conditionGuideLabel(condition) };
+            return { element, condition, label: condition.label || conditionGuideLabel(condition), indirect: i < steps.length - 1 };
         }
         return null;
     }
@@ -3518,11 +3518,16 @@ refreshTitle();
         }
         return null;
     }
-    function declaredCondition(el, allowConcealed = false) {
-        // 从外向内找当前可用的入口；导入标注没有 conditions 时也读取页面上的显现声明。
+    function ancestors(el) {
         const chain = [];
         for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) chain.unshift(n);
-        for (const node of chain) {
+        return chain;
+    }
+    function declaredCondition(el, allowConcealed = false, visited = new Set()) {
+        // 从外向内找当前可用的入口；导入标注没有 conditions 时也读取页面上的显现声明。
+        if (visited.has(el)) return null;
+        visited.add(el);
+        for (const node of ancestors(el)) {
             const by = node.getAttribute?.('data-proto-reveal-by');
             if (!by || !hidden(node)) continue;
             let controls = [];
@@ -3533,12 +3538,12 @@ refreshTitle();
             const raw = node.getAttribute('data-proto-reveal-value') ?? 'true';
             const kind = control.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control.type) ? control.type : 'click';
             if (!visible(control)) {
-                // 定位可使用显式声明、仅因透明而暂未出现的入口，且必须保留布局。
-                if (!allowConcealed || kind !== 'click' || control.hidden || control.inert ||
-                    control.getAttribute('aria-hidden')?.toLowerCase() === 'true' || !control.getClientRects().length) continue;
-                const style = getComputedStyle(control);
-                if (!style.opacity || Number(style.opacity) !== 0 || style.visibility !== 'visible' ||
-                    style.contentVisibility === 'hidden' || hiddenRoot(control.parentElement)) continue;
+                if (!(allowConcealed && kind === 'click' && isTransparentControl(control))) {
+                    // 浮层可能挂在 body 下。沿隐藏入口自身的声明查找外层路径，与浮层原来的 DOM 位置无关。
+                    const upstream = declaredCondition(control, allowConcealed, visited);
+                    if (upstream && !revealFailed(el, upstream.element)) return { ...upstream, indirect: true };
+                    continue;
+                }
             }
             const label = node.getAttribute('data-proto-reveal-label');
             const condition = { selector: by, kind, value: kind === 'select' || kind === 'click' ? raw : raw === 'true', explicit: true,
@@ -3547,6 +3552,11 @@ refreshTitle();
             return { element: control, condition, label: label || (kind === 'click' ? clickLabel : conditionGuideLabel(condition)) };
         }
         return null;
+    }
+    function isTransparentControl(control) {
+        if (control.hidden || control.inert || control.getAttribute('aria-hidden')?.toLowerCase() === 'true' || !control.getClientRects().length) return false;
+        const style = getComputedStyle(control);
+        return style.opacity === '0' && style.visibility === 'visible' && style.contentVisibility !== 'hidden' && !hiddenRoot(control.parentElement);
     }
     let revealNotes = [];
     function setRevealNotes(notes) { revealNotes = Array.isArray(notes) ? notes : []; }
@@ -3594,29 +3604,34 @@ refreshTitle();
             return result(broken ? 'needed' : 'manual', broken ? '手动路径当前不可用，请检查入口或补充上层步骤' : !el ? '目标当前未渲染，可测试手动路径后检查定位' : '按手动配置的顺序展开', rows, { source: '手动配置' });
         }
         if (!el) return result('missing', '标注目标未找到，请先检查页面状态或重新绑定序号');
-        const chain = [];
-        for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) chain.unshift(n);
+        const chain = ancestors(el), visited = new Set();
         const steps = [], seen = new Set(); let problem = '';
         const add = step => { const key = JSON.stringify([step.selector, step.kind, step.value]); if (!seen.has(key)) { seen.add(key); steps.push(inspectStep(step)); } };
         const ariaControls = [...document.querySelectorAll('[aria-controls]')].filter(c => !owned(c));
-        for (const node of chain) {
-            const by = node.getAttribute('data-proto-reveal-by');
-            if (by) {
-                const matches = find(by), control = matches.length === 1 ? matches[0] : null;
-                const raw = node.getAttribute('data-proto-reveal-value') ?? 'true';
-                const kind = control?.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control?.type) ? control.type : 'click';
-                add({ selector: by, kind, value: kind === 'select' || kind === 'click' ? raw : raw === 'true',
-                    label: node.getAttribute('data-proto-reveal-label') || text(control) || controlLabel(control) || '展开' });
-            } else if (node.tagName === 'DETAILS') {
-                const summary = node.querySelector('summary');
-                if (summary) add({ selector: selector(summary), kind: 'click', value: 'true', label: text(summary) || '展开折叠区' });
-                else problem = '折叠区缺少展开入口，请手动补充';
-            } else if (node.id) {
-                const controls = ariaControls.filter(c => (c.getAttribute('aria-controls') || '').split(/\s+/).includes(node.id));
-                if (controls.length === 1) add({ selector: selector(controls[0]), kind: 'click', value: 'true', label: text(controls[0]) || controlLabel(controls[0]) || '展开' });
-                else if (controls.length > 1) problem = '发现多个不同入口，请选择实际使用的展开路径';
+        function collect(nodes) {
+            for (const node of nodes) {
+                if (visited.has(node)) continue;
+                visited.add(node);
+                const by = node.getAttribute('data-proto-reveal-by');
+                if (by) {
+                    const matches = find(by), control = matches.length === 1 ? matches[0] : null;
+                    if (control) collect(ancestors(control));
+                    const raw = node.getAttribute('data-proto-reveal-value') ?? 'true';
+                    const kind = control?.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control?.type) ? control.type : 'click';
+                    add({ selector: by, kind, value: kind === 'select' || kind === 'click' ? raw : raw === 'true',
+                        label: node.getAttribute('data-proto-reveal-label') || text(control) || controlLabel(control) || '展开' });
+                } else if (node.tagName === 'DETAILS') {
+                    const summary = node.querySelector('summary');
+                    if (summary) add({ selector: selector(summary), kind: 'click', value: 'true', label: text(summary) || '展开折叠区' });
+                    else problem = '折叠区缺少展开入口，请手动补充';
+                } else if (node.id) {
+                    const controls = ariaControls.filter(c => (c.getAttribute('aria-controls') || '').split(/\s+/).includes(node.id));
+                    if (controls.length === 1) add({ selector: selector(controls[0]), kind: 'click', value: 'true', label: text(controls[0]) || controlLabel(controls[0]) || '展开' });
+                    else if (controls.length > 1) problem = '发现多个不同入口，请选择实际使用的展开路径';
+                }
             }
         }
+        collect(chain);
         const report = (rows, reason, extra = {}) => {
             const broken = rows.find(s => ['missing', 'duplicate', 'disabled'].includes(s.status));
             const message = broken ? `入口“${broken.label}”${{ missing: '未找到', duplicate: '定位不唯一', disabled: '当前禁用' }[broken.status]}，请检查或手动调整` : problem || (!shown && rows.every(s => s.status === 'hidden') ? '所有入口当前均隐藏，请先展开其所在区域或补充上层入口' : '');
@@ -3652,11 +3667,11 @@ refreshTitle();
         }
         return shown && !semantic ? result('visible', '目标当前直接可见，无需添加展开入口') : result('needed', shown ? '目标位于可收起区域，尚未识别打开入口' : '目标已隐藏，尚未识别展开入口');
     }
-    function revealHint(anchor, el = resolveHidden(anchor)) {
+    function revealHint(anchor, el = resolveHidden(anchor), allowConcealed = false) {
         if (el && !hidden(el)) return null; // 目标已显现；若落点异常应走失锚/响应式回退，不能继续显示条件引导
-        const conditionHint = (hit, target) => hit && { trigger: hit.element, target, label: hit.label, kind: 'condition', action: hit.condition.kind };
-        if (anchor?.revealSteps?.length) return conditionHint(manualCondition(anchor), anchor);
-        const declared = el ? declaredCondition(el) : null;
+        const conditionHint = (hit, target) => hit && { trigger: hit.element, target, label: hit.label, kind: 'condition', action: hit.condition.kind, indirect: hit.indirect };
+        if (anchor?.revealSteps?.length) return conditionHint(manualCondition(anchor, new Set(), allowConcealed), anchor);
+        const declared = el ? declaredCondition(el, allowConcealed) : null;
         if (declared) return conditionHint(declared, anchor || el);
         // 优先语义明确的 details / aria-controls；其次用创建标注时记录的、当前值确实不同的状态条件；
         // 再用邻近按钮弱推断；条件值已满足却仍隐藏的同值重放排最后（否则弹层折叠时会误显「选择 智能体」）。
@@ -3674,8 +3689,8 @@ refreshTitle();
     function reveal(target, attempted = new Set(), notify = true) {
         const anchor = target && target.nodeType === 1 ? null : target;
         let el = target && target.nodeType === 1 ? target : resolveHidden(target);
+        if (el && !hidden(el)) return el;
         if (anchor?.revealSteps?.length) {
-            if (el && !hidden(el)) return el;
             for (let i = 0; i < anchor.revealSteps.length; i++) {
                 const hit = manualCondition(anchor, attempted, true);
                 if (!hit) break;
@@ -3797,7 +3812,7 @@ refreshTitle();
 /* 展示编号投影：不改元数据 number，所有定位与编辑始终使用稳定 id。
    排序键是页面逻辑坐标（视口坐标加回各级滚动偏移），从上到下、从左到右。
    目标当前不可见、但能在主页面流里靠「展开 / 选中 / 点击」显现的标注（折叠区、条件行、页签），
-   用它的显现触发器位置代位参与主序，编号在展开前后保持一致，而不是被甩到末尾；
+   用直接显现入口的位置参与排序。跨视图路径的前置入口只用于定位，不作为目标的坐标；
    落在弹窗 / 抽屉 / 提示等分支容器里的目标整体排在主页序号之后再自然排序；彻底失锚的排最后。 */
 (() => {
     'use strict';
@@ -3836,11 +3851,10 @@ refreshTitle();
         if (el && el.getClientRects().length) return logicalPoint({ element: el, point: el.getBoundingClientRect(), legacy: true }, win);
         let hint = null;
         try {
-            hint = PA.revealHint?.(note.anchor, el) ||
-                (el && PA.revealTrigger?.(el) ? { trigger: PA.revealTrigger(el) } : null);
+            hint = PA.revealHint?.(note.anchor, el, true);
         } catch (_) { /* 条件选择器失效等同无触发器 */ }
         const trigger = hint?.trigger;
-        if (!trigger || !trigger.getClientRects?.().length) return null;
+        if (hint?.indirect || !trigger || !trigger.getClientRects?.().length) return null;
         const p = logicalPoint({ element: trigger, point: {}, legacy: true }, win);
         return p && { x: p.x, y: p.y + trigger.getBoundingClientRect().height };
     }
@@ -3855,13 +3869,19 @@ refreshTitle();
         }
         return result;
     }
-    /* records: { note, point, group }。group 0 = 主页面流，1 = 分支容器；同组内按行序，组间主页面流在前；无 point 的失锚置底。 */
+    /* 同组先按位置排序，仍存在但没有可用坐标的隐藏目标沿用存储顺序。失锚置底。 */
     function arrange(records) {
-        const placed = records.filter(r => r.point);
+        const group = (branch) => {
+            const items = records.filter(r => !!r.group === branch);
+            return [
+                ...rows(items.filter(r => r.point)),
+                ...items.filter(r => r.deferred).sort((a, b) => (a.note.number ?? Infinity) - (b.note.number ?? Infinity) || stable(a.note, b.note)),
+            ];
+        };
         const result = [
-            ...rows(placed.filter(r => !r.group)),
-            ...rows(placed.filter(r => r.group)),
-            ...records.filter(r => !r.point).sort((a, b) => stable(a.note, b.note)),
+            ...group(false),
+            ...group(true),
+            ...records.filter(r => !r.point && !r.deferred).sort((a, b) => stable(a.note, b.note)),
         ];
         return result.map((r, i) => ({ ...r.note, displayNumber: i + 1 }));
     }
@@ -3873,7 +3893,7 @@ refreshTitle();
         if (!el && note.anchor) { try { el = PA.resolveHidden?.(note.anchor) || null; } catch (_) { /* 旧选择器失效 */ } }
         if (!point && note.anchor) { try { point = proxyPoint(note, el, win); } catch (_) { /* 代位失败按失锚处理 */ } }
         const group = el && inBranch(el, win) ? 1 : 0;
-        return { note, point, group };
+        return { note, point, group, deferred: !point && !!el && PA.hidden?.(el) };
     }
     function project(notes, win, pending = null) {
         const records = notes.map(note => classify(note, win));
@@ -4295,28 +4315,34 @@ refreshTitle();
     window.addEventListener('scroll', e => {
         if (pop && pop.style.display === 'block' && pop.contains(e.target)) return;
         hidePop();
-        scheduleLayout();
+        scheduleLayout(true);
     }, { passive: true, capture: true });
     window.addEventListener('resize', () => { hidePop(); scheduleLayout(); }, { passive: true });
 
-    let layoutFrame = 0;
-    function scheduleLayout() {
+    let layoutFrame = 0, orderDirty = false;
+    function scheduleLayout(geometryOnly = false) {
+        if (!geometryOnly) orderDirty = true;
         if (layoutFrame) return;
-        layoutFrame = requestAnimationFrame(() => { layoutFrame = 0; layout(); });
+        layoutFrame = requestAnimationFrame(() => {
+            layoutFrame = 0;
+            const refreshOrder = orderDirty;
+            orderDirty = false;
+            layout(!refreshOrder);
+        });
     }
 
     const stateOf = () => document.documentElement.dataset.protoState || 'default';
-    let lastState = '', lastX = -1, lastY = -1, lastW = 0, lastH = 0;
-    let lastOrder = '', lastStale = '';
+    let lastState = '', lastX = scrollX, lastY = scrollY, lastW = innerWidth, lastH = innerHeight;
+    let lastOrder = '', lastStale = '', arranged = [];
     const pinsById = new Map();
 
-    function layout() {
+    function layout(geometryOnly = false) {
         const state = stateOf();
         if (state !== lastState) hidePop(); // 只在原型状态切换时关气泡；纯几何重排不关（避免侧栏收起引发的 reflow 误关刚弹出的气泡）
         const notes = (R.notes || []).filter(n => n.stateId === state);
         window.ProtoAnchors.setRevealNotes?.(notes);
         if (selectedNoteId && !notes.some(n => n.id === selectedNoteId)) selectNote(null);
-        const arranged = window.ProtoOrder.project(notes, window);
+        if (geometryOnly !== true || state !== lastState) arranged = window.ProtoOrder.project(notes, window);
         const stale = [], noPoint = [];
         const visibleIds = new Set(), occupied = [];
         for (const n of arranged) {
@@ -4441,10 +4467,10 @@ refreshTitle();
     document.fonts?.ready.then(scheduleLayout);
 
     setInterval(() => {
-        if (stateOf() !== lastState || scrollX !== lastX || scrollY !== lastY ||
-            innerWidth !== lastW || innerHeight !== lastH) {
+        const refreshOrder = stateOf() !== lastState || innerWidth !== lastW || innerHeight !== lastH;
+        if (refreshOrder || scrollX !== lastX || scrollY !== lastY) {
             lastX = scrollX; lastY = scrollY; lastW = innerWidth; lastH = innerHeight;
-            layout();
+            layout(!refreshOrder);
         }
     }, 350);
 

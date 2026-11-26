@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>度学 · 数据范围设置弹窗</title><style>*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%}body{font-family:"Microsoft YaHei","PingFang SC",-apple-system,"Segoe UI",sans-serif;background:#eef1f6;display:flex;flex-direction:column;overflow:hidden;color:#2b3a67}.ic{display:inline-block;vertical-align:-2px;flex-shrink:0}.topbar{height:56px;background:#fff;display:flex;align-items:center;padding:0 20px;gap:14px;box-shadow:0 1px 4px rgba(20,30,60,.08);position:relative;z-index:20}.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;color:#22315e;white-space:nowrap}.logo-img{height:34px;width:auto;display:block;object-fit:contain}.duxue-word{display:none;align-items:flex-end;gap:4px;color:#22315e;font-weight:900;letter-spacing:.5px}.duxue-word b{font-size:21px;line-height:1}.duxue-word small{font-size:10px;color:#73809a;font-weight:700;line-height:1.1}.logo .dot{color:#c3cbdd;font-weight:400}.page-title{flex:1;text-align:center;font-size:15px;color:#4a5568;letter-spacing:1px}.top-actions{display:flex;align-items:center;gap:18px;color:#4a5568;font-size:13.5px}.top-actions .link{cursor:pointer}.top-actions .link:hover{color:#6a4df4}.bell-link{position:relative;width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#6a4df4;background:#f7f5ff}.bell-badge{position:absolute;right:2px;top:0;min-width:15px;height:15px;padding:0 4px;border-radius:8px;background:#ff4d4f;color:#fff;font-size:10px;line-height:15px;font-weight:800;text-align:center}.user-chip{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#69758b;background:#f7f8fc}.user-chip:hover{color:#6a4df4;background:#f3f0ff}.user-icon{display:flex;align-items:center;justify-content:center}.btn{height:36px;padding:0 20px;border-radius:8px;border:1px solid #d5dbe8;background:#fff;color:#4a5568;cursor:pointer;font-size:13.5px;font-family:inherit}.btn:hover{border-color:#aeb9d4}.btn.primary{background:#6a4df4;border-color:#6a4df4;color:#fff}.btn.primary:hover{background:#5a3fe0}.studio-title-gear{color:#8a94ab;font-size:13px;margin-left:6px;cursor:pointer;display:inline-flex;vertical-align:1px}.studio-title-gear:hover{color:#6a4df4}.studio-gear-menu{display:none}.range-modal-mask{position:fixed;inset:0;z-index:125;background:rgba(15,23,42,.22);display:none;align-items:center;justify-content:center}.range-modal-mask.show{display:flex}.range-modal{width:640px;background:#fff;border-radius:8px;box-shadow:0 18px 60px rgba(20,30,60,.24);display:flex;flex-direction:column}.range-hd{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid #eef1f6;font-size:16px;font-weight:800;color:#22315e}.range-close{border:0;background:transparent;font-size:28px;line-height:1;color:#9aa5bd;cursor:pointer}.range-close:hover{color:#6a4df4}.range-bd{padding:18px 24px 20px}.range-section{margin-bottom:18px}.range-label{margin-bottom:6px;font-weight:800;color:#22315e;font-size:14px}.range-desc{margin:0 0 10px;color:#8a94ab;font-size:12.5px;line-height:1.5}.range-options{display:flex;flex-wrap:wrap;gap:10px 12px;padding:13px 14px;border:1px solid #e1e6f0;border-radius:8px;background:#fafcff}.range-options.grouped{flex-direction:column;gap:12px}.range-year-group{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px}.range-year-subtitle{width:100%;color:#22315e;font-size:13px;font-weight:800}.class-check{min-width:96px;display:flex;align-items:center;gap:6px;color:#5a667d;font-size:13px;cursor:pointer}.range-year-group .class-check{min-width:82px}.class-check input{width:16px;height:16px;accent-color:#2f73ee}.range-ft{height:66px;display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:0 24px;border-top:1px solid #eef1f6}</style><script data-prototype-owned data-proto-hotspot-bootstrap data-proto-review="hotspots">
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>度学 · 待处理任务弹窗</title><style>*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%}body{font-family:"Microsoft YaHei","PingFang SC",-apple-system,"Segoe UI",sans-serif;background:#eef1f6;display:flex;flex-direction:column;overflow:hidden;color:#2b3a67}.ic{display:inline-block;vertical-align:-2px;flex-shrink:0}.topbar{height:56px;background:#fff;display:flex;align-items:center;padding:0 20px;gap:14px;box-shadow:0 1px 4px rgba(20,30,60,.08);position:relative;z-index:20}.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;color:#22315e;white-space:nowrap}.logo-img{height:34px;width:auto;display:block;object-fit:contain}.duxue-word{display:none;align-items:flex-end;gap:4px;color:#22315e;font-weight:900;letter-spacing:.5px}.duxue-word b{font-size:21px;line-height:1}.duxue-word small{font-size:10px;color:#73809a;font-weight:700;line-height:1.1}.logo .dot{color:#c3cbdd;font-weight:400}.page-title{flex:1;text-align:center;font-size:15px;color:#4a5568;letter-spacing:1px}.top-actions{display:flex;align-items:center;gap:18px;color:#4a5568;font-size:13.5px}.top-actions .link{cursor:pointer}.top-actions .link:hover{color:#6a4df4}.bell-link{position:relative;width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#6a4df4;background:#f7f5ff}.bell-badge{position:absolute;right:2px;top:0;min-width:15px;height:15px;padding:0 4px;border-radius:8px;background:#ff4d4f;color:#fff;font-size:10px;line-height:15px;font-weight:800;text-align:center}.user-chip{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#69758b;background:#f7f8fc}.user-chip:hover{color:#6a4df4;background:#f3f0ff}.user-icon{display:flex;align-items:center;justify-content:center}.btn{height:36px;padding:0 20px;border-radius:8px;border:1px solid #d5dbe8;background:#fff;color:#4a5568;cursor:pointer;font-size:13.5px;font-family:inherit}.btn:hover{border-color:#aeb9d4}.btn.primary{background:#6a4df4;border-color:#6a4df4;color:#fff}.btn.primary:hover{background:#5a3fe0}.studio-title-gear{color:#8a94ab;font-size:13px;margin-left:6px;cursor:pointer;display:inline-flex;vertical-align:1px}.studio-title-gear:hover{color:#6a4df4}.studio-gear-menu{display:none}.task-mask{position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:128;display:none;align-items:center;justify-content:center}.task-mask.show{display:flex}.task-modal{width:835px;height:516px;background:#fff;border-radius:8px;box-shadow:0 20px 70px rgba(10,20,50,.3);display:flex;flex-direction:column;overflow:hidden}.task-hd{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;border-bottom:1px solid #edf0f5;font-size:16px;font-weight:800;color:#222}.task-close{border:0;background:transparent;font-size:25px;color:#9aa5bd;cursor:pointer}.task-close:hover{color:#6a4df4}.task-filter{display:flex;align-items:center;gap:12px;padding:14px 20px;background:#fff}.task-tabs{display:flex;background:#f1f3f7;border-radius:5px;overflow:hidden}.task-tab{padding:7px 16px;color:#65708a;font-size:12px;cursor:pointer}.task-tab.active{background:#fff;color:#6a4df4;font-weight:800;box-shadow:0 1px 4px rgba(20,30,60,.08)}.date-box{height:30px;border:1px solid #dfe5f0;border-radius:4px;padding:0 10px;display:flex;align-items:center;color:#6b7690;font-size:12px;min-width:100px}.task-table-wrap{flex:1;min-height:0;margin:0 20px;border-top:1px solid #edf0f5;overflow:auto}.task-table{width:100%;border-collapse:collapse;font-size:12px;color:#5a667d}.task-table th{text-align:left;color:#9aa5bd;font-weight:500;background:#fafbfd;padding:11px 10px;position:sticky;top:0}.task-table td{padding:11px 10px;border-bottom:1px solid #edf0f5;white-space:nowrap}.task-table .red{color:#ff4d4f}.task-table a{color:#6a4df4;margin-right:10px;cursor:pointer;text-decoration:none}.task-table a:hover{text-decoration:underline}.task-ft{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;color:#8a94ab;font-size:12px}.pager{display:flex;align-items:center;gap:8px}.page-size,.page-btn{border:1px solid #dfe5f0;border-radius:4px;height:28px;padding:0 10px;background:#fff;color:#6b7690;display:flex;align-items:center}.page-btn.active{background:#6a4df4;color:#fff;border-color:#6a4df4}</style><script data-prototype-owned data-proto-hotspot-bootstrap data-proto-review="hotspots">
 /* 点击空白时短暂提示本次需求范围内的真实交互；未声明范围时不扫描整页。 */
 (() => {
     'use strict';
@@ -305,7 +305,7 @@
 })();
 
 </script>
-</head><body><header class="topbar"><div class="logo"><span class="duxue-word" style="display:inline-flex;"><b>度学</b><small>duxue.cn</small></span><span class="dot">·</span><span style="font-weight:700;color:#22315e;">济宁市育才中学</span></div><div class="page-title" id="pageTitle"><span style="font-size:18px;color:#22315e;font-weight:700;">陈老师备课工作室</span><span id="studioTitleGear" class="studio-title-gear" title="数据范围设置">⚙</span></div><div class="top-actions"><span class="link" id="backStudio" style="display:none;">返回备课工作室</span><span class="link bell-link" id="bellBtn"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/></svg><span class="bell-badge" id="bellBadge">3</span></span><span class="user-chip" id="userChip" title="个人中心"><span class="user-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 21c0-4.2 3.1-7 7-7s7 2.8 7 7"></path></svg></span></span></div></header><div class="range-modal-mask show" id="rangeModalMask"><div class="range-modal"><div class="range-hd"><span>数据范围设置</span><button class="range-close" id="rangeClose">×</button></div><div class="range-bd"><div class="range-section"><div class="range-label">1. 查看学年范围：</div><div class="range-options" data-group="years"><label class="class-check"><input type="checkbox" checked>2025-2026学年</label><label class="class-check"><input type="checkbox" checked>2024-2025学年</label></div></div><div class="range-section"><div class="range-label">2. 我带过的班：</div><div class="range-desc">查看曾经任教班级的作业数据</div><div class="range-options grouped" data-group="pastClasses"><div class="range-year-group"><div class="range-year-subtitle">2025-2026学年</div><label class="class-check" data-year="2025-2026"><input type="checkbox" checked>6班</label><label class="class-check" data-year="2025-2026"><input type="checkbox" checked>7班</label></div><div class="range-year-group"><div class="range-year-subtitle">2024-2025学年</div><label class="class-check" data-year="2024-2025"><input type="checkbox" checked>7班</label><label class="class-check" data-year="2024-2025"><input type="checkbox" checked>8班</label><label class="class-check" data-year="2024-2025"><input type="checkbox">9班</label></div></div></div><div class="range-section"><div class="range-label">3. 当前带班历史作业：</div><div class="range-desc">查看当前任教班级历史学年或之前任课教师布置的作业</div><div class="range-options" data-group="currentHistory"><label class="class-check"><input type="checkbox" checked>6班</label><label class="class-check"><input type="checkbox" checked>7班</label><label class="class-check"><input type="checkbox">8班</label></div></div></div><div class="range-ft"><button class="btn" id="rangeCancel">取消</button><button class="btn primary" id="rangeOk">确定</button></div></div></div><!-- proto-review-bundle -->
+</head><body><header class="topbar"><div class="logo"><span class="duxue-word" style="display:inline-flex;"><b>度学</b><small>duxue.cn</small></span><span class="dot">·</span><span style="font-weight:700;color:#22315e;">济宁市育才中学</span></div><div class="page-title" id="pageTitle"><span style="font-size:18px;color:#22315e;font-weight:700;">陈老师备课工作室</span><span id="studioTitleGear" class="studio-title-gear" title="数据范围设置">⚙</span></div><div class="top-actions"><span class="link" id="backStudio" style="display:none;">返回备课工作室</span><span class="link bell-link" id="bellBtn"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/></svg><span class="bell-badge" id="bellBadge">3</span></span><span class="user-chip" id="userChip" title="个人中心"><span class="user-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 21c0-4.2 3.1-7 7-7s7 2.8 7 7"></path></svg></span></span></div></header><div class="task-mask show" id="taskMask"><div class="task-modal"><div class="task-hd"><span>待处理任务</span><button class="task-close" id="taskClose">×</button></div><div class="task-filter"><div class="task-tabs"><span class="task-tab">全部</span><span class="task-tab active">加入课程</span><span class="task-tab">未设置通用题卡</span></div><span>时间</span><span class="date-box">m/d/yyyy　◼</span><span>至</span><span class="date-box">m/d/yyyy　◼</span></div><div class="task-table-wrap"><table class="task-table"><thead><tr><th>名称</th><th>班级</th><th>已交</th><th>未交</th><th>时间</th><th>操作</th></tr></thead><tbody id="taskTbody"><tr><td>数学填空拆题不拆图智批看原卷批阅痕迹</td><td>6班-改</td><td>1</td><td class="red">9</td><td>2026-08-06 17:41</td><td><a>关联课时</a><a>答题卡设置</a></td></tr><tr><td>2026年08月06日数学作业</td><td>3班</td><td>2</td><td class="red">10</td><td>2026-08-06 16:40</td><td><a>关联课时</a><a>答题卡设置</a></td></tr><tr><td>2026年08月05日数学作业</td><td>hr班</td><td>3</td><td class="red">11</td><td>2026-08-05 15:39</td><td><a>关联课时</a><a>答题卡设置</a></td></tr><tr><td>是的法规</td><td>2班</td><td>1</td><td class="red">12</td><td>2026-08-05 14:38</td><td><a>关联课时</a><a>答题卡设置</a></td></tr><tr><td>2026年08月06日物理作业手写</td><td>1班</td><td>2</td><td class="red">13</td><td>2026-08-04 13:37</td><td><a>关联课时</a><a>答题卡设置</a></td></tr><tr><td>集合的概念课时练</td><td>6班-改</td><td>3</td><td class="red">14</td><td>2026-08-04 17:36</td><td><a>关联课时</a><a>答题卡设置</a></td></tr><tr><td>一元二次函数巩固</td><td>3班</td><td>1</td><td class="red">9</td><td>2026-08-03 16:35</td><td><a>关联课时</a><a>答题卡设置</a></td></tr><tr><td>函数的概念与性质小测</td><td>hr班</td><td>2</td><td class="red">10</td><td>2026-08-03 15:34</td><td><a>关联课时</a><a>答题卡设置</a></td></tr><tr><td>数学填空拆题不拆图智批看原卷批阅痕迹（2）</td><td>2班</td><td>3</td><td class="red">11</td><td>2026-08-02 14:33</td><td><a>关联课时</a><a>答题卡设置</a></td></tr></tbody></table></div><div class="task-ft"><span>共 23 条</span><div class="pager"><span class="page-size">10 条/页⌄</span><span class="page-btn">‹</span><span class="page-btn active">1</span><span class="page-btn">2</span><span class="page-btn">3</span><span class="page-btn">›</span></div></div></div></div><!-- proto-review-bundle -->
 <script data-proto-review="appearance">
 /* PRD 内容色板与序号外观；编辑、导出和发布共用。 */
 (() => {
@@ -768,7 +768,7 @@
                 return false;
             })) continue;
             if (condition.kind !== 'click' && conditionValue(element, condition) === condition.value) continue;
-            return { element, condition, label: condition.label || conditionGuideLabel(condition) };
+            return { element, condition, label: condition.label || conditionGuideLabel(condition), indirect: i < steps.length - 1 };
         }
         return null;
     }
@@ -831,11 +831,16 @@
         }
         return null;
     }
-    function declaredCondition(el, allowConcealed = false) {
-        // 从外向内找当前可用的入口；导入标注没有 conditions 时也读取页面上的显现声明。
+    function ancestors(el) {
         const chain = [];
         for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) chain.unshift(n);
-        for (const node of chain) {
+        return chain;
+    }
+    function declaredCondition(el, allowConcealed = false, visited = new Set()) {
+        // 从外向内找当前可用的入口；导入标注没有 conditions 时也读取页面上的显现声明。
+        if (visited.has(el)) return null;
+        visited.add(el);
+        for (const node of ancestors(el)) {
             const by = node.getAttribute?.('data-proto-reveal-by');
             if (!by || !hidden(node)) continue;
             let controls = [];
@@ -846,12 +851,12 @@
             const raw = node.getAttribute('data-proto-reveal-value') ?? 'true';
             const kind = control.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control.type) ? control.type : 'click';
             if (!visible(control)) {
-                // 定位可使用显式声明、仅因透明而暂未出现的入口，且必须保留布局。
-                if (!allowConcealed || kind !== 'click' || control.hidden || control.inert ||
-                    control.getAttribute('aria-hidden')?.toLowerCase() === 'true' || !control.getClientRects().length) continue;
-                const style = getComputedStyle(control);
-                if (!style.opacity || Number(style.opacity) !== 0 || style.visibility !== 'visible' ||
-                    style.contentVisibility === 'hidden' || hiddenRoot(control.parentElement)) continue;
+                if (!(allowConcealed && kind === 'click' && isTransparentControl(control))) {
+                    // 浮层可能挂在 body 下。沿隐藏入口自身的声明查找外层路径，与浮层原来的 DOM 位置无关。
+                    const upstream = declaredCondition(control, allowConcealed, visited);
+                    if (upstream && !revealFailed(el, upstream.element)) return { ...upstream, indirect: true };
+                    continue;
+                }
             }
             const label = node.getAttribute('data-proto-reveal-label');
             const condition = { selector: by, kind, value: kind === 'select' || kind === 'click' ? raw : raw === 'true', explicit: true,
@@ -860,6 +865,11 @@
             return { element: control, condition, label: label || (kind === 'click' ? clickLabel : conditionGuideLabel(condition)) };
         }
         return null;
+    }
+    function isTransparentControl(control) {
+        if (control.hidden || control.inert || control.getAttribute('aria-hidden')?.toLowerCase() === 'true' || !control.getClientRects().length) return false;
+        const style = getComputedStyle(control);
+        return style.opacity === '0' && style.visibility === 'visible' && style.contentVisibility !== 'hidden' && !hiddenRoot(control.parentElement);
     }
     let revealNotes = [];
     function setRevealNotes(notes) { revealNotes = Array.isArray(notes) ? notes : []; }
@@ -907,29 +917,34 @@
             return result(broken ? 'needed' : 'manual', broken ? '手动路径当前不可用，请检查入口或补充上层步骤' : !el ? '目标当前未渲染，可测试手动路径后检查定位' : '按手动配置的顺序展开', rows, { source: '手动配置' });
         }
         if (!el) return result('missing', '标注目标未找到，请先检查页面状态或重新绑定序号');
-        const chain = [];
-        for (let n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) chain.unshift(n);
+        const chain = ancestors(el), visited = new Set();
         const steps = [], seen = new Set(); let problem = '';
         const add = step => { const key = JSON.stringify([step.selector, step.kind, step.value]); if (!seen.has(key)) { seen.add(key); steps.push(inspectStep(step)); } };
         const ariaControls = [...document.querySelectorAll('[aria-controls]')].filter(c => !owned(c));
-        for (const node of chain) {
-            const by = node.getAttribute('data-proto-reveal-by');
-            if (by) {
-                const matches = find(by), control = matches.length === 1 ? matches[0] : null;
-                const raw = node.getAttribute('data-proto-reveal-value') ?? 'true';
-                const kind = control?.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control?.type) ? control.type : 'click';
-                add({ selector: by, kind, value: kind === 'select' || kind === 'click' ? raw : raw === 'true',
-                    label: node.getAttribute('data-proto-reveal-label') || text(control) || controlLabel(control) || '展开' });
-            } else if (node.tagName === 'DETAILS') {
-                const summary = node.querySelector('summary');
-                if (summary) add({ selector: selector(summary), kind: 'click', value: 'true', label: text(summary) || '展开折叠区' });
-                else problem = '折叠区缺少展开入口，请手动补充';
-            } else if (node.id) {
-                const controls = ariaControls.filter(c => (c.getAttribute('aria-controls') || '').split(/\s+/).includes(node.id));
-                if (controls.length === 1) add({ selector: selector(controls[0]), kind: 'click', value: 'true', label: text(controls[0]) || controlLabel(controls[0]) || '展开' });
-                else if (controls.length > 1) problem = '发现多个不同入口，请选择实际使用的展开路径';
+        function collect(nodes) {
+            for (const node of nodes) {
+                if (visited.has(node)) continue;
+                visited.add(node);
+                const by = node.getAttribute('data-proto-reveal-by');
+                if (by) {
+                    const matches = find(by), control = matches.length === 1 ? matches[0] : null;
+                    if (control) collect(ancestors(control));
+                    const raw = node.getAttribute('data-proto-reveal-value') ?? 'true';
+                    const kind = control?.tagName === 'SELECT' ? 'select' : /^(checkbox|radio)$/.test(control?.type) ? control.type : 'click';
+                    add({ selector: by, kind, value: kind === 'select' || kind === 'click' ? raw : raw === 'true',
+                        label: node.getAttribute('data-proto-reveal-label') || text(control) || controlLabel(control) || '展开' });
+                } else if (node.tagName === 'DETAILS') {
+                    const summary = node.querySelector('summary');
+                    if (summary) add({ selector: selector(summary), kind: 'click', value: 'true', label: text(summary) || '展开折叠区' });
+                    else problem = '折叠区缺少展开入口，请手动补充';
+                } else if (node.id) {
+                    const controls = ariaControls.filter(c => (c.getAttribute('aria-controls') || '').split(/\s+/).includes(node.id));
+                    if (controls.length === 1) add({ selector: selector(controls[0]), kind: 'click', value: 'true', label: text(controls[0]) || controlLabel(controls[0]) || '展开' });
+                    else if (controls.length > 1) problem = '发现多个不同入口，请选择实际使用的展开路径';
+                }
             }
         }
+        collect(chain);
         const report = (rows, reason, extra = {}) => {
             const broken = rows.find(s => ['missing', 'duplicate', 'disabled'].includes(s.status));
             const message = broken ? `入口“${broken.label}”${{ missing: '未找到', duplicate: '定位不唯一', disabled: '当前禁用' }[broken.status]}，请检查或手动调整` : problem || (!shown && rows.every(s => s.status === 'hidden') ? '所有入口当前均隐藏，请先展开其所在区域或补充上层入口' : '');
@@ -965,11 +980,11 @@
         }
         return shown && !semantic ? result('visible', '目标当前直接可见，无需添加展开入口') : result('needed', shown ? '目标位于可收起区域，尚未识别打开入口' : '目标已隐藏，尚未识别展开入口');
     }
-    function revealHint(anchor, el = resolveHidden(anchor)) {
+    function revealHint(anchor, el = resolveHidden(anchor), allowConcealed = false) {
         if (el && !hidden(el)) return null; // 目标已显现；若落点异常应走失锚/响应式回退，不能继续显示条件引导
-        const conditionHint = (hit, target) => hit && { trigger: hit.element, target, label: hit.label, kind: 'condition', action: hit.condition.kind };
-        if (anchor?.revealSteps?.length) return conditionHint(manualCondition(anchor), anchor);
-        const declared = el ? declaredCondition(el) : null;
+        const conditionHint = (hit, target) => hit && { trigger: hit.element, target, label: hit.label, kind: 'condition', action: hit.condition.kind, indirect: hit.indirect };
+        if (anchor?.revealSteps?.length) return conditionHint(manualCondition(anchor, new Set(), allowConcealed), anchor);
+        const declared = el ? declaredCondition(el, allowConcealed) : null;
         if (declared) return conditionHint(declared, anchor || el);
         // 优先语义明确的 details / aria-controls；其次用创建标注时记录的、当前值确实不同的状态条件；
         // 再用邻近按钮弱推断；条件值已满足却仍隐藏的同值重放排最后（否则弹层折叠时会误显「选择 智能体」）。
@@ -987,8 +1002,8 @@
     function reveal(target, attempted = new Set(), notify = true) {
         const anchor = target && target.nodeType === 1 ? null : target;
         let el = target && target.nodeType === 1 ? target : resolveHidden(target);
+        if (el && !hidden(el)) return el;
         if (anchor?.revealSteps?.length) {
-            if (el && !hidden(el)) return el;
             for (let i = 0; i < anchor.revealSteps.length; i++) {
                 const hit = manualCondition(anchor, attempted, true);
                 if (!hit) break;
@@ -1110,7 +1125,7 @@
 /* 展示编号投影：不改元数据 number，所有定位与编辑始终使用稳定 id。
    排序键是页面逻辑坐标（视口坐标加回各级滚动偏移），从上到下、从左到右。
    目标当前不可见、但能在主页面流里靠「展开 / 选中 / 点击」显现的标注（折叠区、条件行、页签），
-   用它的显现触发器位置代位参与主序，编号在展开前后保持一致，而不是被甩到末尾；
+   用直接显现入口的位置参与排序。跨视图路径的前置入口只用于定位，不作为目标的坐标；
    落在弹窗 / 抽屉 / 提示等分支容器里的目标整体排在主页序号之后再自然排序；彻底失锚的排最后。 */
 (() => {
     'use strict';
@@ -1149,11 +1164,10 @@
         if (el && el.getClientRects().length) return logicalPoint({ element: el, point: el.getBoundingClientRect(), legacy: true }, win);
         let hint = null;
         try {
-            hint = PA.revealHint?.(note.anchor, el) ||
-                (el && PA.revealTrigger?.(el) ? { trigger: PA.revealTrigger(el) } : null);
+            hint = PA.revealHint?.(note.anchor, el, true);
         } catch (_) { /* 条件选择器失效等同无触发器 */ }
         const trigger = hint?.trigger;
-        if (!trigger || !trigger.getClientRects?.().length) return null;
+        if (hint?.indirect || !trigger || !trigger.getClientRects?.().length) return null;
         const p = logicalPoint({ element: trigger, point: {}, legacy: true }, win);
         return p && { x: p.x, y: p.y + trigger.getBoundingClientRect().height };
     }
@@ -1168,13 +1182,19 @@
         }
         return result;
     }
-    /* records: { note, point, group }。group 0 = 主页面流，1 = 分支容器；同组内按行序，组间主页面流在前；无 point 的失锚置底。 */
+    /* 同组先按位置排序，仍存在但没有可用坐标的隐藏目标沿用存储顺序。失锚置底。 */
     function arrange(records) {
-        const placed = records.filter(r => r.point);
+        const group = (branch) => {
+            const items = records.filter(r => !!r.group === branch);
+            return [
+                ...rows(items.filter(r => r.point)),
+                ...items.filter(r => r.deferred).sort((a, b) => (a.note.number ?? Infinity) - (b.note.number ?? Infinity) || stable(a.note, b.note)),
+            ];
+        };
         const result = [
-            ...rows(placed.filter(r => !r.group)),
-            ...rows(placed.filter(r => r.group)),
-            ...records.filter(r => !r.point).sort((a, b) => stable(a.note, b.note)),
+            ...group(false),
+            ...group(true),
+            ...records.filter(r => !r.point && !r.deferred).sort((a, b) => stable(a.note, b.note)),
         ];
         return result.map((r, i) => ({ ...r.note, displayNumber: i + 1 }));
     }
@@ -1186,7 +1206,7 @@
         if (!el && note.anchor) { try { el = PA.resolveHidden?.(note.anchor) || null; } catch (_) { /* 旧选择器失效 */ } }
         if (!point && note.anchor) { try { point = proxyPoint(note, el, win); } catch (_) { /* 代位失败按失锚处理 */ } }
         const group = el && inBranch(el, win) ? 1 : 0;
-        return { note, point, group };
+        return { note, point, group, deferred: !point && !!el && PA.hidden?.(el) };
     }
     function project(notes, win, pending = null) {
         const records = notes.map(note => classify(note, win));
@@ -1608,28 +1628,34 @@
     window.addEventListener('scroll', e => {
         if (pop && pop.style.display === 'block' && pop.contains(e.target)) return;
         hidePop();
-        scheduleLayout();
+        scheduleLayout(true);
     }, { passive: true, capture: true });
     window.addEventListener('resize', () => { hidePop(); scheduleLayout(); }, { passive: true });
 
-    let layoutFrame = 0;
-    function scheduleLayout() {
+    let layoutFrame = 0, orderDirty = false;
+    function scheduleLayout(geometryOnly = false) {
+        if (!geometryOnly) orderDirty = true;
         if (layoutFrame) return;
-        layoutFrame = requestAnimationFrame(() => { layoutFrame = 0; layout(); });
+        layoutFrame = requestAnimationFrame(() => {
+            layoutFrame = 0;
+            const refreshOrder = orderDirty;
+            orderDirty = false;
+            layout(!refreshOrder);
+        });
     }
 
     const stateOf = () => document.documentElement.dataset.protoState || 'default';
-    let lastState = '', lastX = -1, lastY = -1, lastW = 0, lastH = 0;
-    let lastOrder = '', lastStale = '';
+    let lastState = '', lastX = scrollX, lastY = scrollY, lastW = innerWidth, lastH = innerHeight;
+    let lastOrder = '', lastStale = '', arranged = [];
     const pinsById = new Map();
 
-    function layout() {
+    function layout(geometryOnly = false) {
         const state = stateOf();
         if (state !== lastState) hidePop(); // 只在原型状态切换时关气泡；纯几何重排不关（避免侧栏收起引发的 reflow 误关刚弹出的气泡）
         const notes = (R.notes || []).filter(n => n.stateId === state);
         window.ProtoAnchors.setRevealNotes?.(notes);
         if (selectedNoteId && !notes.some(n => n.id === selectedNoteId)) selectNote(null);
-        const arranged = window.ProtoOrder.project(notes, window);
+        if (geometryOnly !== true || state !== lastState) arranged = window.ProtoOrder.project(notes, window);
         const stale = [], noPoint = [];
         const visibleIds = new Set(), occupied = [];
         for (const n of arranged) {
@@ -1754,10 +1780,10 @@
     document.fonts?.ready.then(scheduleLayout);
 
     setInterval(() => {
-        if (stateOf() !== lastState || scrollX !== lastX || scrollY !== lastY ||
-            innerWidth !== lastW || innerHeight !== lastH) {
+        const refreshOrder = stateOf() !== lastState || innerWidth !== lastW || innerHeight !== lastH;
+        if (refreshOrder || scrollX !== lastX || scrollY !== lastY) {
             lastX = scrollX; lastY = scrollY; lastW = innerWidth; lastH = innerHeight;
-            layout();
+            layout(!refreshOrder);
         }
     }, 350);
 
